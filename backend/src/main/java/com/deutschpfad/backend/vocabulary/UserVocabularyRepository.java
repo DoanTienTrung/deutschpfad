@@ -12,4 +12,10 @@ public interface UserVocabularyRepository extends JpaRepository<UserVocabulary, 
     Optional<UserVocabulary> findByUserAndVocabularyItem(User user, VocabularyItem vocabularyItem);
 
     List<UserVocabulary> findByUserAndNextReviewDateLessThanEqual(User user, LocalDate date);
+
+    long countByUser(User user);
+
+    long countByUserAndRepetitionsGreaterThanEqual(User user, int repetitions);
+
+    long countByUserAndNextReviewDateLessThanEqual(User user, LocalDate date);
 }

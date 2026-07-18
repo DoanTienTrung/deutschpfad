@@ -68,7 +68,7 @@ export default function VocabularyHubPage() {
   }, [mode, level, goetheLevel, topicId])
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-5xl">
       <h2 className="mb-4 font-display text-xl font-bold text-ink">Từ vựng</h2>
 
       <div className="mb-6 flex gap-2">
@@ -151,30 +151,33 @@ export default function VocabularyHubPage() {
 
       {!loading && lessons.length === 0 && <p className="text-muted">Chưa có bộ từ nào ở đây.</p>}
 
-      <ul className="space-y-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {lessons.map((lesson) => (
-          <li key={lesson.id} className="rounded-md border border-hairline bg-white p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-display font-semibold text-ink">
-                  {mode === 'level' || mode === 'goethe' ? `Bài ${lesson.orderIndex}: ` : ''}
-                  {lesson.title}
-                </p>
-                {lesson.description && <p className="mt-1 text-sm text-muted">{lesson.description}</p>}
-                <p className="mt-1 text-xs text-muted">
-                  [{lesson.level}] {lesson.wordCount} từ
-                </p>
-              </div>
-              <Link
-                to={`/app/practice/${lesson.id}`}
-                className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-canvas hover:bg-primary-deep"
-              >
-                Học ngay
-              </Link>
+          <div
+            key={lesson.id}
+            className="flex flex-col justify-between rounded-md border border-hairline bg-white p-4 shadow-lifted"
+          >
+            <div>
+              <p className="font-display font-semibold text-ink">
+                {mode === 'level' || mode === 'goethe' ? `Bài ${lesson.orderIndex}: ` : ''}
+                {lesson.title}
+              </p>
+              {lesson.description && (
+                <p className="mt-1 line-clamp-2 text-sm text-muted">{lesson.description}</p>
+              )}
+              <p className="mt-2 text-xs text-muted">
+                [{lesson.level}] {lesson.wordCount} từ
+              </p>
             </div>
-          </li>
+            <Link
+              to={`/app/practice/${lesson.id}`}
+              className="mt-4 rounded-sm bg-primary px-4 py-2 text-center text-sm font-medium text-canvas hover:bg-primary-deep"
+            >
+              Học ngay
+            </Link>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }

@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { listDeckItems, addDeckItem, deleteDeckItem, type DeckItemInput } from '../api/deckApi'
+import { listDeckItems, addDeckItem, deleteDeckItem, lookupVocabWord, type DeckItemInput } from '../api/deckApi'
 import type { DeckItem } from '../api/types'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
+import Field from '../components/ui/Field'
 
 const EMPTY_FORM: DeckItemInput = {
   germanWord: '',
   vietnameseMeaning: '',
   wordType: '',
   exampleSentence: '',
+  phonetic: '',
+  englishMeaning: '',
+  synonyms: '',
+  antonyms: '',
 }
 
 export default function DeckDetailPage() {
@@ -19,12 +24,37 @@ export default function DeckDetailPage() {
   const [items, setItems] = useState<DeckItem[]>([])
   const [form, setForm] = useState<DeckItemInput>(EMPTY_FORM)
   const [error, setError] = useState<string | null>(null)
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupError, setLookupError] = useState<string | null>(null)
 
   useEffect(() => {
     listDeckItems(id)
       .then(setItems)
       .catch(() => setError('Không tải được danh sách từ'))
   }, [id])
+
+  async function handleLookup() {
+    if (!form.germanWord.trim()) return
+    setLookupError(null)
+    setLookupLoading(true)
+    try {
+      const result = await lookupVocabWord(form.germanWord.trim())
+      setForm({
+        germanWord: result.germanWord,
+        vietnameseMeaning: result.vietnameseMeaning,
+        wordType: result.wordType,
+        exampleSentence: result.exampleSentence,
+        phonetic: result.phonetic,
+        englishMeaning: result.englishMeaning ?? '',
+        synonyms: result.synonyms ?? '',
+        antonyms: result.antonyms ?? '',
+      })
+    } catch {
+      setLookupError('Không tự động điền được, bạn nhập tay giúp mình nhé')
+    } finally {
+      setLookupLoading(false)
+    }
+  }
 
   async function handleAdd() {
     setError(null)
@@ -56,48 +86,102 @@ export default function DeckDetailPage() {
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-sm border border-hairline bg-white p-4">
-        <input
-          value={form.germanWord}
-          onChange={(e) => setForm({ ...form, germanWord: e.target.value })}
-          placeholder="Từ tiếng Đức"
-          className="rounded-sm border border-hairline px-3 py-2"
-        />
-        <input
-          value={form.vietnameseMeaning}
-          onChange={(e) => setForm({ ...form, vietnameseMeaning: e.target.value })}
-          placeholder="Nghĩa tiếng Việt"
-          className="rounded-sm border border-hairline px-3 py-2"
-        />
-        <input
-          value={form.wordType}
-          onChange={(e) => setForm({ ...form, wordType: e.target.value })}
-          placeholder="Loại từ (tuỳ chọn)"
-          className="rounded-sm border border-hairline px-3 py-2"
-        />
-        <input
-          value={form.exampleSentence}
-          onChange={(e) => setForm({ ...form, exampleSentence: e.target.value })}
-          placeholder="Câu ví dụ (tuỳ chọn)"
-          className="rounded-sm border border-hairline px-3 py-2"
-        />
-        <Button onClick={handleAdd} className="col-span-2">
-          Thêm từ
-        </Button>
+      <div className="mb-6 space-y-3 rounded-sm border border-hairline bg-white p-4">
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <Field
+              id="deck-item-german-word"
+              label="Từ tiếng Đức"
+              value={form.germanWord}
+              onChange={(e) => setForm({ ...form, germanWord: e.target.value })}
+              placeholder="Nhập hoặc dán từ tiếng Đức"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleLookup}
+            disabled={lookupLoading || !form.germanWord.trim()}
+            className="shrink-0 rounded-sm border border-primary px-3 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-40"
+          >
+            {lookupLoading ? 'Đang điền...' : '✨ Tự động điền AI'}
+          </button>
+        </div>
+
+        {lookupError && <p className="text-sm text-danger">{lookupError}</p>}
+
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <Field
+            id="deck-item-vi-meaning"
+            label="Nghĩa tiếng Việt"
+            value={form.vietnameseMeaning}
+            onChange={(e) => setForm({ ...form, vietnameseMeaning: e.target.value })}
+          />
+          <Field
+            id="deck-item-en-meaning"
+            label="Nghĩa tiếng Anh (tuỳ chọn)"
+            value={form.englishMeaning}
+            onChange={(e) => setForm({ ...form, englishMeaning: e.target.value })}
+          />
+          <Field
+            id="deck-item-word-type"
+            label="Loại từ (tuỳ chọn)"
+            value={form.wordType}
+            onChange={(e) => setForm({ ...form, wordType: e.target.value })}
+          />
+          <Field
+            id="deck-item-phonetic"
+            label="Phiên âm IPA (tuỳ chọn)"
+            value={form.phonetic}
+            onChange={(e) => setForm({ ...form, phonetic: e.target.value })}
+          />
+          <div className="col-span-2">
+            <Field
+              id="deck-item-example"
+              label="Câu ví dụ (tuỳ chọn)"
+              value={form.exampleSentence}
+              onChange={(e) => setForm({ ...form, exampleSentence: e.target.value })}
+            />
+          </div>
+          <Field
+            id="deck-item-synonyms"
+            label="Từ đồng nghĩa (tuỳ chọn)"
+            value={form.synonyms}
+            onChange={(e) => setForm({ ...form, synonyms: e.target.value })}
+          />
+          <Field
+            id="deck-item-antonyms"
+            label="Từ trái nghĩa (tuỳ chọn)"
+            value={form.antonyms}
+            onChange={(e) => setForm({ ...form, antonyms: e.target.value })}
+          />
+        </div>
+
+        <Button onClick={handleAdd}>Thêm từ</Button>
       </div>
 
       <ul className="space-y-2">
         {items.map((item) => (
-          <li
-            key={item.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-white p-3"
-          >
-            <span>
-              <strong>{item.germanWord}</strong> — {item.vietnameseMeaning}
-            </span>
-            <button onClick={() => handleDelete(item.id)} className="text-sm text-red-600 hover:underline">
-              Xoá
-            </button>
+          <li key={item.id} className="rounded-sm border border-hairline bg-white p-3">
+            <div className="flex items-center justify-between">
+              <span>
+                <strong>{item.germanWord}</strong>
+                {item.phonetic && <span className="ml-1 text-sm text-muted">/{item.phonetic}/</span>}
+                {' — '}
+                {item.vietnameseMeaning}
+                {item.englishMeaning && <span className="text-muted"> ({item.englishMeaning})</span>}
+              </span>
+              <button onClick={() => handleDelete(item.id)} className="text-sm text-red-600 hover:underline">
+                Xoá
+              </button>
+            </div>
+            {item.exampleSentence && <p className="mt-1 text-sm italic text-muted">{item.exampleSentence}</p>}
+            {(item.synonyms || item.antonyms) && (
+              <p className="mt-1 text-xs text-muted">
+                {item.synonyms && <>Đồng nghĩa: {item.synonyms}</>}
+                {item.synonyms && item.antonyms && ' · '}
+                {item.antonyms && <>Trái nghĩa: {item.antonyms}</>}
+              </p>
+            )}
           </li>
         ))}
       </ul>

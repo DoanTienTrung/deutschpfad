@@ -17,17 +17,20 @@ public class ListeningExerciseAdminController {
     private final ListeningSentenceRepository sentenceRepository;
     private final YtDlpService ytDlpService;
     private final GroqAiService translationService;
+    private final EspeakPhoneticService phoneticService;
 
     public ListeningExerciseAdminController(
         ListeningExerciseRepository exerciseRepository,
         ListeningSentenceRepository sentenceRepository,
         YtDlpService ytDlpService,
-        GroqAiService translationService
+        GroqAiService translationService,
+        EspeakPhoneticService phoneticService
     ) {
         this.exerciseRepository = exerciseRepository;
         this.sentenceRepository = sentenceRepository;
         this.ytDlpService = ytDlpService;
         this.translationService = translationService;
+        this.phoneticService = phoneticService;
     }
 
     @GetMapping
@@ -49,6 +52,7 @@ public class ListeningExerciseAdminController {
 
     @PostMapping
     public ResponseEntity<ListeningExerciseAdminResponse> create(@Valid @RequestBody ListeningExerciseRequest request) {
+        requireAudioSource(request);
         ListeningExercise exercise = new ListeningExercise();
         applyRequest(exercise, request);
         exercise = exerciseRepository.save(exercise);
@@ -62,6 +66,7 @@ public class ListeningExerciseAdminController {
     public ResponseEntity<ListeningExerciseAdminResponse> update(
         @PathVariable Long id, @Valid @RequestBody ListeningExerciseRequest request
     ) {
+        requireAudioSource(request);
         ListeningExercise exercise = findOrThrow(id);
         applyRequest(exercise, request);
         exercise = exerciseRepository.save(exercise);
@@ -92,9 +97,13 @@ public class ListeningExerciseAdminController {
         List<TranscriptParser.SentenceData> parsed;
         if (hasRawTranscript) {
             parsed = TranscriptParser.parse(rawTranscript);
-        } else {
+        } else if (exercise.getYoutubeVideoId() != null && !exercise.getYoutubeVideoId().isBlank()) {
             parsed = ytDlpService.fetchAutoTranscript(exercise.getYoutubeVideoId());
             autoFetched = !parsed.isEmpty();
+        } else {
+            // Audio-URL-only exercises (e.g. official exam Modellsatz) have no captions to
+            // auto-fetch — the transcript must be pasted in by hand.
+            parsed = List.of();
         }
 
         sentenceRepository.deleteByExerciseId(exercise.getId());
@@ -111,7 +120,8 @@ public class ListeningExerciseAdminController {
             sentence.setStartSeconds(data.startSeconds());
             sentence.setEndSeconds(data.endSeconds());
             sentence.setTranslation(annotations.get(i).translation());
-            sentence.setPhonetic(annotations.get(i).phonetic());
+            String phonetic = phoneticService.phonetic(data.text());
+            sentence.setPhonetic(phonetic != null ? phonetic : annotations.get(i).phonetic());
             saved.add(sentenceRepository.save(sentence));
         }
 
@@ -119,16 +129,28 @@ public class ListeningExerciseAdminController {
     }
 
     private void applyRequest(ListeningExercise exercise, ListeningExerciseRequest request) {
-        boolean videoChanged = !request.youtubeVideoId().equals(exercise.getYoutubeVideoId());
+        boolean hasVideo = request.youtubeVideoId() != null && !request.youtubeVideoId().isBlank();
+        boolean videoChanged = hasVideo && !request.youtubeVideoId().equals(exercise.getYoutubeVideoId());
         exercise.setTitle(request.title());
         exercise.setLevelMin(request.levelMin());
         exercise.setLevelMax(request.levelMax());
-        exercise.setYoutubeVideoId(request.youtubeVideoId());
+        exercise.setYoutubeVideoId(hasVideo ? request.youtubeVideoId() : null);
+        exercise.setAudioUrl(request.audioUrl() != null && !request.audioUrl().isBlank() ? request.audioUrl().trim() : null);
+        exercise.setSourceLabel(request.sourceLabel() != null && !request.sourceLabel().isBlank() ? request.sourceLabel().trim() : null);
+        exercise.setSourceUrl(request.sourceUrl() != null && !request.sourceUrl().isBlank() ? request.sourceUrl().trim() : null);
         exercise.setDescription(request.description());
         exercise.setTopic(request.topic() != null && !request.topic().isBlank() ? request.topic().trim() : null);
         exercise.setOrderIndex(request.orderIndex());
-        if (videoChanged || exercise.getDurationSeconds() == null) {
+        if (hasVideo && (videoChanged || exercise.getDurationSeconds() == null)) {
             exercise.setDurationSeconds(ytDlpService.fetchDurationSeconds(request.youtubeVideoId()));
+        }
+    }
+
+    private void requireAudioSource(ListeningExerciseRequest request) {
+        boolean hasVideo = request.youtubeVideoId() != null && !request.youtubeVideoId().isBlank();
+        boolean hasAudio = request.audioUrl() != null && !request.audioUrl().isBlank();
+        if (!hasVideo && !hasAudio) {
+            throw new IllegalArgumentException("Cần có YouTube video ID hoặc audioUrl");
         }
     }
 

@@ -101,7 +101,7 @@ export default function AdminVocabularyPage() {
       {error && <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       <div className="mb-6 space-y-2 rounded-sm border border-hairline bg-white p-4">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input
             value={form.germanWord}
             onChange={(e) => setForm({ ...form, germanWord: e.target.value })}

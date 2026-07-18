@@ -10,11 +10,16 @@ import java.util.List;
 public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, Long> {
     List<VocabularyItem> findByLevel(VocabularyItem.Level level);
     List<VocabularyItem> findByLessonId(Long lessonId);
+    List<VocabularyItem> findByExampleSentenceIsNotNull();
+    List<VocabularyItem> findByExampleSentenceIsNotNullAndExampleSentenceHighlightIsNull();
 
+    // Only words the user has studied before and whose SM2 schedule says are due again today —
+    // matches VocabularyReviewService.getStats()'s "dueForReview" count exactly. Never-studied
+    // words are a separate concept ("chưa học", browsed via lessons/decks), not part of this queue.
     @Query("""
         SELECT v FROM VocabularyItem v
-        LEFT JOIN UserVocabulary uv ON uv.vocabularyItem = v AND uv.user = :user
-        WHERE uv.id IS NULL OR uv.nextReviewDate <= CURRENT_DATE
+        JOIN UserVocabulary uv ON uv.vocabularyItem = v AND uv.user = :user
+        WHERE uv.nextReviewDate <= CURRENT_DATE
         """)
     List<VocabularyItem> findDueForReview(@Param("user") User user);
 }

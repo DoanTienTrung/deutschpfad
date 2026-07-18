@@ -41,7 +41,10 @@ export type ListeningExerciseAdminRequest = {
   title: string
   levelMin: string
   levelMax: string
-  youtubeVideoId: string
+  youtubeVideoId: string | null
+  audioUrl: string | null
+  sourceLabel: string | null
+  sourceUrl: string | null
   description: string | null
   topic: string | null
   orderIndex: number

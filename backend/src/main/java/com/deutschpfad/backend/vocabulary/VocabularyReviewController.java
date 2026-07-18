@@ -25,6 +25,11 @@ public class VocabularyReviewController {
         return reviewService.getDueCards(currentUser(authentication));
     }
 
+    @GetMapping("/stats")
+    public VocabularyStatsResponse stats(Authentication authentication) {
+        return reviewService.getStats(currentUser(authentication));
+    }
+
     @PostMapping("/review/{vocabularyItemId}")
     public ReviewResultResponse submitReview(
         @PathVariable Long vocabularyItemId,

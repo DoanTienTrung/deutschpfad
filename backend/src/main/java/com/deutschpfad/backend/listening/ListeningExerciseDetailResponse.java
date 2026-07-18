@@ -10,6 +10,9 @@ public record ListeningExerciseDetailResponse(
     VocabularyItem.Level levelMin,
     VocabularyItem.Level levelMax,
     String youtubeVideoId,
+    String audioUrl,
+    String sourceLabel,
+    String sourceUrl,
     String description,
     String topic,
     List<ListeningSentenceResponse> sentences
@@ -21,6 +24,9 @@ public record ListeningExerciseDetailResponse(
             exercise.getLevelMin(),
             exercise.getLevelMax(),
             exercise.getYoutubeVideoId(),
+            exercise.getAudioUrl(),
+            exercise.getSourceLabel(),
+            exercise.getSourceUrl(),
             exercise.getDescription(),
             exercise.getTopic(),
             sentences.stream().map(ListeningSentenceResponse::from).toList()

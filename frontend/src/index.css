@@ -2,13 +2,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: oklch(1 0 0);
-  --color-surface: oklch(0.97 0.006 202);
-  --color-ink: oklch(0.22 0.02 202);
-  --color-muted: oklch(0.55 0.01 202);
-  --color-hairline: oklch(0.88 0.01 202);
-  --color-primary: oklch(0.22 0.01 250);
-  --color-primary-deep: oklch(0.15 0.01 250);
+  /* Neutrals share the same warm hue (70) as --color-accent below, instead of the cooler 202/250
+     used before — a grey (or near-white/near-black) with a hue bias toward the page's accent
+     reads as chosen rather than an unconsidered default. */
+  --color-canvas: oklch(0.995 0.004 70);
+  --color-surface: oklch(0.97 0.012 70);
+  --color-ink: oklch(0.22 0.018 70);
+  --color-muted: oklch(0.55 0.014 70);
+  --color-hairline: oklch(0.88 0.014 70);
+  --color-primary: oklch(0.22 0.014 70);
+  --color-primary-deep: oklch(0.15 0.014 70);
   --color-accent: oklch(0.75 0.15 70);
   --color-accent-deep: oklch(0.62 0.16 68);
   --color-danger: oklch(0.55 0.19 25);
@@ -23,8 +26,8 @@
   --radius-md: 8px;
   --radius-lg: 12px;
 
-  --shadow-lifted: 0 2px 8px oklch(0.22 0.02 202 / 0.08);
-  --shadow-floating: 0 12px 32px oklch(0.22 0.02 202 / 0.14);
+  --shadow-lifted: 0 2px 8px oklch(0.22 0.018 70 / 0.08);
+  --shadow-floating: 0 12px 32px oklch(0.22 0.018 70 / 0.14);
 
   --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
 }

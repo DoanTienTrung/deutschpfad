@@ -31,6 +31,7 @@ export type VocabularyItem = {
   phonetic: string | null
   wordType: string | null
   exampleSentence: string | null
+  exampleSentenceHighlight: string | null
   imageUrl: string | null
   level: string
   source: VocabularySource
@@ -49,6 +50,12 @@ export type ReviewResult = {
   nextReviewDate: string
 }
 
+export type VocabularyStats = {
+  learned: number
+  remembered: number
+  dueForReview: number
+}
+
 export type Deck = {
   id: number
   name: string
@@ -62,6 +69,21 @@ export type DeckItem = {
   vietnameseMeaning: string
   wordType: string | null
   exampleSentence: string | null
+  phonetic: string | null
+  englishMeaning: string | null
+  synonyms: string | null
+  antonyms: string | null
+}
+
+export type VocabLookupResult = {
+  germanWord: string
+  wordType: string
+  vietnameseMeaning: string
+  englishMeaning: string | null
+  phonetic: string
+  exampleSentence: string
+  synonyms: string | null
+  antonyms: string | null
 }
 
 export type LessonSummary = {
@@ -115,7 +137,8 @@ export type ListeningExerciseSummary = {
   title: string
   levelMin: string
   levelMax: string
-  youtubeVideoId: string
+  youtubeVideoId: string | null
+  sourceLabel: string | null
   description: string | null
   topic: string | null
   orderIndex: number
@@ -128,7 +151,10 @@ export type ListeningExerciseDetail = {
   title: string
   levelMin: string
   levelMax: string
-  youtubeVideoId: string
+  youtubeVideoId: string | null
+  audioUrl: string | null
+  sourceLabel: string | null
+  sourceUrl: string | null
   description: string | null
   topic: string | null
   sentences: ListeningSentence[]
@@ -146,7 +172,10 @@ export type ListeningExerciseAdmin = {
   title: string
   levelMin: string
   levelMax: string
-  youtubeVideoId: string
+  youtubeVideoId: string | null
+  audioUrl: string | null
+  sourceLabel: string | null
+  sourceUrl: string | null
   description: string | null
   topic: string | null
   orderIndex: number
@@ -170,6 +199,101 @@ export type UserListeningItemDetail = {
   description: string | null
   autoFetched: boolean
   sentences: ListeningSentence[]
+}
+
+export type ReadingQuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'MATCHING' | 'FILL_BLANK' | 'SHORT_ANSWER'
+export type ReadingCategory = 'EXAM' | 'ARTICLE'
+
+export type ReadingMatchingOption = {
+  letter: string
+  text: string
+}
+
+export type ReadingPassageSummary = {
+  id: number
+  title: string
+  levelMin: string
+  levelMax: string
+  topic: string | null
+  sourceLabel: string | null
+  orderIndex: number
+  questionCount: number
+  category: ReadingCategory
+  imageUrl: string | null
+  imageAttributionName: string | null
+  imageAttributionUrl: string | null
+}
+
+export type ReadingQuestionPractice = {
+  id: number
+  orderIndex: number
+  questionText: string
+  questionType: ReadingQuestionType
+  optionA: string | null
+  optionB: string | null
+  optionC: string | null
+  optionD: string | null
+}
+
+export type ReadingPassageDetail = {
+  id: number
+  title: string
+  levelMin: string
+  levelMax: string
+  topic: string | null
+  sourceLabel: string | null
+  sourceUrl: string | null
+  content: string
+  contentTranslation: string | null
+  category: ReadingCategory
+  imageUrl: string | null
+  imageAttributionName: string | null
+  imageAttributionUrl: string | null
+  questions: ReadingQuestionPractice[]
+  matchingOptions: ReadingMatchingOption[]
+}
+
+export type ReadingSubmitResult = {
+  correctCount: number
+  totalCount: number
+  results: {
+    questionId: number
+    correct: boolean
+    submittedAnswer: string | null
+    correctAnswer: string
+    explanation: string | null
+  }[]
+}
+
+export type ReadingQuestionAdmin = {
+  id: number
+  orderIndex: number
+  questionText: string
+  questionType: ReadingQuestionType
+  optionA: string | null
+  optionB: string | null
+  optionC: string | null
+  optionD: string | null
+  correctAnswer: string
+  explanation: string | null
+}
+
+export type ReadingPassageAdmin = {
+  id: number
+  title: string
+  levelMin: string
+  levelMax: string
+  topic: string | null
+  sourceLabel: string | null
+  sourceUrl: string | null
+  orderIndex: number
+  content: string
+  category: ReadingCategory
+  imageUrl: string | null
+  imageAttributionName: string | null
+  imageAttributionUrl: string | null
+  questions: ReadingQuestionAdmin[]
+  matchingOptions: ReadingMatchingOption[]
 }
 
 export type SpeakingPrompt = {

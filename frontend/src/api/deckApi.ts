@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import type { Deck, DeckItem } from './types'
+import type { Deck, DeckItem, VocabLookupResult } from './types'
 
 export function listDecks() {
   return apiFetch<Deck[]>('/decks')
@@ -8,6 +8,13 @@ export function listDecks() {
 export function createDeck(name: string, description: string) {
   return apiFetch<Deck>('/decks', {
     method: 'POST',
+    body: JSON.stringify({ name, description }),
+  })
+}
+
+export function updateDeck(deckId: number, name: string, description: string) {
+  return apiFetch<Deck>(`/decks/${deckId}`, {
+    method: 'PUT',
     body: JSON.stringify({ name, description }),
   })
 }
@@ -25,12 +32,23 @@ export type DeckItemInput = {
   vietnameseMeaning: string
   wordType: string
   exampleSentence: string
+  phonetic?: string
+  englishMeaning?: string
+  synonyms?: string
+  antonyms?: string
 }
 
 export function addDeckItem(deckId: number, input: DeckItemInput) {
   return apiFetch<DeckItem>(`/decks/${deckId}/items`, {
     method: 'POST',
     body: JSON.stringify(input),
+  })
+}
+
+export function lookupVocabWord(germanWord: string) {
+  return apiFetch<VocabLookupResult>('/decks/lookup', {
+    method: 'POST',
+    body: JSON.stringify({ germanWord }),
   })
 }
 

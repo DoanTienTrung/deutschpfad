@@ -36,6 +36,9 @@ export default function AdminLayout() {
             <Link to="/admin/speaking" className="text-primary hover:text-primary-deep">
               Đề nói
             </Link>
+            <Link to="/admin/reading" className="text-primary hover:text-primary-deep">
+              Bài đọc
+            </Link>
             <button onClick={handleLogout} className="text-muted hover:text-ink">
               Đăng xuất
             </button>

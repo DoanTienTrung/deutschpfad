@@ -34,6 +34,9 @@ public class VocabularyItem {
     @Column(name = "example_sentence")
     private String exampleSentence;
 
+    @Column(name = "example_sentence_highlight")
+    private String exampleSentenceHighlight;
+
     @Column(name = "image_url")
     private String imageUrl;
 

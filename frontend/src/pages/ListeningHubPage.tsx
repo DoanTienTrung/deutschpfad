@@ -1,115 +1,52 @@
-import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { listListeningByLevel, listListeningTopics } from '../api/listeningApi'
-import type { ListeningExerciseSummary } from '../api/types'
-import { getYoutubeThumbnailUrl, formatDuration } from '../lib/youtubeThumbnail'
-
-const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
+import { Link } from 'react-router-dom'
 
 export default function ListeningHubPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [level, setLevel] = useState(() => searchParams.get('level') ?? 'A1')
-  const [topic, setTopic] = useState(() => searchParams.get('topic') ?? '')
-  const [topics, setTopics] = useState<string[]>([])
-  const [exercises, setExercises] = useState<ListeningExerciseSummary[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-
-  const visibleExercises = exercises.filter((e) => e.title.toLowerCase().includes(search.trim().toLowerCase()))
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount, topic list is global
-    listListeningTopics().then(setTopics)
-  }, [])
-
-  useEffect(() => {
-    setSearchParams(topic ? { level, topic } : { level }, { replace: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync URL when level/topic changes
-  }, [level, topic])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- level/topic changed, reset loading before refetch
-    setLoading(true)
-    listListeningByLevel(level, topic || undefined)
-      .then(setExercises)
-      .finally(() => setLoading(false))
-  }, [level, topic])
-
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold text-ink">Nghe</h2>
-        <Link to="/app/listening/mine" className="text-sm font-medium text-primary hover:underline">
-          🎬 Video của tôi
-        </Link>
-      </div>
+    <div className="mx-auto max-w-3xl">
+      <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+        🎧 Trung tâm luyện nghe
+      </span>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm theo tên video..."
-        className="mb-4 w-full rounded-sm border border-hairline px-3 py-2 text-sm"
-      />
+      <h2 className="font-display text-3xl font-bold text-ink">
+        Luyện <span className="text-accent-deep">nghe</span> tiếng Đức
+      </h2>
+      <p className="mt-2 text-sm text-muted">
+        Luyện nghe qua video hội thoại YouTube theo chủ đề đời sống, hoặc luyện trực tiếp với dữ
+        liệu đề thi mẫu chính thức Goethe-Institut để làm quen với đúng định dạng thi thật.
+      </p>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-2">
-          {LEVELS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevel(l)}
-              className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                level === l ? 'bg-accent/30 text-ink' : 'border border-hairline text-ink hover:bg-surface'
-              }`}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
-        {topics.length > 0 && (
-          <select
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            className="rounded-sm border border-hairline px-3 py-1.5 text-sm text-ink"
-          >
-            <option value="">Tất cả chủ đề</option>
-            {topics.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      {loading && <p className="text-muted">Đang tải...</p>}
-
-      {!loading && exercises.length === 0 && <p className="text-muted">Chưa có bài nghe nào ở cấp độ này.</p>}
-      {!loading && exercises.length > 0 && visibleExercises.length === 0 && (
-        <p className="text-muted">Không tìm thấy video nào khớp với tên bạn tìm.</p>
-      )}
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {visibleExercises.map((exercise) => (
-          <Link key={exercise.id} to={`/app/listening/${exercise.id}`} className="group">
-            <div className="relative aspect-video overflow-hidden rounded-lg bg-surface">
-              <img
-                src={getYoutubeThumbnailUrl(exercise.youtubeVideoId)}
-                alt={exercise.title}
-                className="h-full w-full object-cover transition-transform group-hover:scale-105"
-              />
-              <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-canvas">
-                {exercise.levelMin === exercise.levelMax
-                  ? exercise.levelMin
-                  : `${exercise.levelMin}-${exercise.levelMax}`}
-              </span>
-              {exercise.durationSeconds != null && (
-                <span className="absolute bottom-2 right-2 rounded-sm bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
-                  {formatDuration(exercise.durationSeconds)}
-                </span>
-              )}
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <Link
+          to="/app/listening/youtube"
+          className="group flex items-center justify-between gap-3 rounded-lg bg-primary p-5 text-canvas shadow-lifted transition-transform hover:-translate-y-0.5"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-canvas/15 text-lg">
+              📺
+            </span>
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide">Luyện qua Video YouTube</p>
+              <p className="mt-0.5 text-xs text-canvas/70">Hội thoại đời sống, đủ mọi cấp độ</p>
             </div>
-            <p className="mt-2 text-sm font-semibold text-ink group-hover:text-primary">{exercise.title}</p>
-            <p className="mt-0.5 text-xs text-muted">{exercise.sentenceCount} câu</p>
-          </Link>
-        ))}
+          </div>
+          <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+        </Link>
+
+        <Link
+          to="/app/listening/exam"
+          className="group flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface p-5 text-ink shadow-lifted transition-transform hover:-translate-y-0.5"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/25 text-lg">
+              📝
+            </span>
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide">Luyện qua Đề thi</p>
+              <p className="mt-0.5 text-xs text-muted">Dữ liệu Modellsatz Goethe-Institut</p>
+            </div>
+          </div>
+          <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+        </Link>
       </div>
     </div>
   )

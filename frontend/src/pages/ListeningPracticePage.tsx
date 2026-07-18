@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { getListeningExercise, getShadowingFeedback, getWordTranslation, recordListeningProgress } from '../api/listeningApi'
 import type { ListeningExerciseDetail } from '../api/types'
 import YouTubePlayer, { type YouTubePlayerRef } from '../components/listening/YouTubePlayer'
+import AudioPlayer from '../components/listening/AudioPlayer'
 import ShadowingPanel from '../components/listening/ShadowingPanel'
 import ListeningDictationPanel from '../components/listening/ListeningDictationPanel'
 import ListeningClozePanel from '../components/listening/ListeningClozePanel'
+import ListeningBreadcrumb from '../components/listening/ListeningBreadcrumb'
 
 type Mode = 'shadowing' | 'dictation' | 'cloze'
 
@@ -76,20 +78,35 @@ export default function ListeningPracticePage() {
 
   return (
     <div className="mx-auto max-w-[1800px]">
-      <nav className="mb-4 text-sm text-muted">
-        <button onClick={() => navigate(-1)} className="text-primary hover:underline">
-          Nghe
-        </button>
-        {' / '}
-        {exercise?.title ?? '...'}
-      </nav>
+      <ListeningBreadcrumb
+        items={[{ label: '🎧 Nghe', onClick: () => navigate(-1) }, { label: exercise?.title ?? '...' }]}
+      />
 
       {loading && <p className="text-muted">Đang tải...</p>}
 
       {!loading && exercise && (
         <div className="flex flex-col gap-6 lg:flex-row">
           <div className="min-w-0 lg:w-2/5">
-            <YouTubePlayer ref={playerRef} videoId={exercise.youtubeVideoId} onTimeUpdate={setCurrentTime} />
+            {exercise.youtubeVideoId ? (
+              <YouTubePlayer ref={playerRef} videoId={exercise.youtubeVideoId} onTimeUpdate={setCurrentTime} />
+            ) : exercise.audioUrl ? (
+              <AudioPlayer ref={playerRef} src={exercise.audioUrl} onTimeUpdate={setCurrentTime} />
+            ) : (
+              <p className="text-sm text-danger">Bài nghe này chưa có nguồn audio.</p>
+            )}
+
+            {exercise.sourceLabel && (
+              <p className="mt-2 text-xs text-muted">
+                Nguồn:{' '}
+                {exercise.sourceUrl ? (
+                  <a href={exercise.sourceUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    {exercise.sourceLabel}
+                  </a>
+                ) : (
+                  exercise.sourceLabel
+                )}
+              </p>
+            )}
 
             {exercise.sentences.length === 0 ? (
               <p className="mt-4 text-sm text-muted">Bài này chưa có phụ đề.</p>

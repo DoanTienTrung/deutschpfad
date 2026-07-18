@@ -32,6 +32,18 @@ public class UserDeckItem {
     @Column(name = "example_sentence")
     private String exampleSentence;
 
+    @Column(name = "phonetic")
+    private String phonetic;
+
+    @Column(name = "english_meaning")
+    private String englishMeaning;
+
+    @Column(name = "synonyms")
+    private String synonyms;
+
+    @Column(name = "antonyms")
+    private String antonyms;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

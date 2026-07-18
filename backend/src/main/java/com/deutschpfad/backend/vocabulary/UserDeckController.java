@@ -2,6 +2,7 @@ package com.deutschpfad.backend.vocabulary;
 
 import com.deutschpfad.backend.auth.User;
 import com.deutschpfad.backend.auth.UserRepository;
+import com.deutschpfad.backend.listening.GroqAiService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,15 +18,42 @@ public class UserDeckController {
     private final UserDeckRepository deckRepository;
     private final UserDeckItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final GroqAiService aiService;
+    private final VocabLookupCacheRepository lookupCacheRepository;
 
     public UserDeckController(
         UserDeckRepository deckRepository,
         UserDeckItemRepository itemRepository,
-        UserRepository userRepository
+        UserRepository userRepository,
+        GroqAiService aiService,
+        VocabLookupCacheRepository lookupCacheRepository
     ) {
         this.deckRepository = deckRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.aiService = aiService;
+        this.lookupCacheRepository = lookupCacheRepository;
+    }
+
+    @PostMapping("/lookup")
+    public ResponseEntity<VocabLookupResult> lookup(
+        @Valid @RequestBody VocabLookupRequest request,
+        Authentication authentication
+    ) {
+        currentUser(authentication);
+        String normalizedWord = request.germanWord().trim().toLowerCase();
+
+        var cached = lookupCacheRepository.findByWord(normalizedWord);
+        if (cached.isPresent()) {
+            return ResponseEntity.ok(cached.get().toResult());
+        }
+
+        VocabLookupResult result = aiService.lookupNewWord(request.germanWord());
+        if (result == null) {
+            return ResponseEntity.unprocessableEntity().build();
+        }
+        lookupCacheRepository.save(VocabLookupCache.from(normalizedWord, result));
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping
@@ -44,6 +72,19 @@ public class UserDeckController {
         deck.setDescription(request.description());
         deckRepository.save(deck);
         return ResponseEntity.ok(DeckResponse.from(deck, 0));
+    }
+
+    @PutMapping("/{deckId}")
+    public ResponseEntity<DeckResponse> update(
+        @PathVariable Long deckId,
+        @Valid @RequestBody DeckRequest request,
+        Authentication authentication
+    ) {
+        UserDeck deck = getOwnedDeck(deckId, currentUser(authentication));
+        deck.setName(request.name());
+        deck.setDescription(request.description());
+        deckRepository.save(deck);
+        return ResponseEntity.ok(DeckResponse.from(deck, itemRepository.findByDeckId(deck.getId()).size()));
     }
 
     @DeleteMapping("/{deckId}")
@@ -74,6 +115,10 @@ public class UserDeckController {
         item.setVietnameseMeaning(request.vietnameseMeaning());
         item.setWordType(request.wordType());
         item.setExampleSentence(request.exampleSentence());
+        item.setPhonetic(request.phonetic());
+        item.setEnglishMeaning(request.englishMeaning());
+        item.setSynonyms(request.synonyms());
+        item.setAntonyms(request.antonyms());
         itemRepository.save(item);
         return ResponseEntity.ok(DeckItemResponse.from(item));
     }

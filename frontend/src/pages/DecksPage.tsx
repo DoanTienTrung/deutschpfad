@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { listDecks, createDeck, deleteDeck } from '../api/deckApi'
+import { listDecks, createDeck, deleteDeck, updateDeck } from '../api/deckApi'
 import type { Deck } from '../api/types'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
@@ -10,6 +10,8 @@ export default function DecksPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingName, setEditingName] = useState('')
 
   useEffect(() => {
     listDecks()
@@ -39,13 +41,30 @@ export default function DecksPage() {
     }
   }
 
+  function startEdit(deck: Deck) {
+    setEditingId(deck.id)
+    setEditingName(deck.name)
+  }
+
+  async function handleSaveEdit(deck: Deck) {
+    if (!editingName.trim()) return
+    setError(null)
+    try {
+      const updated = await updateDeck(deck.id, editingName.trim(), deck.description ?? '')
+      setDecks((prev) => prev.map((d) => (d.id === deck.id ? updated : d)))
+      setEditingId(null)
+    } catch {
+      setError('Không đổi được tên bộ từ')
+    }
+  }
+
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <h2 className="mb-4 font-display text-xl font-bold text-ink">Bộ từ của tôi</h2>
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      <div className="mb-6 space-y-2 rounded-sm border border-hairline bg-white p-4">
+      <div className="mb-6 space-y-2 rounded-md border border-hairline bg-white p-4 shadow-lifted">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -61,21 +80,72 @@ export default function DecksPage() {
         <Button onClick={handleCreate}>Tạo bộ từ</Button>
       </div>
 
-      <ul className="space-y-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {decks.map((deck) => (
-          <li
-            key={deck.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-white p-3"
-          >
-            <Link to={`/app/decks/${deck.id}`} className="text-primary hover:underline">
-              {deck.name} <span className="text-sm text-muted">({deck.itemCount} từ)</span>
-            </Link>
-            <button onClick={() => handleDelete(deck.id)} className="text-sm text-red-600 hover:underline">
-              Xoá
-            </button>
-          </li>
+            <div key={deck.id} className="rounded-lg border border-hairline bg-white p-4 shadow-lifted">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="flex flex-1 items-center gap-3">
+                  {editingId === deck.id ? (
+                    <div className="flex flex-1 items-center gap-1">
+                      <input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(deck)}
+                        autoFocus
+                        className="flex-1 rounded-sm border border-hairline px-2 py-1 text-sm"
+                      />
+                      <button onClick={() => handleSaveEdit(deck)} aria-label="Lưu tên" className="text-primary">
+                        ✓
+                      </button>
+                      <button onClick={() => setEditingId(null)} aria-label="Huỷ" className="text-muted">
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="font-display font-semibold text-ink">
+                        {deck.name}
+                        <button
+                          onClick={() => startEdit(deck)}
+                          aria-label="Sửa tên bộ từ"
+                          className="ml-1.5 text-sm text-muted hover:text-primary"
+                        >
+                          ✎
+                        </button>
+                      </p>
+                      <span className="inline-block rounded-full bg-surface px-2 py-0.5 text-xs text-muted">
+                        {deck.itemCount} từ
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => handleDelete(deck.id)} className="shrink-0 text-sm text-red-600 hover:underline">
+                  Xoá
+                </button>
+              </div>
+
+              <div className="flex gap-2">
+                <Link
+                  to={`/app/decks/${deck.id}`}
+                  className="flex-1 rounded-sm border border-hairline px-3 py-2 text-center text-sm font-medium text-ink hover:bg-surface"
+                >
+                  + Thêm từ
+                </Link>
+                <Link
+                  to={`/app/decks/${deck.id}/practice`}
+                  className={`flex-1 rounded-sm px-3 py-2 text-center text-sm font-medium ${
+                    deck.itemCount === 0
+                      ? 'pointer-events-none bg-hairline text-muted'
+                      : 'bg-accent-deep text-canvas hover:opacity-90'
+                  }`}
+                  aria-disabled={deck.itemCount === 0}
+                >
+                  ▶ Luyện tập
+                </Link>
+              </div>
+            </div>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }

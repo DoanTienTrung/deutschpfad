@@ -5,7 +5,11 @@ public record DeckItemResponse(
     String germanWord,
     String vietnameseMeaning,
     String wordType,
-    String exampleSentence
+    String exampleSentence,
+    String phonetic,
+    String englishMeaning,
+    String synonyms,
+    String antonyms
 ) {
     public static DeckItemResponse from(UserDeckItem item) {
         return new DeckItemResponse(
@@ -13,7 +17,11 @@ public record DeckItemResponse(
             item.getGermanWord(),
             item.getVietnameseMeaning(),
             item.getWordType(),
-            item.getExampleSentence()
+            item.getExampleSentence(),
+            item.getPhonetic(),
+            item.getEnglishMeaning(),
+            item.getSynonyms(),
+            item.getAntonyms()
         );
     }
 }

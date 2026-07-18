@@ -31,6 +31,7 @@ public class UserListeningController {
     private final GroqAiService aiService;
     private final YoutubeMetadataService youtubeMetadataService;
     private final DeepgramTranscriptionService transcriptionService;
+    private final EspeakPhoneticService phoneticService;
 
     public UserListeningController(
         UserListeningItemRepository itemRepository,
@@ -39,7 +40,8 @@ public class UserListeningController {
         YtDlpService ytDlpService,
         GroqAiService aiService,
         YoutubeMetadataService youtubeMetadataService,
-        DeepgramTranscriptionService transcriptionService
+        DeepgramTranscriptionService transcriptionService,
+        EspeakPhoneticService phoneticService
     ) {
         this.itemRepository = itemRepository;
         this.sentenceRepository = sentenceRepository;
@@ -48,6 +50,7 @@ public class UserListeningController {
         this.aiService = aiService;
         this.youtubeMetadataService = youtubeMetadataService;
         this.transcriptionService = transcriptionService;
+        this.phoneticService = phoneticService;
     }
 
     public record VideoTitleResponse(String title) {}
@@ -167,7 +170,8 @@ public class UserListeningController {
             sentence.setStartSeconds(data.startSeconds());
             sentence.setEndSeconds(data.endSeconds());
             sentence.setTranslation(annotations.get(i).translation());
-            sentence.setPhonetic(annotations.get(i).phonetic());
+            String phonetic = phoneticService.phonetic(data.text());
+            sentence.setPhonetic(phonetic != null ? phonetic : annotations.get(i).phonetic());
             saved.add(sentenceRepository.save(sentence));
         }
 

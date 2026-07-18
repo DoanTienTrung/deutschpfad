@@ -91,8 +91,11 @@ export default function ListeningClozePanel({
 
   useEffect(() => {
     if (!current) return
-    if (currentTime >= current.endSeconds) playerRef.current?.pause()
-  }, [currentTime, current, playerRef])
+    // Last sentence's endSeconds is a synthetic "+5s" placeholder, often shorter than the real
+    // clip — don't cut playback short there since there's no next sentence to advance into.
+    const isLastSentence = index === sentences.length - 1
+    if (!isLastSentence && currentTime >= current.endSeconds) playerRef.current?.pause()
+  }, [currentTime, current, playerRef, index, sentences.length])
 
   useEffect(() => {
     if (!allCorrect || !autoAdvance) return
@@ -247,7 +250,7 @@ export default function ListeningClozePanel({
         )}
       </div>
 
-      <div className="mt-3 grid grid-cols-3 items-center gap-2">
+      <div className="mt-3 grid grid-cols-1 items-center gap-2 sm:grid-cols-3">
         <button
           onClick={() => goTo(Math.max(0, index - 1))}
           disabled={index === 0}

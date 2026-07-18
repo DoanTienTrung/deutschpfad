@@ -20,10 +20,12 @@ export default function MatchingExercise({
   )
   const [roundIndex, setRoundIndex] = useState(0)
   const [matchedByRound, setMatchedByRound] = useState<Record<number, Set<number>>>({})
+  const [fadingByRound, setFadingByRound] = useState<Record<number, Set<number>>>({})
   const [selected, setSelected] = useState<{ id: number; side: 'left' | 'right' } | null>(null)
   const [wrong, setWrong] = useState<{ id: number; side: 'left' | 'right' }[] | null>(null)
 
   const matched = matchedByRound[roundIndex] ?? new Set<number>()
+  const fading = fadingByRound[roundIndex] ?? new Set<number>()
 
   const [tiles] = useState<Tile[][]>(() =>
     rounds.map((pairs) =>
@@ -60,6 +62,8 @@ export default function MatchingExercise({
     }
 
     if (selected.id === tile.id) {
+      const matchedId = tile.id
+      const matchedRound = roundIndex
       setMatchedByRound((prev) => {
         const next = new Set(prev[roundIndex] ?? [])
         next.add(tile.id)
@@ -72,6 +76,15 @@ export default function MatchingExercise({
         return { ...prev, [roundIndex]: next }
       })
       setSelected(null)
+      // Let the "correct" highlight register first, then fade+shrink the tile
+      // in place (its grid cell stays put, no reflow) to draw focus elsewhere.
+      setTimeout(() => {
+        setFadingByRound((prev) => {
+          const next = new Set(prev[matchedRound] ?? [])
+          next.add(matchedId)
+          return { ...prev, [matchedRound]: next }
+        })
+      }, 400)
       return
     }
 
@@ -84,8 +97,10 @@ export default function MatchingExercise({
 
   function tileClass(tile: Tile) {
     const isMatched = matched.has(tile.id)
+    const isFading = fading.has(tile.id)
     const isSelected = selected?.id === tile.id && selected.side === tile.side
     const isWrong = wrong?.some((w) => w.id === tile.id && w.side === tile.side)
+    if (isFading) return 'border-success bg-success-bg scale-75 opacity-0'
     if (isMatched) return 'border-success bg-success-bg opacity-60'
     if (isWrong) return 'border-danger bg-danger-bg text-danger'
     if (isSelected) return 'border-primary bg-primary/10'
@@ -120,8 +135,23 @@ export default function MatchingExercise({
         </button>
       </div>
 
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+        {tiles[roundIndex].map((tile) => (
+          <button
+            key={tile.key}
+            onClick={() => clickTile(tile)}
+            disabled={matched.has(tile.id)}
+            className={`flex min-h-28 items-center justify-center rounded-md border p-5 text-center text-base font-medium transition-all duration-300 ease-out ${tileClass(tile)} ${
+              tile.side === 'left' ? 'text-accent-deep' : 'text-ink'
+            }`}
+          >
+            {tile.text}
+          </button>
+        ))}
+      </div>
+
       <p className="mb-2 font-medium text-ink">Danh sách vòng:</p>
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {rounds.map((pairs, i) => {
           const isCurrent = i === roundIndex
           const isDone = (matchedByRound[i]?.size ?? 0) === pairs.length
@@ -143,21 +173,6 @@ export default function MatchingExercise({
             </button>
           )
         })}
-      </div>
-
-      <div className="grid grid-cols-4 gap-4">
-        {tiles[roundIndex].map((tile) => (
-          <button
-            key={tile.key}
-            onClick={() => clickTile(tile)}
-            disabled={matched.has(tile.id)}
-            className={`flex min-h-28 items-center justify-center rounded-md border p-5 text-center text-base font-medium ${tileClass(tile)} ${
-              tile.side === 'left' ? 'text-accent-deep' : 'text-ink'
-            }`}
-          >
-            {tile.text}
-          </button>
-        ))}
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
-import { buildChoices, questionText, shuffle } from '../../lib/quiz'
+import { buildChoices, questionDisplay, shuffle } from '../../lib/quiz'
+import QuestionSentence from './QuestionSentence'
 
 export default function MultipleChoiceExercise({
   items,
@@ -77,30 +78,6 @@ export default function MultipleChoiceExercise({
         </button>
       </div>
 
-      <p className="mb-2 font-medium text-ink">Danh sách bài tập:</p>
-      <div className="mb-6 flex flex-wrap gap-2">
-        {order.map((_, i) => {
-          const answer = selectedByIndex[i]
-          const isCurrent = i === index
-          const stateClass = isCurrent
-            ? 'bg-primary text-canvas'
-            : answer === undefined
-              ? 'border border-hairline text-ink hover:bg-surface'
-              : answer === order[i].germanWord
-                ? 'border border-success bg-success-bg text-success'
-                : 'border border-danger bg-danger-bg text-danger'
-          return (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`h-9 w-9 rounded-sm text-sm font-medium ${stateClass}`}
-            >
-              {i + 1}
-            </button>
-          )
-        })}
-      </div>
-
       {finished && (
         <p className="mb-4 text-center font-display text-lg font-semibold text-ink">
           Hoàn thành! Đúng {score}/{order.length} câu.
@@ -108,8 +85,8 @@ export default function MultipleChoiceExercise({
       )}
 
       <div className="mb-6 rounded-md border border-hairline bg-white p-6 text-center">
-        {questionText(current) && (
-          <p className="text-lg font-medium text-ink">{questionText(current)}</p>
+        {questionDisplay(current) && (
+          <QuestionSentence display={questionDisplay(current)!} className="text-lg font-medium text-ink" />
         )}
         <p className="mt-4 text-sm text-muted">
           Hint: {current.englishMeaning ? `${current.englishMeaning} ` : ''}
@@ -117,7 +94,7 @@ export default function MultipleChoiceExercise({
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {choices.map((choice) => {
           const isCorrect = choice === current.germanWord
           const showResult = selected !== null
@@ -136,6 +113,30 @@ export default function MultipleChoiceExercise({
               className={`rounded-sm border px-4 py-3 text-center font-medium ${stateClass}`}
             >
               {choice}
+            </button>
+          )
+        })}
+      </div>
+
+      <p className="mb-2 mt-6 font-medium text-ink">Danh sách bài tập:</p>
+      <div className="flex flex-wrap gap-2">
+        {order.map((_, i) => {
+          const answer = selectedByIndex[i]
+          const isCurrent = i === index
+          const stateClass = isCurrent
+            ? 'bg-primary text-canvas'
+            : answer === undefined
+              ? 'border border-hairline text-ink hover:bg-surface'
+              : answer === order[i].germanWord
+                ? 'border border-success bg-success-bg text-success'
+                : 'border border-danger bg-danger-bg text-danger'
+          return (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`h-9 w-9 rounded-sm text-sm font-medium ${stateClass}`}
+            >
+              {i + 1}
             </button>
           )
         })}

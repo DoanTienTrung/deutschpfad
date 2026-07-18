@@ -20,6 +20,66 @@ const MODES: { value: PracticeMode; label: string }[] = [
   { value: 'DICTATION', label: 'Nghe chính tả' },
 ]
 
+function LessonSidebarContent({
+  lesson,
+  completed,
+  mode,
+  markingComplete,
+  onSelectMode,
+  onMarkLessonComplete,
+}: {
+  lesson: LessonSummary | null
+  completed: Set<PracticeMode>
+  mode: PracticeMode
+  markingComplete: boolean
+  onSelectMode: (mode: PracticeMode) => void
+  onMarkLessonComplete: () => void
+}) {
+  return (
+    <>
+      {lesson && (
+        <div className="mb-4 border-b border-hairline pb-4">
+          <p className="font-display font-semibold text-ink">{lesson.title}</p>
+          <p className="text-xs text-muted">{lesson.wordCount} từ</p>
+        </div>
+      )}
+
+      <div className="mb-4">
+        {completed.has('LESSON_COMPLETE') ? (
+          <p className="rounded-sm bg-success-bg px-3 py-2 text-center text-sm font-medium text-success">
+            🎉 Đã hoàn thành bài học
+          </p>
+        ) : (
+          <button
+            onClick={onMarkLessonComplete}
+            disabled={markingComplete}
+            className="w-full rounded-sm border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
+          >
+            {markingComplete ? 'Đang lưu...' : ' Đánh dấu đã hoàn thành bài học'}
+          </button>
+        )}
+      </div>
+
+      <nav className="space-y-1">
+        {MODES.map((m) => (
+          <button
+            key={m.value}
+            onClick={() => onSelectMode(m.value)}
+            className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm ${
+              mode === m.value ? 'bg-primary text-canvas' : 'text-ink hover:bg-surface'
+            }`}
+          >
+            <span>{m.label}</span>
+            {completed.has(m.value) && (
+              <span className={mode === m.value ? 'text-canvas' : 'text-success'}>✓</span>
+            )}
+          </button>
+        ))}
+      </nav>
+    </>
+  )
+}
+
 export default function PracticePage() {
   const { lessonId } = useParams<{ lessonId: string }>()
   const navigate = useNavigate()
@@ -32,6 +92,7 @@ export default function PracticePage() {
   const [mode, setMode] = useState<PracticeMode>('FLASHCARD')
   const [flashcardPracticing, setFlashcardPracticing] = useState(false)
   const [markingComplete, setMarkingComplete] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   function handleSelectMode(newMode: PracticeMode) {
     setMode(newMode)
@@ -59,48 +120,48 @@ export default function PracticePage() {
       .finally(() => setMarkingComplete(false))
   }
 
+  const currentModeLabel = MODES.find((m) => m.value === mode)?.label
+
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row">
-      <aside className="shrink-0 rounded-md border border-hairline bg-white p-4 md:w-60">
-        {lesson && (
-          <div className="mb-4 border-b border-hairline pb-4">
-            <p className="font-display font-semibold text-ink">{lesson.title}</p>
-            <p className="text-xs text-muted">{lesson.wordCount} từ</p>
+      {/* Mobile: compact bar showing the current mode, opens a drawer instead of pushing content
+          down like the desktop sidebar does. */}
+      <button
+        onClick={() => setMobileMenuOpen(true)}
+        className="flex items-center justify-between rounded-md border border-hairline bg-white p-3 text-sm font-medium text-ink md:hidden"
+      >
+        <span>{currentModeLabel}</span>
+        <span className="text-muted">☰ Đổi chế độ</span>
+      </button>
+
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-lg bg-white p-4 shadow-lifted">
+            <LessonSidebarContent
+              lesson={lesson}
+              completed={completed}
+              mode={mode}
+              markingComplete={markingComplete}
+              onSelectMode={(m) => {
+                handleSelectMode(m)
+                setMobileMenuOpen(false)
+              }}
+              onMarkLessonComplete={handleMarkLessonComplete}
+            />
           </div>
-        )}
-
-        <div className="mb-4">
-          {completed.has('LESSON_COMPLETE') ? (
-            <p className="rounded-sm bg-success-bg px-3 py-2 text-center text-sm font-medium text-success">
-              🎉 Đã hoàn thành bài học
-            </p>
-          ) : (
-            <button
-              onClick={handleMarkLessonComplete}
-              disabled={markingComplete}
-              className="w-full rounded-sm border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
-            >
-              {markingComplete ? 'Đang lưu...' : ' Đánh dấu đã hoàn thành bài học'}
-            </button>
-          )}
         </div>
+      )}
 
-        <nav className="space-y-1">
-          {MODES.map((m) => (
-            <button
-              key={m.value}
-              onClick={() => handleSelectMode(m.value)}
-              className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm ${
-                mode === m.value ? 'bg-primary text-canvas' : 'text-ink hover:bg-surface'
-              }`}
-            >
-              <span>{m.label}</span>
-              {completed.has(m.value) && (
-                <span className={mode === m.value ? 'text-canvas' : 'text-success'}>✓</span>
-              )}
-            </button>
-          ))}
-        </nav>
+      <aside className="hidden shrink-0 rounded-md border border-hairline bg-white p-4 md:block md:w-60">
+        <LessonSidebarContent
+          lesson={lesson}
+          completed={completed}
+          mode={mode}
+          markingComplete={markingComplete}
+          onSelectMode={handleSelectMode}
+          onMarkLessonComplete={handleMarkLessonComplete}
+        />
       </aside>
 
       <div className="min-w-0 flex-1">

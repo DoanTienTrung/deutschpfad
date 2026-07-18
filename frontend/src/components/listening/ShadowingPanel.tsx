@@ -81,8 +81,12 @@ export default function ShadowingPanel({
 
   useEffect(() => {
     if (!sentence) return
-    if (currentTime >= sentence.endSeconds) playerRef.current?.pause()
-  }, [currentTime, sentence, playerRef])
+    // The last sentence's endSeconds is a synthetic "+5s" placeholder (no next sentence to derive
+    // a real boundary from), often shorter than the actual clip — don't cut playback short there;
+    // let it run to the audio's real end instead of auto-pausing mid-sentence.
+    const isLastSentence = index === sentences.length - 1
+    if (!isLastSentence && currentTime >= sentence.endSeconds) playerRef.current?.pause()
+  }, [currentTime, sentence, playerRef, index, sentences.length])
 
   function playOriginal() {
     if (!sentence) return

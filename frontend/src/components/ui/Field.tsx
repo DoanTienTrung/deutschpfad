@@ -1,15 +1,11 @@
-import { useId, useState, type InputHTMLAttributes } from 'react'
+import { forwardRef, useId, useState, type InputHTMLAttributes } from 'react'
 
 type FieldStatus = 'default' | 'error' | 'success'
 
-export default function Field({
-  label,
-  id,
-  type,
-  className = '',
-  status = 'default',
-  ...props
-}: InputHTMLAttributes<HTMLInputElement> & { label: string; status?: FieldStatus }) {
+const Field = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { label: string; status?: FieldStatus }>(function Field(
+  { label, id, type, className = '', status = 'default', ...props },
+  ref,
+) {
   const generatedId = useId()
   const fieldId = id ?? generatedId
   const [visible, setVisible] = useState(false)
@@ -34,6 +30,7 @@ export default function Field({
       </label>
       <div className="relative">
         <input
+          ref={ref}
           id={fieldId}
           type={inputType}
           className={`w-full rounded-sm border ${borderClass} bg-canvas px-3.5 py-2.5 text-ink font-sans placeholder:text-muted transition-[border-color,box-shadow] duration-150 ${focusBorderClass} focus:outline-none focus:ring-3 ${focusRingClass} ${isPassword ? 'pr-11' : ''} ${className}`}
@@ -65,4 +62,6 @@ export default function Field({
       </div>
     </div>
   )
-}
+})
+
+export default Field

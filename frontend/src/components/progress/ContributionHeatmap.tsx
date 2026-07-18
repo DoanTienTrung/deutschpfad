@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { HeatmapDay } from '../../api/types'
 
 const CELL_GAP = 3
+const CELL_SIZE = 11
 const DEFAULT_WEEKS = 53
 const WEEKDAY_LABELS = ['', 'Th 2', '', 'Th 4', '', 'Th 6', '']
 const MONTH_LABELS = [
@@ -67,11 +68,14 @@ export default function ContributionHeatmap({
     return { weekColumns: columns, monthMarkers: markers }
   }, [data, weeks])
 
-  const gridStyle = { gridTemplateColumns: `repeat(${weeks}, minmax(0, 1fr))`, gap: CELL_GAP }
+  // Fixed cell size (not minmax(0,1fr)) so cells never shrink to illegible slivers on narrow
+  // screens -- the grid instead grows wider than the viewport and scrolls horizontally.
+  const gridStyle = { gridTemplateColumns: `repeat(${weeks}, ${CELL_SIZE}px)`, gap: CELL_GAP }
+  const gridWidth = weeks * CELL_SIZE + (weeks - 1) * CELL_GAP
 
   return (
     <div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto">
         <div
           className="flex shrink-0 flex-col justify-between text-xs text-muted"
           style={{ marginTop: 18, paddingBottom: 2 }}
@@ -83,7 +87,7 @@ export default function ContributionHeatmap({
           ))}
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="shrink-0" style={{ width: gridWidth }}>
           <div className="relative mb-1 grid h-4 text-xs text-muted" style={gridStyle}>
             {weekColumns.map((_, i) => (
               <span key={i} className="relative overflow-visible whitespace-nowrap leading-none">
@@ -110,17 +114,17 @@ export default function ContributionHeatmap({
               </div>
             ))}
           </div>
-
-          <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted">
-            <span>Ít hơn</span>
-            <div className="h-3 w-3 rounded-[2px] bg-hairline" />
-            <div className="h-3 w-3 rounded-[2px] bg-accent/35" />
-            <div className="h-3 w-3 rounded-[2px] bg-accent/60" />
-            <div className="h-3 w-3 rounded-[2px] bg-accent/85" />
-            <div className="h-3 w-3 rounded-[2px] bg-accent" />
-            <span>Nhiều hơn</span>
-          </div>
         </div>
+      </div>
+
+      <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted">
+        <span>Ít hơn</span>
+        <div className="h-3 w-3 rounded-[2px] bg-hairline" />
+        <div className="h-3 w-3 rounded-[2px] bg-accent/35" />
+        <div className="h-3 w-3 rounded-[2px] bg-accent/60" />
+        <div className="h-3 w-3 rounded-[2px] bg-accent/85" />
+        <div className="h-3 w-3 rounded-[2px] bg-accent" />
+        <span>Nhiều hơn</span>
       </div>
     </div>
   )

@@ -6,5 +6,9 @@ public record DeckItemRequest(
     @NotBlank String germanWord,
     @NotBlank String vietnameseMeaning,
     String wordType,
-    String exampleSentence
+    String exampleSentence,
+    String phonetic,
+    String englishMeaning,
+    String synonyms,
+    String antonyms
 ) {}

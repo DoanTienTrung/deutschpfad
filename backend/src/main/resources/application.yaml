@@ -51,5 +51,8 @@ app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   deepgram-api-key: ${DEEPGRAM_API_KEY:}
   groq-api-key: ${GROQ_API_KEY:}
+  gemini-api-key: ${GEMINI_API_KEY:}
+  unsplash-api-key: ${UNSPLASH_API_KEY:}
+  openrouter-api-key: ${OPENROUTER_API_KEY:}
 
 

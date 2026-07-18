@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
-import { questionText, shuffle } from '../../lib/quiz'
+import { questionDisplay, shuffle } from '../../lib/quiz'
 import { isCorrectAnswer } from '../../lib/answer'
 import AudioBar from './AudioBar'
 import Field from '../ui/Field'
+import QuestionSentence from './QuestionSentence'
 
 const ADVANCE_DELAY_MS = 700
+const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü']
 
 export default function DictationExercise({
   items,
@@ -22,6 +24,7 @@ export default function DictationExercise({
   const [justCorrect, setJustCorrect] = useState(false)
   const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
   const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const finished = order.length > 0 && answeredIndexes.size === order.length
 
@@ -78,6 +81,19 @@ export default function DictationExercise({
     if (e.key === 'Enter') handleCheck()
   }
 
+  function insertChar(char: string) {
+    const el = inputRef.current
+    const start = el?.selectionStart ?? input.length
+    const end = el?.selectionEnd ?? input.length
+    const next = input.slice(0, start) + char + input.slice(end)
+    setInput(next)
+    setAttemptFailed(false)
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(start + char.length, start + char.length)
+    })
+  }
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -100,28 +116,6 @@ export default function DictationExercise({
         </button>
       </div>
 
-      <p className="mb-2 font-medium text-ink">Danh sách bài tập:</p>
-      <div className="mb-6 flex flex-wrap gap-2">
-        {order.map((_, i) => {
-          const isCurrent = i === index
-          const isDone = answeredIndexes.has(i)
-          const stateClass = isCurrent
-            ? 'bg-primary text-canvas'
-            : isDone
-              ? 'border border-success bg-success-bg text-success'
-              : 'border border-hairline text-ink hover:bg-surface'
-          return (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              className={`h-9 w-9 rounded-sm text-sm font-medium ${stateClass}`}
-            >
-              {i + 1}
-            </button>
-          )
-        })}
-      </div>
-
       <div className="mb-6 rounded-md border border-hairline bg-white p-6 text-center">
         <AudioBar text={current.germanWord} />
 
@@ -130,13 +124,16 @@ export default function DictationExercise({
           <p className="mt-1 text-xl font-bold text-ink">{current.vietnameseMeaning}</p>
           {current.englishMeaning && <p className="mt-1 italic text-muted">= {current.englishMeaning}</p>}
           {current.phonetic && <p className="mt-1 italic text-primary">/{current.phonetic}/</p>}
-          {questionText(current) && <p className="mt-3 text-base text-ink">{questionText(current)}</p>}
+          {questionDisplay(current) && (
+            <QuestionSentence display={questionDisplay(current)!} className="mt-3 text-base text-ink" />
+          )}
         </div>
 
         <div className="mt-4 border-t border-hairline pt-4">
           {!answeredIndexes.has(index) || justCorrect ? (
             <>
               <Field
+                ref={inputRef}
                 id="dictation-answer"
                 label="Nghe và gõ lại từ tiếng Đức"
                 value={input}
@@ -150,6 +147,21 @@ export default function DictationExercise({
                 readOnly={justCorrect}
                 status={justCorrect ? 'success' : attemptFailed ? 'error' : 'default'}
               />
+              {!justCorrect && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="mr-1 text-xs text-muted">Không gõ được dấu?</span>
+                  {UMLAUT_KEYS.map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => insertChar(key)}
+                      className="rounded-sm border border-hairline px-2.5 py-1 text-sm font-medium text-ink hover:bg-surface"
+                    >
+                      {key}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="mt-4 flex justify-center">
                 <button
                   onClick={handleCheck}
@@ -175,6 +187,28 @@ export default function DictationExercise({
             <p className="text-sm font-medium text-success">Đã hoàn thành: "{current.germanWord}"</p>
           )}
         </div>
+      </div>
+
+      <p className="mb-2 font-medium text-ink">Danh sách bài tập:</p>
+      <div className="flex flex-wrap gap-2">
+        {order.map((_, i) => {
+          const isCurrent = i === index
+          const isDone = answeredIndexes.has(i)
+          const stateClass = isCurrent
+            ? 'bg-primary text-canvas'
+            : isDone
+              ? 'border border-success bg-success-bg text-success'
+              : 'border border-hairline text-ink hover:bg-surface'
+          return (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={`h-9 w-9 rounded-sm text-sm font-medium ${stateClass}`}
+            >
+              {i + 1}
+            </button>
+          )
+        })}
       </div>
     </div>
   )

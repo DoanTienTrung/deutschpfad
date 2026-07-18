@@ -80,7 +80,7 @@ export default function AdminSpeakingPage() {
 
       {error && <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-sm border border-hairline bg-white p-4">
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-white p-4 sm:grid-cols-2">
         <select
           value={level}
           onChange={(e) => setLevel(e.target.value)}

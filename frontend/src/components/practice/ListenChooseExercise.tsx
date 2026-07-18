@@ -67,7 +67,7 @@ export default function ListenChooseExercise({
         <AudioBar text={current.germanWord} />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {choiceWords.map((word) => {
           const item = itemByGermanWord.get(word) as VocabularyItem
           const isCorrect = word === current.germanWord

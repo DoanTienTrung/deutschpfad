@@ -19,6 +19,9 @@ export default function AdminListeningPage() {
   const [levelMin, setLevelMin] = useState('A1')
   const [levelMax, setLevelMax] = useState('A1')
   const [youtubeVideoId, setYoutubeVideoId] = useState('')
+  const [audioUrl, setAudioUrl] = useState('')
+  const [sourceLabel, setSourceLabel] = useState('')
+  const [sourceUrl, setSourceUrl] = useState('')
   const [orderIndex, setOrderIndex] = useState(1)
   const [description, setDescription] = useState('')
   const [topic, setTopic] = useState('')
@@ -45,6 +48,9 @@ export default function AdminListeningPage() {
     setLevelMin('A1')
     setLevelMax('A1')
     setYoutubeVideoId('')
+    setAudioUrl('')
+    setSourceLabel('')
+    setSourceUrl('')
     setOrderIndex(1)
     setDescription('')
     setTopic('')
@@ -57,7 +63,10 @@ export default function AdminListeningPage() {
     setTitle(exercise.title)
     setLevelMin(exercise.levelMin)
     setLevelMax(exercise.levelMax)
-    setYoutubeVideoId(exercise.youtubeVideoId)
+    setYoutubeVideoId(exercise.youtubeVideoId ?? '')
+    setAudioUrl(exercise.audioUrl ?? '')
+    setSourceLabel(exercise.sourceLabel ?? '')
+    setSourceUrl(exercise.sourceUrl ?? '')
     setOrderIndex(exercise.orderIndex)
     setDescription(exercise.description ?? '')
     setTopic(exercise.topic ?? '')
@@ -74,7 +83,10 @@ export default function AdminListeningPage() {
         title,
         levelMin,
         levelMax,
-        youtubeVideoId: extractYoutubeVideoId(youtubeVideoId),
+        youtubeVideoId: youtubeVideoId.trim() ? extractYoutubeVideoId(youtubeVideoId) : null,
+        audioUrl: audioUrl.trim() || null,
+        sourceLabel: sourceLabel.trim() || null,
+        sourceUrl: sourceUrl.trim() || null,
         description: description || null,
         topic: topic || null,
         orderIndex,
@@ -126,7 +138,7 @@ export default function AdminListeningPage() {
       {error && <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       {lastResult && <div className="mb-4 rounded-sm bg-success-bg p-3 text-sm text-success">{lastResult}</div>}
 
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-sm border border-hairline bg-white p-4">
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-white p-4 sm:grid-cols-2">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -163,6 +175,27 @@ export default function AdminListeningPage() {
           onChange={(e) => setYoutubeVideoId(e.target.value)}
           onBlur={handleVideoLinkBlur}
           placeholder="Dán link YouTube (bất kỳ dạng nào) hoặc mã video, vd. dQw4w9WgXcQ"
+          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+        />
+        <p className="col-span-2 text-xs text-muted">
+          — hoặc, cho bài nghe không phải YouTube (vd. đề thi Goethe Modellsatz) —
+        </p>
+        <input
+          value={audioUrl}
+          onChange={(e) => setAudioUrl(e.target.value)}
+          placeholder="Link file audio trực tiếp (mp3/mp4), thay cho YouTube"
+          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+        />
+        <input
+          value={sourceLabel}
+          onChange={(e) => setSourceLabel(e.target.value)}
+          placeholder="Tên nguồn hiển thị (vd. Goethe-Institut Modellsatz B1 – Hören Teil 2)"
+          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+        />
+        <input
+          value={sourceUrl}
+          onChange={(e) => setSourceUrl(e.target.value)}
+          placeholder="Link gốc tới nguồn (tuỳ chọn)"
           className="col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <input

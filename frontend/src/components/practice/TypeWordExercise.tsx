@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
-import { questionText, shuffle } from '../../lib/quiz'
+import { questionDisplay, shuffle } from '../../lib/quiz'
 import { isCorrectAnswer } from '../../lib/answer'
 import Field from '../ui/Field'
+import QuestionSentence from './QuestionSentence'
+
+const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü']
 
 export default function TypeWordExercise({
   items,
@@ -16,6 +19,7 @@ export default function TypeWordExercise({
   const [input, setInput] = useState('')
   const [revealAnswer, setRevealAnswer] = useState(false)
   const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const finished = order.length > 0 && answeredIndexes.size === order.length
 
@@ -56,6 +60,18 @@ export default function TypeWordExercise({
     if (e.key === 'Enter') handleSubmit()
   }
 
+  function insertChar(char: string) {
+    const el = inputRef.current
+    const start = el?.selectionStart ?? input.length
+    const end = el?.selectionEnd ?? input.length
+    const next = input.slice(0, start) + char + input.slice(end)
+    setInput(next)
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(start + char.length, start + char.length)
+    })
+  }
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -78,8 +94,56 @@ export default function TypeWordExercise({
         </button>
       </div>
 
-      <p className="mb-2 font-medium text-ink">Danh sách bài tập:</p>
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 rounded-md border border-hairline bg-white p-6 text-center">
+        {questionDisplay(current) && (
+          <QuestionSentence display={questionDisplay(current)!} className="text-lg font-medium text-ink" />
+        )}
+        <p className="mt-4 text-sm text-muted">
+          Hint: {current.englishMeaning ? `${current.englishMeaning} ` : ''}
+          {current.englishMeaning ? `(${current.vietnameseMeaning})` : current.vietnameseMeaning}
+        </p>
+      </div>
+
+      {!answeredIndexes.has(index) && (
+        <>
+          <Field
+            ref={inputRef}
+            id="type-word-answer"
+            label="Gõ từ tiếng Đức, rồi nhấn Enter"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoComplete="off"
+            autoFocus
+          />
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-xs text-muted">Không gõ được dấu?</span>
+            {UMLAUT_KEYS.map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => insertChar(key)}
+                className="rounded-sm border border-hairline px-2.5 py-1 text-sm font-medium text-ink hover:bg-surface"
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {revealAnswer && !answeredIndexes.has(index) && (
+        <p className="mt-3 text-sm font-medium text-danger">
+          Chưa đúng — đáp án là "{current.germanWord}". Gõ lại cho đúng để qua câu mới.
+        </p>
+      )}
+
+      {answeredIndexes.has(index) && (
+        <p className="text-sm font-medium text-success">Đã hoàn thành: "{current.germanWord}"</p>
+      )}
+
+      <p className="mb-2 mt-6 font-medium text-ink">Danh sách bài tập:</p>
+      <div className="flex flex-wrap gap-2">
         {order.map((_, i) => {
           const isCurrent = i === index
           const isDone = answeredIndexes.has(i)
@@ -99,36 +163,6 @@ export default function TypeWordExercise({
           )
         })}
       </div>
-
-      <div className="mb-6 rounded-md border border-hairline bg-white p-6 text-center">
-        {questionText(current) && <p className="text-lg font-medium text-ink">{questionText(current)}</p>}
-        <p className="mt-4 text-sm text-muted">
-          Hint: {current.englishMeaning ? `${current.englishMeaning} ` : ''}
-          {current.englishMeaning ? `(${current.vietnameseMeaning})` : current.vietnameseMeaning}
-        </p>
-      </div>
-
-      {!answeredIndexes.has(index) && (
-        <Field
-          id="type-word-answer"
-          label="Gõ từ tiếng Đức, rồi nhấn Enter"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoComplete="off"
-          autoFocus
-        />
-      )}
-
-      {revealAnswer && !answeredIndexes.has(index) && (
-        <p className="mt-3 text-sm font-medium text-danger">
-          Chưa đúng — đáp án là "{current.germanWord}". Gõ lại cho đúng để qua câu mới.
-        </p>
-      )}
-
-      {answeredIndexes.has(index) && (
-        <p className="text-sm font-medium text-success">Đã hoàn thành: "{current.germanWord}"</p>
-      )}
     </div>
   )
 }
