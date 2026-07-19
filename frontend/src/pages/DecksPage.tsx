@@ -60,24 +60,30 @@ export default function DecksPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Bộ từ của tôi</h2>
+      <h2 className="font-display text-2xl font-bold text-ink">Bộ từ của tôi</h2>
+      <p className="mt-1 mb-6 text-sm text-muted">
+        Tự tạo bộ từ riêng cho từng tình huống: phỏng vấn, nhập học, khám bệnh, làm giấy tờ...
+      </p>
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      <div className="mb-6 space-y-2 rounded-md border border-hairline bg-white p-4 shadow-lifted">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Tên bộ từ (vd. Từ vựng phỏng vấn)"
-          className="w-full rounded-sm border border-hairline px-3 py-2"
-        />
-        <input
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Mô tả (tuỳ chọn)"
-          className="w-full rounded-sm border border-hairline px-3 py-2"
-        />
-        <Button onClick={handleCreate}>Tạo bộ từ</Button>
+      <div className="mb-8 rounded-lg border border-hairline bg-white p-5">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">Tạo bộ từ mới</p>
+        <div className="space-y-2">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Tên bộ từ (vd. Từ vựng phỏng vấn)"
+            className="w-full rounded-sm border border-hairline px-3.5 py-2.5 text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Mô tả (tuỳ chọn)"
+            className="w-full rounded-sm border border-hairline px-3.5 py-2.5 text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+          <Button onClick={handleCreate}>Tạo bộ từ</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -85,7 +91,7 @@ export default function DecksPage() {
             <div
               key={deck.id}
               style={{ '--stagger-index': i % 12 } as React.CSSProperties}
-              className="stagger-in rounded-lg border border-hairline bg-white p-4 shadow-lifted"
+              className="stagger-in rounded-lg border border-hairline bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="flex flex-1 items-center gap-3">
@@ -123,7 +129,7 @@ export default function DecksPage() {
                     </div>
                   )}
                 </div>
-                <button onClick={() => handleDelete(deck.id)} className="shrink-0 text-sm text-red-600 hover:underline">
+                <button onClick={() => handleDelete(deck.id)} className="shrink-0 text-sm text-danger hover:underline">
                   Xoá
                 </button>
               </div>

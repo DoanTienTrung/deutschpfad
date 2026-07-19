@@ -68,14 +68,25 @@ export default function VocabularyHubPage() {
     }
   }, [mode, level, goetheLevel, topicId])
 
+  // Chips per DESIGN.md: pill-shaped, surface + hairline at rest, primary/12 fill when selected.
+  const chipClass = (selected: boolean) =>
+    `rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+      selected
+        ? 'bg-primary/12 text-primary-deep'
+        : 'border border-hairline bg-surface text-ink hover:border-primary/40 hover:text-primary'
+    }`
+
   return (
     <div className="mx-auto max-w-5xl">
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Từ vựng</h2>
+      <h2 className="font-display text-2xl font-bold text-ink">Từ vựng</h2>
+      <p className="mt-1 mb-6 text-sm text-muted">
+        Học theo lộ trình cấp độ, theo chủ đề thực tế, hoặc bám sát Wortliste của kỳ thi Goethe.
+      </p>
 
-      <div className="mb-6 flex gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => setMode('level')}
-          className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             mode === 'level' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
           }`}
         >
@@ -83,7 +94,7 @@ export default function VocabularyHubPage() {
         </button>
         <button
           onClick={() => setMode('topic')}
-          className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             mode === 'topic' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
           }`}
         >
@@ -91,7 +102,7 @@ export default function VocabularyHubPage() {
         </button>
         <button
           onClick={() => setMode('goethe')}
-          className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             mode === 'goethe' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
           }`}
         >
@@ -100,15 +111,9 @@ export default function VocabularyHubPage() {
       </div>
 
       {mode === 'level' && (
-        <div className="mb-6 flex gap-2">
+        <div className="mb-6 flex flex-wrap gap-2">
           {LEVELS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevel(l)}
-              className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                level === l ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
-              }`}
-            >
+            <button key={l} onClick={() => setLevel(l)} className={chipClass(level === l)}>
               {l}
             </button>
           ))}
@@ -116,15 +121,9 @@ export default function VocabularyHubPage() {
       )}
 
       {mode === 'goethe' && (
-        <div className="mb-6 flex gap-2">
+        <div className="mb-6 flex flex-wrap gap-2">
           {GOETHE_LEVELS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setGoetheLevel(l)}
-              className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                goetheLevel === l ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
-              }`}
-            >
+            <button key={l} onClick={() => setGoetheLevel(l)} className={chipClass(goetheLevel === l)}>
               Goethe-Zertifikat {l}
             </button>
           ))}
@@ -135,13 +134,7 @@ export default function VocabularyHubPage() {
         <div className="mb-6 flex flex-wrap gap-2">
           {topics.length === 0 && <p className="text-sm text-muted">Chưa có chủ đề nào.</p>}
           {topics.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTopicId(t.id)}
-              className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                topicId === t.id ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
-              }`}
-            >
+            <button key={t.id} onClick={() => setTopicId(t.id)} className={chipClass(topicId === t.id)}>
               {t.name}
             </button>
           ))}
@@ -164,7 +157,7 @@ export default function VocabularyHubPage() {
           <div
             key={lesson.id}
             style={{ '--stagger-index': i % 12 } as React.CSSProperties}
-            className="stagger-in flex flex-col justify-between rounded-md border border-hairline bg-white p-4 shadow-lifted"
+            className="stagger-in flex flex-col justify-between rounded-lg border border-hairline bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
           >
             <div>
               <p className="font-display font-semibold text-ink">
@@ -174,8 +167,9 @@ export default function VocabularyHubPage() {
               {lesson.description && (
                 <p className="mt-1 line-clamp-2 text-sm text-muted">{lesson.description}</p>
               )}
-              <p className="mt-2 text-xs text-muted">
-                [{lesson.level}] {lesson.wordCount} từ
+              <p className="mt-2 flex items-center gap-2 text-xs text-muted">
+                <span className="rounded-full bg-surface px-2 py-0.5 font-medium text-ink">{lesson.level}</span>
+                {lesson.wordCount} từ
               </p>
             </div>
             <Link

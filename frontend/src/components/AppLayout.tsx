@@ -6,19 +6,63 @@ import { StudyTimeProvider, useStudyTime } from '../context/StudyTimeContext'
 import { formatStudyTimeClock } from '../lib/studyTime'
 import { useAuth } from '../context/AuthContext'
 
+// Simple 18px stroke icons keep the sidebar scannable without pulling in an icon library.
+const NAV_ICONS: Record<string, React.ReactNode> = {
+  home: (
+    <path d="M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5" />
+  ),
+  book: (
+    <path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2Zm0 0A2.5 2.5 0 0 0 6.5 22H20v-3M9 7h8M9 11h5" />
+  ),
+  headphones: (
+    <path d="M4 13a8 8 0 0 1 16 0M4 13v5a2 2 0 0 0 2 2h1v-7H6a2 2 0 0 0-2 2Zm16 0v5a2 2 0 0 1-2 2h-1v-7h1a2 2 0 0 1 2 2Z" />
+  ),
+  mic: (
+    <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm6-4a6 6 0 0 1-12 0M12 17v4m-3 0h6" />
+  ),
+  reading: (
+    <path d="M12 6.5C10.5 5 8.5 4 6 4H3v15h3c2.5 0 4.5 1 6 2.5 1.5-1.5 3.5-2.5 6-2.5h3V4h-3c-2.5 0-4.5 1-6 2.5Zm0 0V21" />
+  ),
+  layers: (
+    <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5m-18 4 9 5 9-5" />
+  ),
+  user: (
+    <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 10a8 8 0 0 1 16 0" />
+  ),
+}
+
+function NavIcon({ name }: { name: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      {NAV_ICONS[name]}
+    </svg>
+  )
+}
+
 const NAV_ITEMS = [
-  { to: '/app', label: 'Trang chủ', end: true },
-  { to: '/app/vocabulary', label: 'Từ vựng', end: false },
-  { to: '/app/listening', label: 'Nghe', end: false },
-  { to: '/app/speaking', label: 'Nói', end: false },
-  { to: '/app/reading', label: 'Đọc', end: false },
+  { to: '/app', label: 'Trang chủ', icon: 'home', end: true },
+  { to: '/app/vocabulary', label: 'Từ vựng', icon: 'book', end: false },
+  { to: '/app/listening', label: 'Nghe', icon: 'headphones', end: false },
+  { to: '/app/speaking', label: 'Nói', icon: 'mic', end: false },
+  { to: '/app/reading', label: 'Đọc', icon: 'reading', end: false },
 ]
 
 // Header-only on desktop (there's room); folded into the mobile drawer nav since the header row
 // on a narrow phone doesn't have space for the hamburger, logo, streak badge, AND these two links.
 const HEADER_LINKS = [
-  { to: '/app/decks', label: 'Bộ từ của tôi' },
-  { to: '/app/profile', label: 'Hồ sơ' },
+  { to: '/app/decks', label: 'Bộ từ của tôi', icon: 'layers' },
+  { to: '/app/profile', label: 'Hồ sơ', icon: 'user' },
 ]
 
 const SIDEBAR_STORAGE_KEY = 'deutschpfad.sidebarOpen'
@@ -34,13 +78,14 @@ function NavLinks({ onNavigate, includeHeaderLinks = false }: { onNavigate?: () 
           end={item.end}
           onClick={onNavigate}
           className={({ isActive }) =>
-            `block rounded-sm px-3 py-2 text-sm font-medium ${
+            `flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               isActive
                 ? 'bg-primary/12 text-primary-deep'
                 : 'text-ink hover:bg-surface hover:text-primary'
             }`
           }
         >
+          <NavIcon name={item.icon} />
           {item.label}
         </NavLink>
       ))}
@@ -88,8 +133,9 @@ function StreakBadge({ streak }: { streak: Streak }) {
     }
   }, [streak.currentStreak])
 
+  // DESIGN.md's signature component: the one earned-amber pill allowed in the header chrome.
   return (
-    <span className={`shrink-0 rounded-sm bg-accent/20 px-2 py-1 font-medium text-ink ${bump ? 'streak-bump' : ''}`}>
+    <span className={`shrink-0 rounded-full bg-accent px-2.5 py-1 font-semibold text-ink ${bump ? 'streak-bump' : ''}`}>
       🔥 {streak.currentStreak}
     </span>
   )
@@ -99,7 +145,7 @@ function StudyTimeBadge() {
   const { todaySeconds } = useStudyTime()
   return (
     <span
-      className="hidden shrink-0 items-center gap-1 rounded-sm bg-surface px-2 py-1 font-medium tabular-nums text-ink sm:flex"
+      className="hidden shrink-0 items-center gap-1 rounded-full border border-hairline bg-canvas px-2.5 py-1 font-medium tabular-nums text-muted sm:flex"
       title="Thời gian học hôm nay"
     >
       ⏱ {formatStudyTimeClock(todaySeconds)}
@@ -122,7 +168,9 @@ export default function AppLayout() {
   return (
     <StudyTimeProvider>
     <div className="min-h-screen bg-canvas">
-      <header className="flex items-center justify-between border-b-2 border-accent/50 bg-surface px-6 py-4">
+      {/* Hairline border per DESIGN.md's nav spec -- an amber border here would put the accent on
+          static chrome, which The One Warm Color Rule reserves for earned moments only. */}
+      <header className="flex items-center justify-between border-b border-hairline bg-surface px-6 py-3.5">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen((v) => !v)}
