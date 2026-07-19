@@ -2,6 +2,13 @@
 .env
 cookies.txt
 
+# DB dumps (chứa dữ liệu user thật -- email, password hash, refresh token)
+*.sql
+
+# Let's Encrypt cert files + ACME challenge webroot (chỉ tồn tại trên server, không commit)
+certbot-etc/
+certbot-webroot/
+
 # Backend (Maven/Java)
 backend/target/
 backend/.mvn/wrapper/maven-wrapper.jar

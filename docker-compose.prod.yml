@@ -37,5 +37,9 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./certbot-webroot:/var/www/certbot:ro
+      - ./certbot-etc:/etc/letsencrypt:ro
     depends_on:
       - backend
