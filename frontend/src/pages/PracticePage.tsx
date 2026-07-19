@@ -53,7 +53,7 @@ function LessonSidebarContent({
           <button
             onClick={onMarkLessonComplete}
             disabled={markingComplete}
-            className="w-full rounded-sm border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
+            className="w-full rounded-md border border-primary px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-50"
           >
             {markingComplete ? 'Đang lưu...' : ' Đánh dấu đã hoàn thành bài học'}
           </button>
@@ -65,7 +65,7 @@ function LessonSidebarContent({
           <button
             key={m.value}
             onClick={() => onSelectMode(m.value)}
-            className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm ${
+            className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm font-medium transition-colors ${
               mode === m.value ? 'bg-primary text-canvas' : 'text-ink hover:bg-surface'
             }`}
           >
