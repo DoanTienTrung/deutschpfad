@@ -1,13 +1,22 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { apiFetch } from '../api/client'
+import { apiFetch, ApiError } from '../api/client'
 import Button from '../components/ui/Button'
+import Field from '../components/ui/Field'
+import Alert from '../components/ui/Alert'
 
 export default function AccountPage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [loggingOut, setLoggingOut] = useState(false)
+
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -16,6 +25,30 @@ export default function AccountPage() {
     } finally {
       logout()
       navigate('/login')
+    }
+  }
+
+  async function handleChangePassword(e: FormEvent) {
+    e.preventDefault()
+    setPasswordError(null)
+    setPasswordSuccess(false)
+    setChangingPassword(true)
+    try {
+      await apiFetch('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      setPasswordSuccess(true)
+      setCurrentPassword('')
+      setNewPassword('')
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setPasswordError((err.data as { message?: string })?.message ?? 'Có lỗi xảy ra')
+      } else {
+        setPasswordError('Có lỗi xảy ra, vui lòng thử lại')
+      }
+    } finally {
+      setChangingPassword(false)
     }
   }
 
@@ -52,6 +85,48 @@ export default function AccountPage() {
             <dd className="font-medium text-ink">{user.role}</dd>
           </div>
         </dl>
+
+        <div className="mt-8 border-t border-hairline pt-6">
+          <button
+            onClick={() => {
+              setShowPasswordForm((v) => !v)
+              setPasswordError(null)
+              setPasswordSuccess(false)
+            }}
+            className="text-sm font-medium text-primary hover:text-primary-deep"
+          >
+            {showPasswordForm ? 'Đóng' : 'Đổi mật khẩu'}
+          </button>
+
+          {showPasswordForm && (
+            <form onSubmit={handleChangePassword} className="mt-4 space-y-4">
+              {passwordError && <Alert tone="danger">{passwordError}</Alert>}
+              {passwordSuccess && <Alert tone="success">Đổi mật khẩu thành công</Alert>}
+              <Field
+                id="currentPassword"
+                label="Mật khẩu hiện tại"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              <Field
+                id="newPassword"
+                label="Mật khẩu mới"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <Button type="submit" loading={changingPassword}>
+                {changingPassword ? 'Đang đổi...' : 'Đổi mật khẩu'}
+              </Button>
+            </form>
+          )}
+        </div>
 
         <Button
           variant="secondary"

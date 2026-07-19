@@ -6,8 +6,13 @@ import AudioCardArt from './AudioCardArt'
 export default function ExerciseGrid({ exercises }: { exercises: ListeningExerciseSummary[] }) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-      {exercises.map((exercise) => (
-        <Link key={exercise.id} to={`/app/listening/${exercise.id}`} className="group">
+      {exercises.map((exercise, i) => (
+        <Link
+          key={exercise.id}
+          to={`/app/listening/${exercise.id}`}
+          style={{ '--stagger-index': i % 12 } as React.CSSProperties}
+          className="stagger-in group"
+        >
           <div className="relative aspect-video overflow-hidden rounded-lg bg-surface">
             {exercise.youtubeVideoId ? (
               <img

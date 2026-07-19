@@ -119,6 +119,16 @@ public class AuthService {
         passwordResetTokenRepository.save(resetToken);
     }
 
+    // For an already-authenticated user changing their own password -- confirms identity via the
+    // current password (no email round-trip needed, unlike forgotPassword/resetPassword above).
+    public void changePassword(User user, ChangePasswordRequest request) {
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException("Mật khẩu hiện tại không đúng");
+        }
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
     public LoginResult login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
             .orElseThrow(() -> new InvalidCredentialsException("Email hoặc mật khẩu không đúng"));

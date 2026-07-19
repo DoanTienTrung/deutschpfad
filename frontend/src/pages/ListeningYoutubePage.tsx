@@ -4,6 +4,7 @@ import { listListeningByLevel } from '../api/listeningApi'
 import type { ListeningExerciseSummary } from '../api/types'
 import ExerciseGrid from '../components/listening/ExerciseGrid'
 import ListeningBreadcrumb from '../components/listening/ListeningBreadcrumb'
+import { CardGridSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
@@ -91,7 +92,7 @@ export default function ListeningYoutubePage() {
               key={l}
               onClick={() => setLevel(l)}
               className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                level === l ? 'bg-accent/30 text-ink' : 'border border-hairline text-ink hover:bg-surface'
+                level === l ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
               }`}
             >
               {l}
@@ -112,7 +113,7 @@ export default function ListeningYoutubePage() {
         )}
       </div>
 
-      {loading && <p className="text-muted">Đang tải...</p>}
+      {loading && <CardGridSkeleton />}
 
       {!loading && topicMissingAtLevel && (
         <p className="text-muted">
@@ -126,7 +127,11 @@ export default function ListeningYoutubePage() {
         </p>
       )}
       {!loading && !topicMissingAtLevel && youtubeOnly.length === 0 && (
-        <p className="text-muted">Chưa có video nào ở cấp độ này.</p>
+        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
+          <p className="text-3xl">📺</p>
+          <p className="mt-2 font-medium text-ink">Chưa có video nào ở cấp độ này</p>
+          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ khác, hoặc tự thêm video ở "Video của tôi".</p>
+        </div>
       )}
       {!loading && !topicMissingAtLevel && youtubeOnly.length > 0 && visibleExercises.length === 0 && (
         <p className="text-muted">Không tìm thấy video nào khớp với tên bạn tìm.</p>

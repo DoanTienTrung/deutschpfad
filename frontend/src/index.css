@@ -2,9 +2,11 @@
 @import "tailwindcss";
 
 @theme {
-  /* Neutrals share the same warm hue (70) as --color-accent below, instead of the cooler 202/250
-     used before — a grey (or near-white/near-black) with a hue bias toward the page's accent
-     reads as chosen rather than an unconsidered default. */
+  /* Neutrals share the same warm hue (70) as --color-accent below -- a grey (or near-white/
+     near-black) with a hue bias toward the page's accent reads as chosen rather than an
+     unconsidered default. Reverted here after two rounds of blue primaries (teal hue 202, then
+     Prussian Blue hue 258) both read as clashing against the amber accent -- this near-black
+     primary paired with amber was the original, unremarked-on combination. */
   --color-canvas: oklch(0.995 0.004 70);
   --color-surface: oklch(0.97 0.012 70);
   --color-ink: oklch(0.22 0.018 70);
@@ -16,8 +18,12 @@
   --color-accent-deep: oklch(0.62 0.16 68);
   --color-danger: oklch(0.55 0.19 25);
   --color-danger-bg: oklch(0.96 0.03 25);
-  --color-success: oklch(0.52 0.14 152);
-  --color-success-bg: oklch(0.96 0.04 152);
+  /* "Patina" -- a muted teal-green, borrowed as a color relationship (a cool secondary sitting
+     quietly alongside a warm near-black primary + amber accent, never competing for primary
+     attention) rather than a literal palette copy. Replaces a generic hue-152 green with a more
+     considered hue-188 teal for the same semantic slot (correct answers, completed states). */
+  --color-success: oklch(0.49 0.13 188);
+  --color-success-bg: oklch(0.96 0.03 188);
 
   --font-display: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
@@ -53,11 +59,125 @@
   }
 }
 
+@keyframes break-reminder-marquee {
+  from {
+    left: 100%;
+  }
+  to {
+    left: -100%;
+  }
+}
+
+/* `left` percentages resolve against the containing block's width (unlike transform:translateX's
+   percentage, which resolves against the element's OWN width) -- that's what makes the text start
+   fully off-screen at the right edge of the banner and exit fully off-screen at the left, instead
+   of just sliding in from a point near its own text width. Needs a positioned ancestor with a
+   fixed height (declared inline in the component, since abs-positioning collapses auto height). */
+.break-reminder-track {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  animation: break-reminder-marquee 22s linear infinite;
+}
+
+/* --- Flashcard 3D flip --- */
+.flip-card {
+  perspective: 1200px;
+}
+.flip-card-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s var(--ease-standard);
+}
+.flip-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+.flip-card-face {
+  backface-visibility: hidden;
+}
+.flip-card-face-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+/* --- Staggered entrance for card grids/lists --- */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.stagger-in {
+  animation: fade-in-up 0.35s var(--ease-standard) both;
+  animation-delay: calc(var(--stagger-index, 0) * 40ms);
+}
+
+/* --- Streak count bump when it increases --- */
+@keyframes streak-bump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.streak-bump {
+  animation: streak-bump 0.4s var(--ease-standard);
+}
+
+/* --- Wrong-answer shake / right-answer pop, used by quiz exercises --- */
+@keyframes answer-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-6px);
+  }
+  40%, 80% {
+    transform: translateX(6px);
+  }
+}
+.answer-shake {
+  animation: answer-shake 0.4s var(--ease-standard);
+}
+
+@keyframes answer-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.answer-pop {
+  animation: answer-pop 0.3s var(--ease-standard);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+
+  /* The global override above would collapse the marquee to a 0.01ms flash instead of a
+     readable scroll -- for reduced-motion, show the message static and centered instead. */
+  .break-reminder-track {
+    animation: none !important;
+    display: block;
+    white-space: normal;
+    text-align: center;
   }
 }

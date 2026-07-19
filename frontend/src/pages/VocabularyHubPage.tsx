@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { listLessonsByLevel, listLessonsByTopic } from '../api/lessonApi'
 import { listTopics } from '../api/topicApi'
 import type { LessonSummary, Topic } from '../api/types'
+import { ListCardSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const GOETHE_LEVELS = ['A1', 'A2', 'B1']
@@ -105,7 +106,7 @@ export default function VocabularyHubPage() {
               key={l}
               onClick={() => setLevel(l)}
               className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                level === l ? 'bg-accent/30 text-ink' : 'border border-hairline text-ink hover:bg-surface'
+                level === l ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
               }`}
             >
               {l}
@@ -121,7 +122,7 @@ export default function VocabularyHubPage() {
               key={l}
               onClick={() => setGoetheLevel(l)}
               className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                goetheLevel === l ? 'bg-accent/30 text-ink' : 'border border-hairline text-ink hover:bg-surface'
+                goetheLevel === l ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
               }`}
             >
               Goethe-Zertifikat {l}
@@ -138,7 +139,7 @@ export default function VocabularyHubPage() {
               key={t.id}
               onClick={() => setTopicId(t.id)}
               className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                topicId === t.id ? 'bg-accent/30 text-ink' : 'border border-hairline text-ink hover:bg-surface'
+                topicId === t.id ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
               }`}
             >
               {t.name}
@@ -147,15 +148,23 @@ export default function VocabularyHubPage() {
         </div>
       )}
 
-      {loading && <p className="text-muted">Đang tải...</p>}
+      {loading && <ListCardSkeleton />}
 
-      {!loading && lessons.length === 0 && <p className="text-muted">Chưa có bộ từ nào ở đây.</p>}
+      {!loading && lessons.length === 0 && (
+        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
+          <p className="text-3xl">📚</p>
+          <p className="mt-2 font-medium text-ink">Chưa có bộ từ nào ở đây</p>
+          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ hoặc chủ đề khác ở trên nhé.</p>
+        </div>
+      )}
 
+      {!loading && lessons.length > 0 && (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {lessons.map((lesson) => (
+        {lessons.map((lesson, i) => (
           <div
             key={lesson.id}
-            className="flex flex-col justify-between rounded-md border border-hairline bg-white p-4 shadow-lifted"
+            style={{ '--stagger-index': i % 12 } as React.CSSProperties}
+            className="stagger-in flex flex-col justify-between rounded-md border border-hairline bg-white p-4 shadow-lifted"
           >
             <div>
               <p className="font-display font-semibold text-ink">
@@ -178,6 +187,7 @@ export default function VocabularyHubPage() {
           </div>
         ))}
       </div>
+      )}
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { getReadingWordTranslation } from '../../api/readingApi'
 import { listDecks, addDeckItem, lookupVocabWord } from '../../api/deckApi'
 import type { Deck, VocabLookupResult } from '../../api/types'
 import { speak } from '../../lib/speech'
+import SpeakerIcon from '../ui/SpeakerIcon'
 
 const LAST_DECK_KEY = 'deutschpfad.lastDeckId'
 
@@ -223,7 +224,7 @@ export default function ClickableWordText({
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-canvas/10 hover:bg-canvas/20"
               aria-label="Nghe phát âm"
             >
-              🔊
+              <SpeakerIcon className="h-4 w-4" />
             </button>
             <span className="text-lg font-bold italic">{lookup?.germanWord ?? openWord}</span>
           </div>

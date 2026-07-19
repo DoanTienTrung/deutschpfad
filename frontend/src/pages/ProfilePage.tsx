@@ -5,17 +5,22 @@ import { getStreak } from '../api/streakApi'
 import { getProgressSummary, getHeatmap } from '../api/progressApi'
 import { getVocabularyStats } from '../api/vocabularyApi'
 import { listDecks } from '../api/deckApi'
+import { getStudyTimeSummary, type StudyTimeSummary } from '../api/studyTimeApi'
+import { formatStudyTime } from '../lib/studyTime'
+import { useStudyTime } from '../context/StudyTimeContext'
 import type { Streak, ProgressSummary, HeatmapDay, VocabularyStats, Deck } from '../api/types'
 import ContributionHeatmap from '../components/progress/ContributionHeatmap'
 import ProgressBars from '../components/progress/ProgressBars'
 
 export default function ProfilePage() {
   const { user } = useAuth()
+  const { todaySeconds } = useStudyTime()
   const [streak, setStreak] = useState<Streak | null>(null)
   const [summary, setSummary] = useState<ProgressSummary[]>([])
   const [heatmap, setHeatmap] = useState<HeatmapDay[]>([])
   const [stats, setStats] = useState<VocabularyStats | null>(null)
   const [decks, setDecks] = useState<Deck[]>([])
+  const [studyTime, setStudyTime] = useState<StudyTimeSummary | null>(null)
 
   useEffect(() => {
     getStreak().then(setStreak).catch(() => {})
@@ -23,6 +28,7 @@ export default function ProfilePage() {
     getHeatmap().then(setHeatmap).catch(() => {})
     getVocabularyStats().then(setStats).catch(() => {})
     listDecks().then(setDecks).catch(() => {})
+    getStudyTimeSummary().then(setStudyTime).catch(() => {})
   }, [])
 
   if (!user) return null
@@ -77,6 +83,26 @@ export default function ProfilePage() {
           <div>
             <p className="text-2xl font-bold text-ink">🔥 {streak.currentStreak} ngày</p>
             <p className="text-sm text-muted">Kỷ lục: {streak.longestStreak} ngày</p>
+          </div>
+        </div>
+      )}
+
+      {studyTime && (
+        <div className="mb-6 rounded-lg bg-surface p-5 shadow-lifted">
+          <p className="mb-3 font-display text-sm font-semibold text-ink">Thời gian học tập</p>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="text-center">
+              <p className="font-display text-lg font-bold text-ink">{formatStudyTime(todaySeconds)}</p>
+              <p className="text-xs text-muted">Hôm nay</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-lg font-bold text-ink">{formatStudyTime(studyTime.weekSeconds)}</p>
+              <p className="text-xs text-muted">7 ngày qua</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-lg font-bold text-ink">{formatStudyTime(studyTime.totalSeconds)}</p>
+              <p className="text-xs text-muted">Tổng cộng</p>
+            </div>
           </div>
         </div>
       )}

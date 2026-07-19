@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { listSpeakingByLevel } from '../api/speakingApi'
 import type { SpeakingPrompt } from '../api/types'
+import { Skeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
@@ -34,7 +35,7 @@ export default function SpeakingHubPage() {
             key={l}
             onClick={() => setLevel(l)}
             className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-              level === l ? 'bg-accent/30 text-ink' : 'border border-hairline text-ink hover:bg-surface'
+              level === l ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
             }`}
           >
             {l}
@@ -42,13 +43,29 @@ export default function SpeakingHubPage() {
         ))}
       </div>
 
-      {loading && <p className="text-muted">Đang tải...</p>}
+      {loading && (
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-md" />
+          ))}
+        </div>
+      )}
 
-      {!loading && prompts.length === 0 && <p className="text-muted">Chưa có đề bài nào ở cấp độ này.</p>}
+      {!loading && prompts.length === 0 && (
+        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
+          <p className="text-3xl">🎤</p>
+          <p className="mt-2 font-medium text-ink">Chưa có đề bài nào ở cấp độ này</p>
+          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ khác ở trên nhé.</p>
+        </div>
+      )}
 
       <ul className="space-y-2">
-        {prompts.map((prompt) => (
-          <li key={prompt.id} className="rounded-md border border-hairline bg-white p-4">
+        {prompts.map((prompt, i) => (
+          <li
+            key={prompt.id}
+            style={{ '--stagger-index': i % 12 } as React.CSSProperties}
+            className="stagger-in rounded-md border border-hairline bg-white p-4"
+          >
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <p className="font-medium text-ink">{prompt.promptText}</p>

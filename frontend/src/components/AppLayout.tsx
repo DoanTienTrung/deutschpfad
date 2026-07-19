@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { getStreak } from '../api/streakApi'
 import type { Streak } from '../api/types'
+import { StudyTimeProvider, useStudyTime } from '../context/StudyTimeContext'
+import { formatStudyTimeClock } from '../lib/studyTime'
+import { useAuth } from '../context/AuthContext'
 
 const NAV_ITEMS = [
   { to: '/app', label: 'Trang chủ', end: true },
@@ -33,8 +36,8 @@ function NavLinks({ onNavigate, includeHeaderLinks = false }: { onNavigate?: () 
           className={({ isActive }) =>
             `block rounded-sm px-3 py-2 text-sm font-medium ${
               isActive
-                ? 'bg-accent/15 text-accent-deep'
-                : 'text-ink hover:bg-surface hover:text-accent-deep'
+                ? 'bg-primary/12 text-primary-deep'
+                : 'text-ink hover:bg-surface hover:text-primary'
             }`
           }
         >
@@ -42,6 +45,65 @@ function NavLinks({ onNavigate, includeHeaderLinks = false }: { onNavigate?: () 
         </NavLink>
       ))}
     </>
+  )
+}
+
+function BreakReminderBanner() {
+  const { breakReminderMessage, dismissBreakReminder } = useStudyTime()
+  const { user } = useAuth()
+
+  if (!breakReminderMessage) return null
+
+  const name = user?.fullName?.trim() || 'Bạn'
+
+  return (
+    <div className="relative flex items-center overflow-hidden bg-accent px-4 py-2 text-ink shadow-floating">
+      <div className="relative h-5 min-w-0 flex-1 overflow-hidden">
+        <p className="break-reminder-track text-sm font-medium">
+          {name} {breakReminderMessage}
+        </p>
+      </div>
+      <button
+        onClick={dismissBreakReminder}
+        aria-label="Đóng nhắc nhở"
+        className="ml-3 shrink-0 rounded-sm p-1 text-ink/70 hover:text-ink"
+      >
+        ✕
+      </button>
+    </div>
+  )
+}
+
+function StreakBadge({ streak }: { streak: Streak }) {
+  const [bump, setBump] = useState(false)
+  const prevRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const increased = prevRef.current !== null && streak.currentStreak > prevRef.current
+    prevRef.current = streak.currentStreak
+    if (increased) {
+      setBump(true)
+      const t = setTimeout(() => setBump(false), 400)
+      return () => clearTimeout(t)
+    }
+  }, [streak.currentStreak])
+
+  return (
+    <span className={`shrink-0 rounded-sm bg-accent/20 px-2 py-1 font-medium text-ink ${bump ? 'streak-bump' : ''}`}>
+      🔥 {streak.currentStreak}
+    </span>
+  )
+}
+
+function StudyTimeBadge() {
+  const { todaySeconds } = useStudyTime()
+  return (
+    <span
+      className="hidden shrink-0 items-center gap-1 rounded-sm bg-surface px-2 py-1 font-medium tabular-nums text-ink sm:flex"
+      title="Thời gian học hôm nay"
+    >
+      ⏱ {formatStudyTimeClock(todaySeconds)}
+    </span>
   )
 }
 
@@ -58,6 +120,7 @@ export default function AppLayout() {
   }, [sidebarOpen])
 
   return (
+    <StudyTimeProvider>
     <div className="min-h-screen bg-canvas">
       <header className="flex items-center justify-between border-b-2 border-accent/50 bg-surface px-6 py-4">
         <div className="flex items-center gap-3">
@@ -77,11 +140,8 @@ export default function AppLayout() {
           </Link>
         </div>
         <div className="flex items-center gap-3 text-sm sm:gap-5">
-          {streak && (
-            <span className="shrink-0 rounded-sm bg-accent/20 px-2 py-1 font-medium text-ink">
-              🔥 {streak.currentStreak}
-            </span>
-          )}
+          {streak && <StreakBadge streak={streak} />}
+          <StudyTimeBadge />
           <Link to="/app/decks" className="hidden text-muted hover:text-ink sm:inline">
             Bộ từ của tôi
           </Link>
@@ -90,6 +150,8 @@ export default function AppLayout() {
           </Link>
         </div>
       </header>
+
+      <BreakReminderBanner />
 
       {/* Mobile nav: sidebarOpen renders a full-screen overlay drawer instead of pushing content,
           since there's no room to squeeze a persistent sidebar next to the page on narrow screens.
@@ -120,5 +182,6 @@ export default function AppLayout() {
         </main>
       </div>
     </div>
+    </StudyTimeProvider>
   )
 }

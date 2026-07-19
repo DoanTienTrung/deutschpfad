@@ -5,6 +5,7 @@ import { isCorrectAnswer } from '../../lib/answer'
 import { speak } from '../../lib/speech'
 import Button from '../ui/Button'
 import Field from '../ui/Field'
+import SpeakerIcon from '../ui/SpeakerIcon'
 import QuestionSentence from './QuestionSentence'
 
 const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü']
@@ -123,10 +124,10 @@ export default function DeckFlashcardExercise({ items, onComplete }: { items: De
       {mode === 'flip' && (
         <div
           onClick={() => setFlipped((f) => !f)}
-          className="cursor-pointer rounded-lg bg-surface p-8 text-center shadow-lifted"
+          className="flip-card h-64 cursor-pointer"
         >
-          {!flipped ? (
-            <>
+          <div className={`flip-card-inner h-full ${flipped ? 'is-flipped' : ''}`}>
+            <div className="flip-card-face flex h-full flex-col items-center justify-center rounded-lg bg-surface p-8 text-center shadow-lifted">
               <p className="font-display text-3xl font-semibold text-ink">{card.germanWord}</p>
               {card.phonetic && <p className="mt-1 text-base text-muted">[{card.phonetic}]</p>}
               {card.wordType && <p className="mt-2 text-sm text-muted">[{card.wordType}]</p>}
@@ -135,15 +136,14 @@ export default function DeckFlashcardExercise({ items, onComplete }: { items: De
                   e.stopPropagation()
                   speak(card.germanWord)
                 }}
-                className="mt-4 text-2xl"
+                className="mt-4 text-primary hover:text-primary-deep"
                 aria-label="Phát âm"
               >
-                🔊
+                <SpeakerIcon className="h-7 w-7" />
               </button>
               <p className="mt-6 text-xs text-muted">Bấm để xem nghĩa</p>
-            </>
-          ) : (
-            <>
+            </div>
+            <div className="flip-card-face flip-card-face-back flex h-full flex-col items-center justify-center overflow-y-auto rounded-lg bg-surface p-8 text-center shadow-lifted">
               <p className="font-display text-2xl font-semibold text-ink">{card.vietnameseMeaning}</p>
               {card.englishMeaning && <p className="mt-1 text-sm text-muted">{card.englishMeaning}</p>}
               {card.exampleSentence && <p className="mt-4 text-sm italic text-muted">{card.exampleSentence}</p>}
@@ -154,8 +154,8 @@ export default function DeckFlashcardExercise({ items, onComplete }: { items: De
                   {card.antonyms && <>Trái nghĩa: {card.antonyms}</>}
                 </p>
               )}
-            </>
-          )}
+            </div>
+          </div>
         </div>
       )}
 

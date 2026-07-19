@@ -4,8 +4,13 @@ import type { ReadingPassageSummary } from '../../api/types'
 export default function ReadingPassageGrid({ passages }: { passages: ReadingPassageSummary[] }) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-      {passages.map((passage) => (
-        <Link key={passage.id} to={`/app/reading/${passage.id}`} className="group">
+      {passages.map((passage, i) => (
+        <Link
+          key={passage.id}
+          to={`/app/reading/${passage.id}`}
+          style={{ '--stagger-index': i % 12 } as React.CSSProperties}
+          className="stagger-in group"
+        >
           <div className="relative aspect-video overflow-hidden rounded-lg bg-surface">
             {passage.imageUrl ? (
               <img

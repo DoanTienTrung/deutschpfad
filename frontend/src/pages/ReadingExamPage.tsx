@@ -4,6 +4,7 @@ import { listReadingByLevel } from '../api/readingApi'
 import type { ReadingPassageSummary } from '../api/types'
 import ReadingPassageGrid from '../components/reading/ReadingPassageGrid'
 import ListeningBreadcrumb from '../components/listening/ListeningBreadcrumb'
+import { CardGridSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
@@ -52,7 +53,7 @@ export default function ReadingExamPage() {
               key={l}
               onClick={() => setLevel(l)}
               className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                level === l ? 'bg-accent/30 text-ink' : 'border border-hairline text-ink hover:bg-surface'
+                level === l ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink hover:bg-surface'
               }`}
             >
               {l}
@@ -73,14 +74,20 @@ export default function ReadingExamPage() {
         )}
       </div>
 
-      {loading && <p className="text-muted">Đang tải...</p>}
+      {loading && <CardGridSkeleton />}
 
-      {!loading && examOnly.length === 0 && <p className="text-muted">Chưa có bài thi mẫu nào ở cấp độ này.</p>}
+      {!loading && examOnly.length === 0 && (
+        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
+          <p className="text-3xl">📝</p>
+          <p className="mt-2 font-medium text-ink">Chưa có bài thi mẫu nào ở cấp độ này</p>
+          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ khác ở trên nhé.</p>
+        </div>
+      )}
       {!loading && examOnly.length > 0 && visiblePassages.length === 0 && (
         <p className="text-muted">Không tìm thấy bài nào khớp với tên bạn tìm.</p>
       )}
 
-      <ReadingPassageGrid passages={visiblePassages} />
+      {!loading && visiblePassages.length > 0 && <ReadingPassageGrid passages={visiblePassages} />}
     </div>
   )
 }

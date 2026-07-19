@@ -106,16 +106,18 @@ export default function TypeWordExercise({
 
       {!answeredIndexes.has(index) && (
         <>
-          <Field
-            ref={inputRef}
-            id="type-word-answer"
-            label="Gõ từ tiếng Đức, rồi nhấn Enter"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoComplete="off"
-            autoFocus
-          />
+          <div className={revealAnswer ? 'answer-shake' : ''}>
+            <Field
+              ref={inputRef}
+              id="type-word-answer"
+              label="Gõ từ tiếng Đức, rồi nhấn Enter"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <span className="mr-1 text-xs text-muted">Không gõ được dấu?</span>
             {UMLAUT_KEYS.map((key) => (

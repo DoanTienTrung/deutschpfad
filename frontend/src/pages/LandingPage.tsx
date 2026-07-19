@@ -2,18 +2,22 @@ import { Link } from 'react-router-dom'
 
 const FEATURES = [
   {
+    icon: '🗂️',
     title: 'Flashcard với SRS thông minh',
     description: 'Thuật toán lặp lại ngắt quãng (SM-2) tự động giãn lịch ôn theo mức độ nhớ của bạn, tập trung thời gian vào từ hay quên.',
   },
   {
+    icon: '✍️',
     title: 'Bộ từ tự tạo theo nhu cầu',
     description: 'Tự tạo bộ từ vựng riêng cho từng tình huống: phỏng vấn xin việc, nhập học, khám bệnh, làm giấy tờ...',
   },
   {
+    icon: '🔥',
     title: 'Streak giữ động lực học',
     description: 'Theo dõi chuỗi ngày học liên tục, nhận email nhắc nhở nếu chưa ôn từ trong ngày.',
   },
   {
+    icon: '🎓',
     title: 'Luyện thi 4 kỹ năng',
     description: 'Mô phỏng sát format thi Goethe/telc/TestDaF: Nghe, Đọc, Viết, Nói — có chấm điểm và nhận xét.',
     comingSoon: true,
@@ -77,8 +81,15 @@ export default function LandingPage() {
       <section className="mx-auto max-w-5xl px-6 py-16">
         <h2 className="mb-8 text-center font-display text-2xl font-bold text-ink">Tính năng nổi bật</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {FEATURES.map((feature) => (
-            <div key={feature.title} className="rounded-md border border-hairline bg-surface p-6">
+          {FEATURES.map((feature, i) => (
+            <div
+              key={feature.title}
+              style={{ '--stagger-index': i } as React.CSSProperties}
+              className="stagger-in rounded-md border border-hairline bg-surface p-6 transition-shadow hover:shadow-lifted"
+            >
+              <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/8 text-xl">
+                {feature.icon}
+              </span>
               <div className="mb-2 flex items-center gap-2">
                 <h3 className="font-display font-semibold text-ink">{feature.title}</h3>
                 {feature.comingSoon && (

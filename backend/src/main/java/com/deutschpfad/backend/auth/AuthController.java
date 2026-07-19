@@ -117,6 +117,16 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công"));
     }
 
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(
+        @Valid @RequestBody ChangePasswordRequest request, Authentication authentication
+    ) {
+        User user = userRepository.findByEmail(authentication.getName())
+            .orElseThrow(() -> new InvalidCredentialsException("Không tìm thấy user"));
+        authService.changePassword(user, request);
+        return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         String refreshTokenValue = cookieUtil.extractCookie(request, CookieUtil.REFRESH_COOKIE_NAME);

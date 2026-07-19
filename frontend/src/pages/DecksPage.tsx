@@ -81,8 +81,12 @@ export default function DecksPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {decks.map((deck) => (
-            <div key={deck.id} className="rounded-lg border border-hairline bg-white p-4 shadow-lifted">
+        {decks.map((deck, i) => (
+            <div
+              key={deck.id}
+              style={{ '--stagger-index': i % 12 } as React.CSSProperties}
+              className="stagger-in rounded-lg border border-hairline bg-white p-4 shadow-lifted"
+            >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="flex flex-1 items-center gap-3">
                   {editingId === deck.id ? (
@@ -136,7 +140,7 @@ export default function DecksPage() {
                   className={`flex-1 rounded-sm px-3 py-2 text-center text-sm font-medium ${
                     deck.itemCount === 0
                       ? 'pointer-events-none bg-hairline text-muted'
-                      : 'bg-accent-deep text-canvas hover:opacity-90'
+                      : 'bg-primary text-canvas hover:bg-primary-deep'
                   }`}
                   aria-disabled={deck.itemCount === 0}
                 >

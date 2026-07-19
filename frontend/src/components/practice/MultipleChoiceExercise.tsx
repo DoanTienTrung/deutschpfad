@@ -105,12 +105,13 @@ export default function MultipleChoiceExercise({
               : choice === selected
                 ? 'border-danger bg-danger-bg text-danger'
                 : 'border-hairline opacity-50'
+          const feedbackClass = showResult && choice === selected ? (isCorrect ? 'answer-pop' : 'answer-shake') : ''
           return (
             <button
               key={choice}
               onClick={() => handleSelect(choice)}
               disabled={selected !== null}
-              className={`rounded-sm border px-4 py-3 text-center font-medium ${stateClass}`}
+              className={`rounded-sm border px-4 py-3 text-center font-medium ${stateClass} ${feedbackClass}`}
             >
               {choice}
             </button>
