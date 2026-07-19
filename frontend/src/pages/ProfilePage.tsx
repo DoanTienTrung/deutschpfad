@@ -50,7 +50,7 @@ export default function ProfilePage() {
             {initial}
           </div>
           <div>
-            <p className="font-display text-2xl font-semibold text-ink text-balance sm:text-[1.75rem]">
+            <p className="font-display text-2xl font-semibold text-ink text-balance sm:text-3xl">
               Chào, {user.fullName}
             </p>
             <p className="mt-0.5 text-sm capitalize text-muted">{todayLabel}</p>
@@ -127,7 +127,7 @@ export default function ProfilePage() {
 
       <div className="stagger-in mb-4 rounded-lg bg-surface p-5" style={{ '--stagger-index': 2 } as React.CSSProperties}>
         <p className={cardHeading}>Hoạt động học tập</p>
-        <ContributionHeatmap data={heatmap} weeks={26} />
+        <ContributionHeatmap data={heatmap} />
       </div>
 
       <div className="stagger-in mb-4 rounded-lg bg-surface p-5" style={{ '--stagger-index': 3 } as React.CSSProperties}>
