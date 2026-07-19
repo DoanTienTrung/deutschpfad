@@ -173,7 +173,7 @@ export default function PracticePage() {
           {lesson?.title ?? '...'}
         </nav>
 
-        {loading && <p className="text-muted">Đang tải...</p>}
+        {loading && <div className="h-56 animate-pulse rounded-lg bg-surface" />}
 
         {!loading && items.length === 0 && <p className="text-muted">Bài học này chưa có từ vựng.</p>}
 

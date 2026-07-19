@@ -81,7 +81,7 @@ export default function SpeakingHubPage() {
               </div>
               <Link
                 to={`/app/speaking/${prompt.id}`}
-                className="shrink-0 rounded-sm bg-primary px-4 py-2 text-sm font-medium text-canvas hover:bg-primary-deep"
+                className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-canvas transition-colors hover:bg-primary-deep"
               >
                 Luyện nói
               </Link>

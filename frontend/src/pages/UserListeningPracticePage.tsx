@@ -85,7 +85,12 @@ export default function UserListeningPracticePage() {
         {item?.title ?? '...'}
       </nav>
 
-      {loading && <p className="text-muted">Đang tải...</p>}
+      {loading && (
+        <div className="space-y-4">
+          <div className="aspect-video animate-pulse rounded-lg bg-surface" />
+          <div className="h-24 animate-pulse rounded-lg bg-surface" />
+        </div>
+      )}
 
       {!loading && item && (
         <div className="flex flex-col gap-6 lg:flex-row">

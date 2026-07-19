@@ -24,7 +24,7 @@ export default function DeckPracticePage() {
       </Link>
 
       {error && <p className="text-danger">{error}</p>}
-      {!error && items === null && <p className="text-muted">Đang tải...</p>}
+      {!error && items === null && <div className="mx-auto max-w-xl"><div className="h-64 animate-pulse rounded-lg bg-surface" /></div>}
       {items !== null && <DeckFlashcardExercise key={`deck-practice-${id}`} items={items} />}
     </div>
   )

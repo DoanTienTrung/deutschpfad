@@ -82,26 +82,26 @@ export default function UserListeningHubPage() {
       </nav>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold text-ink">Video của tôi</h2>
+        <h2 className="font-display text-2xl font-bold text-ink">Video của tôi</h2>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-canvas hover:bg-primary-deep"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-canvas transition-colors hover:bg-primary-deep"
         >
           {showForm ? 'Đóng' : '+ Thêm video'}
         </button>
       </div>
 
-      {error && <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
       {showForm && (
-        <div className="mb-6 rounded-md border border-hairline bg-white p-4">
-          <p className="mb-1 font-display text-lg font-bold text-ink">Thêm Video</p>
-          <p className="mb-3 text-sm text-muted">Dán link YouTube để luyện nghe</p>
+        <div className="mb-6 rounded-lg border border-hairline bg-white p-5">
+          <p className="mb-1 font-display text-lg font-semibold text-ink">Thêm Video</p>
+          <p className="mb-4 text-sm text-muted">Dán link YouTube để luyện nghe</p>
           <input
             value={videoLink}
             onChange={(e) => setVideoLink(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
-            className="w-full rounded-sm border border-hairline px-3 py-2"
+            className="w-full rounded-sm border border-hairline px-3.5 py-2.5 text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <p className="mt-2 text-xs text-muted">
             Video cần có <strong>phụ đề tiếng Đức (CC)</strong> để hoạt động.
@@ -109,15 +109,27 @@ export default function UserListeningHubPage() {
           <button
             onClick={handleStart}
             disabled={saving || !videoLink}
-            className="mt-3 w-full rounded-sm bg-primary px-4 py-2.5 font-medium text-canvas hover:bg-primary-deep disabled:opacity-50"
+            className="mt-3 w-full rounded-md bg-primary px-4 py-2.5 font-medium text-canvas transition-colors hover:bg-primary-deep disabled:opacity-50"
           >
             {saving ? 'Đang xử lý...' : '→ Bắt đầu luyện tập'}
           </button>
         </div>
       )}
 
-      {loading && <p className="text-muted">Đang tải...</p>}
-      {!loading && items.length === 0 && <p className="text-muted">Bạn chưa thêm video nào.</p>}
+      {loading && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="aspect-video animate-pulse rounded-lg bg-surface" />
+          ))}
+        </div>
+      )}
+      {!loading && items.length === 0 && (
+        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
+          <p className="text-3xl">🎬</p>
+          <p className="mt-2 font-medium text-ink">Bạn chưa thêm video nào</p>
+          <p className="mt-1 text-sm text-muted">Bấm "+ Thêm video" và dán link YouTube có phụ đề tiếng Đức nhé.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         {items.map((item) => (
@@ -141,7 +153,7 @@ export default function UserListeningHubPage() {
               <p className="text-xs text-muted">{item.sentenceCount} câu</p>
               <button
                 onClick={() => handleDelete(item.id)}
-                className="text-xs text-red-600 hover:underline"
+                className="text-xs text-danger hover:underline"
               >
                 Xoá
               </button>

@@ -82,7 +82,12 @@ export default function ListeningPracticePage() {
         items={[{ label: '🎧 Nghe', onClick: () => navigate(-1) }, { label: exercise?.title ?? '...' }]}
       />
 
-      {loading && <p className="text-muted">Đang tải...</p>}
+      {loading && (
+        <div className="space-y-4">
+          <div className="aspect-video animate-pulse rounded-lg bg-surface" />
+          <div className="h-24 animate-pulse rounded-lg bg-surface" />
+        </div>
+      )}
 
       {!loading && exercise && (
         <div className="flex flex-col gap-6 lg:flex-row">

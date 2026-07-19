@@ -78,7 +78,7 @@ export default function AdminSpeakingPage() {
     <div>
       <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Đề bài Nói</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
       <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-white p-4 sm:grid-cols-2">
         <select
@@ -139,7 +139,7 @@ export default function AdminSpeakingPage() {
               <button onClick={() => startEdit(prompt)} className="text-sm text-primary hover:underline">
                 Sửa
               </button>
-              <button onClick={() => handleDelete(prompt.id)} className="text-sm text-red-600 hover:underline">
+              <button onClick={() => handleDelete(prompt.id)} className="text-sm text-danger hover:underline">
                 Xoá
               </button>
             </span>

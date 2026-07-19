@@ -163,7 +163,13 @@ export default function SpeakingPracticePage() {
     setCallState('idle')
   }
 
-  if (loading) return <p className="text-muted">Đang tải...</p>
+  if (loading)
+    return (
+      <div className="mx-auto max-w-2xl space-y-4">
+        <div className="h-28 animate-pulse rounded-lg bg-surface" />
+        <div className="h-40 animate-pulse rounded-lg bg-surface" />
+      </div>
+    )
   if (!prompt) return null
 
   const latestRecording = history[0]

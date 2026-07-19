@@ -70,7 +70,7 @@ export default function AccountPage() {
         </div>
       </div>
 
-      <div className="rounded-lg bg-surface p-8 shadow-lifted">
+      <div className="rounded-lg bg-surface p-8">
         <dl className="space-y-4">
           <div className="flex items-center justify-between border-b border-hairline pb-4">
             <dt className="text-sm text-muted">Họ tên</dt>

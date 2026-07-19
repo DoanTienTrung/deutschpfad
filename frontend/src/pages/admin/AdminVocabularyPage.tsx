@@ -98,7 +98,7 @@ export default function AdminVocabularyPage() {
     <div>
       <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Từ vựng</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
       <div className="mb-6 space-y-2 rounded-sm border border-hairline bg-white p-4">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -216,7 +216,7 @@ export default function AdminVocabularyPage() {
               <button onClick={() => startEdit(item)} className="text-primary hover:underline">
                 Sửa
               </button>
-              <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:underline">
+              <button onClick={() => handleDelete(item.id)} className="text-danger hover:underline">
                 Xoá
               </button>
             </div>

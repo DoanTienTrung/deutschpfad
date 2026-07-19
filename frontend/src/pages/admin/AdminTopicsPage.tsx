@@ -42,7 +42,7 @@ export default function AdminTopicsPage() {
     <div>
       <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Chủ đề</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
       <div className="mb-6 flex gap-2">
         <input
@@ -68,7 +68,7 @@ export default function AdminTopicsPage() {
             <span>{topic.name}</span>
             <button
               onClick={() => handleDelete(topic.id)}
-              className="text-sm text-red-600 hover:underline"
+              className="text-sm text-danger hover:underline"
             >
               Xoá
             </button>

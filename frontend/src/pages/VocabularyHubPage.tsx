@@ -174,7 +174,7 @@ export default function VocabularyHubPage() {
             </div>
             <Link
               to={`/app/practice/${lesson.id}`}
-              className="mt-4 rounded-sm bg-primary px-4 py-2 text-center text-sm font-medium text-canvas hover:bg-primary-deep"
+              className="mt-4 rounded-md bg-primary px-4 py-2 text-center text-sm font-medium text-canvas transition-colors hover:bg-primary-deep"
             >
               Học ngay
             </Link>

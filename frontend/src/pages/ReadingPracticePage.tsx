@@ -48,7 +48,13 @@ export default function ReadingPracticePage() {
     }
   }
 
-  if (loading) return <p className="mx-auto max-w-3xl text-muted">Đang tải...</p>
+  if (loading)
+    return (
+      <div className="mx-auto max-w-5xl space-y-4">
+        <div className="h-48 animate-pulse rounded-lg bg-surface sm:h-64" />
+        <div className="h-40 animate-pulse rounded-lg bg-surface" />
+      </div>
+    )
   if (!passage) return <p className="mx-auto max-w-3xl text-muted">Không tìm thấy bài đọc.</p>
 
   const resultByQuestionId = new Map((result?.results ?? []).map((r) => [r.questionId, r]))
@@ -236,7 +242,7 @@ export default function ReadingPracticePage() {
                     </div>
                   )}
                   {questionResult && question.questionType !== 'SHORT_ANSWER' && (
-                    <p className={`mt-3 text-sm ${questionResult.correct ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`mt-3 text-sm ${questionResult.correct ? 'text-success' : 'text-danger'}`}>
                       {questionResult.correct ? '✓ Đúng' : `✗ Sai — đáp án đúng: ${questionResult.correctAnswer}`}
                       {questionResult.explanation && (
                         <span className="ml-1 block text-muted">{questionResult.explanation}</span>
@@ -252,7 +258,7 @@ export default function ReadingPracticePage() {
             <button
               onClick={handleSubmit}
               disabled={!allAnswered || submitting}
-              className="mt-6 rounded-sm bg-primary px-4 py-2 text-sm font-semibold text-canvas hover:bg-primary-deep disabled:opacity-50"
+              className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-canvas transition-colors hover:bg-primary-deep disabled:opacity-50"
             >
               {submitting ? 'Đang chấm...' : 'Nộp bài'}
             </button>

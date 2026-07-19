@@ -82,11 +82,11 @@ export default function DeckDetailPage() {
       <Link to="/app/decks" className="mb-4 inline-block text-sm text-primary hover:underline">
         ← Quay lại danh sách bộ từ
       </Link>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Chi tiết bộ từ</h2>
+      <h2 className="mb-4 font-display text-2xl font-bold text-ink">Chi tiết bộ từ</h2>
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      <div className="mb-6 space-y-3 rounded-sm border border-hairline bg-white p-4">
+      <div className="mb-8 space-y-3 rounded-lg border border-hairline bg-white p-5">
         <div className="flex items-end gap-2">
           <div className="flex-1">
             <Field
@@ -101,7 +101,7 @@ export default function DeckDetailPage() {
             type="button"
             onClick={handleLookup}
             disabled={lookupLoading || !form.germanWord.trim()}
-            className="shrink-0 rounded-sm border border-primary px-3 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-40"
+            className="shrink-0 rounded-md border border-primary px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-40"
           >
             {lookupLoading ? 'Đang điền...' : '✨ Tự động điền AI'}
           </button>
@@ -161,16 +161,16 @@ export default function DeckDetailPage() {
 
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.id} className="rounded-sm border border-hairline bg-white p-3">
-            <div className="flex items-center justify-between">
-              <span>
-                <strong>{item.germanWord}</strong>
+          <li key={item.id} className="rounded-lg border border-hairline bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="min-w-0">
+                <strong className="font-display">{item.germanWord}</strong>
                 {item.phonetic && <span className="ml-1 text-sm text-muted">/{item.phonetic}/</span>}
                 {' — '}
                 {item.vietnameseMeaning}
                 {item.englishMeaning && <span className="text-muted"> ({item.englishMeaning})</span>}
               </span>
-              <button onClick={() => handleDelete(item.id)} className="text-sm text-red-600 hover:underline">
+              <button onClick={() => handleDelete(item.id)} className="shrink-0 text-sm text-danger hover:underline">
                 Xoá
               </button>
             </div>

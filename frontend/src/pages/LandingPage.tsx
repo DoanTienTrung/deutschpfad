@@ -36,7 +36,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/register"
-              className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas hover:bg-primary-deep"
+              className="rounded-md bg-primary px-4 py-2 font-medium text-canvas transition-colors hover:bg-primary-deep"
             >
               Đăng ký miễn phí
             </Link>
@@ -64,13 +64,13 @@ export default function LandingPage() {
           <div className="mt-8 flex justify-center gap-3">
             <Link
               to="/register"
-              className="rounded-sm bg-primary px-6 py-3 font-medium text-canvas hover:bg-primary-deep"
+              className="rounded-md bg-primary px-6 py-3 font-medium text-canvas transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-deep hover:shadow-lifted"
             >
               Bắt đầu học miễn phí
             </Link>
             <Link
               to="/login"
-              className="rounded-sm border border-hairline px-6 py-3 font-medium text-ink hover:bg-surface"
+              className="rounded-md border border-hairline px-6 py-3 font-medium text-ink transition-colors hover:bg-surface"
             >
               Đăng nhập
             </Link>
@@ -118,7 +118,7 @@ export default function LandingPage() {
         <h2 className="font-display text-2xl font-bold text-ink">Bắt đầu học miễn phí ngay hôm nay</h2>
         <Link
           to="/register"
-          className="mt-6 inline-block rounded-sm bg-primary px-6 py-3 font-medium text-canvas hover:bg-primary-deep"
+          className="mt-6 inline-block rounded-md bg-primary px-6 py-3 font-medium text-canvas transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-deep hover:shadow-lifted"
         >
           Đăng ký tài khoản
         </Link>
