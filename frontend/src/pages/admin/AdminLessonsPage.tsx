@@ -82,7 +82,7 @@ export default function AdminLessonsPage() {
         <select
           value={source}
           onChange={(e) => setSource(e.target.value as VocabularySource)}
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         >
           <option value="FREQUENCY">Nguồn: Tần suất (mặc định)</option>
           <option value="GOETHE">Nguồn: Goethe-Zertifikat</option>
@@ -90,7 +90,7 @@ export default function AdminLessonsPage() {
         <select
           value={topicId ?? ''}
           onChange={(e) => setTopicId(e.target.value ? Number(e.target.value) : null)}
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         >
           <option value="">-- Không thuộc chủ đề nào (từ vựng theo cấp) --</option>
           {topics.map((t) => (
@@ -101,11 +101,11 @@ export default function AdminLessonsPage() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Mô tả (tuỳ chọn)"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <button
           onClick={handleCreate}
-          className="col-span-2 rounded-sm bg-primary px-4 py-2 font-medium text-white"
+          className="sm:col-span-2 rounded-sm bg-primary px-4 py-2 font-medium text-white"
         >
           Thêm bài học
         </button>

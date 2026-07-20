@@ -143,7 +143,7 @@ export default function AdminListeningPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Tên bài nghe"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <select
           value={levelMin}
@@ -175,41 +175,41 @@ export default function AdminListeningPage() {
           onChange={(e) => setYoutubeVideoId(e.target.value)}
           onBlur={handleVideoLinkBlur}
           placeholder="Dán link YouTube (bất kỳ dạng nào) hoặc mã video, vd. dQw4w9WgXcQ"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
-        <p className="col-span-2 text-xs text-muted">
+        <p className="sm:col-span-2 text-xs text-muted">
           — hoặc, cho bài nghe không phải YouTube (vd. đề thi Goethe Modellsatz) —
         </p>
         <input
           value={audioUrl}
           onChange={(e) => setAudioUrl(e.target.value)}
           placeholder="Link file audio trực tiếp (mp3/mp4), thay cho YouTube"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <input
           value={sourceLabel}
           onChange={(e) => setSourceLabel(e.target.value)}
           placeholder="Tên nguồn hiển thị (vd. Goethe-Institut Modellsatz B1 – Hören Teil 2)"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <input
           value={sourceUrl}
           onChange={(e) => setSourceUrl(e.target.value)}
           placeholder="Link gốc tới nguồn (tuỳ chọn)"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Mô tả (tuỳ chọn)"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <input
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           placeholder="Chủ đề (vd. Erziehung, Gastronomie...)"
           list="topic-suggestions"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <datalist id="topic-suggestions">
           {topicSuggestions.map((t) => (
@@ -221,18 +221,18 @@ export default function AdminListeningPage() {
           onChange={(e) => setRawTranscript(e.target.value)}
           placeholder="Dán transcript từ YouTube (mở video → &quot;...&quot; → Hiển thị bản ghi → copy). Để trống để hệ thống tự động thử lấy phụ đề."
           rows={6}
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2 font-mono text-xs"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2 font-mono text-xs"
         />
-        <label className="col-span-2 flex items-center gap-2 text-sm text-ink">
+        <label className="sm:col-span-2 flex items-center gap-2 text-sm text-ink">
           <input type="checkbox" checked={autoFetch} onChange={(e) => setAutoFetch(e.target.checked)} />
           Tự động lấy phụ đề qua yt-dlp (bỏ qua nếu đã dán transcript ở trên)
         </label>
-        <p className="col-span-2 text-xs text-muted">
+        <p className="sm:col-span-2 text-xs text-muted">
           {editingId
             ? 'Sửa bài: để trống transcript và bỏ tick ô trên nếu không muốn đổi lại các câu đã có. Tick ô trên để thử lấy lại phụ đề tự động (ghi đè câu cũ).'
             : 'Tạo mới: để trống transcript, hệ thống sẽ tự thử lấy phụ đề qua yt-dlp; nếu video không có phụ đề, hãy dán tay.'}
         </p>
-        <div className="col-span-2 flex gap-2">
+        <div className="sm:col-span-2 flex gap-2">
           <button
             onClick={handleSave}
             disabled={saving}

@@ -87,8 +87,8 @@ export default function DeckDetailPage() {
       {error && <Alert tone="danger">{error}</Alert>}
 
       <div className="mb-8 space-y-3 rounded-lg border border-hairline bg-white p-5">
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <div className="min-w-0 flex-1">
             <Field
               id="deck-item-german-word"
               label="Từ tiếng Đức"
@@ -101,7 +101,7 @@ export default function DeckDetailPage() {
             type="button"
             onClick={handleLookup}
             disabled={lookupLoading || !form.germanWord.trim()}
-            className="shrink-0 rounded-md border border-primary px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-40"
+            className="shrink-0 self-start rounded-md border border-primary px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-40 sm:self-auto"
           >
             {lookupLoading ? 'Đang điền...' : '✨ Tự động điền AI'}
           </button>
@@ -134,7 +134,9 @@ export default function DeckDetailPage() {
             value={form.phonetic}
             onChange={(e) => setForm({ ...form, phonetic: e.target.value })}
           />
-          <div className="col-span-2">
+          {/* sm: prefix matters -- a bare col-span-2 inside the phone's 1-column grid forces an
+              implicit second column and breaks the whole form layout on mobile. */}
+          <div className="sm:col-span-2">
             <Field
               id="deck-item-example"
               label="Câu ví dụ (tuỳ chọn)"

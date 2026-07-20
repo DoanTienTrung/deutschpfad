@@ -250,16 +250,16 @@ export default function AdminReadingPage() {
           value={sourceLabel}
           onChange={(e) => setSourceLabel(e.target.value)}
           placeholder="Tên nguồn hiển thị (tuỳ chọn)"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <input
           value={sourceUrl}
           onChange={(e) => setSourceUrl(e.target.value)}
           placeholder="Link gốc tới nguồn (tuỳ chọn)"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         {category === 'ARTICLE' && (
-          <div className="col-span-2 flex items-end gap-2 rounded-sm border border-dashed border-hairline bg-surface p-3">
+          <div className="sm:col-span-2 flex items-end gap-2 rounded-sm border border-dashed border-hairline bg-surface p-3">
             <div className="flex-1">
               <p className="mb-1 text-xs font-medium text-ink">AI soạn nháp bài đọc (nội dung gốc, không sao chép báo thật)</p>
               <input
@@ -283,10 +283,10 @@ export default function AdminReadingPage() {
           onChange={(e) => setContent(e.target.value)}
           placeholder="Nội dung đoạn văn (tiếng Đức)"
           rows={8}
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
 
-        <div className="col-span-2 mt-2 space-y-3">
+        <div className="sm:col-span-2 mt-2 space-y-3">
           <p className="text-sm font-semibold text-ink">
             Kho lựa chọn (dùng chung cho câu dạng "Nối câu")
           </p>
@@ -318,7 +318,7 @@ export default function AdminReadingPage() {
           </button>
         </div>
 
-        <div className="col-span-2 mt-4 space-y-3">
+        <div className="sm:col-span-2 mt-4 space-y-3">
           <p className="text-sm font-semibold text-ink">Câu hỏi</p>
           {category === 'ARTICLE' && (
             <p className="text-xs text-muted">
@@ -444,7 +444,7 @@ export default function AdminReadingPage() {
           </button>
         </div>
 
-        <div className="col-span-2 mt-2 flex gap-2">
+        <div className="sm:col-span-2 mt-2 flex gap-2">
           <button
             onClick={handleSave}
             disabled={saving}

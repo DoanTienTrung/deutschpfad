@@ -102,15 +102,15 @@ export default function AdminSpeakingPage() {
           onChange={(e) => setPromptText(e.target.value)}
           placeholder="Đề bài (câu hỏi/yêu cầu học viên trả lời bằng giọng nói)"
           rows={3}
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Ghi chú thêm (tuỳ chọn)"
-          className="col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
-        <div className="col-span-2 flex gap-2">
+        <div className="sm:col-span-2 flex gap-2">
           <button
             onClick={handleSave}
             disabled={saving}
