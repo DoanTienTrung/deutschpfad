@@ -123,6 +123,31 @@ public class UserDeckController {
         return ResponseEntity.ok(DeckItemResponse.from(item));
     }
 
+    @PutMapping("/{deckId}/items/{itemId}")
+    public ResponseEntity<DeckItemResponse> updateItem(
+        @PathVariable Long deckId,
+        @PathVariable Long itemId,
+        @Valid @RequestBody DeckItemRequest request,
+        Authentication authentication
+    ) {
+        UserDeck deck = getOwnedDeck(deckId, currentUser(authentication));
+        UserDeckItem item = itemRepository.findById(itemId)
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy từ trong bộ từ"));
+        if (!item.getDeck().getId().equals(deck.getId())) {
+            throw new IllegalArgumentException("Không tìm thấy từ trong bộ từ");
+        }
+        item.setGermanWord(request.germanWord());
+        item.setVietnameseMeaning(request.vietnameseMeaning());
+        item.setWordType(request.wordType());
+        item.setExampleSentence(request.exampleSentence());
+        item.setPhonetic(request.phonetic());
+        item.setEnglishMeaning(request.englishMeaning());
+        item.setSynonyms(request.synonyms());
+        item.setAntonyms(request.antonyms());
+        itemRepository.save(item);
+        return ResponseEntity.ok(DeckItemResponse.from(item));
+    }
+
     @DeleteMapping("/{deckId}/items/{itemId}")
     public ResponseEntity<Void> deleteItem(
         @PathVariable Long deckId,

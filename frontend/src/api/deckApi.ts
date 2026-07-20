@@ -52,6 +52,13 @@ export function lookupVocabWord(germanWord: string) {
   })
 }
 
+export function updateDeckItem(deckId: number, itemId: number, input: DeckItemInput) {
+  return apiFetch<DeckItem>(`/decks/${deckId}/items/${itemId}`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  })
+}
+
 export function deleteDeckItem(deckId: number, itemId: number) {
   return apiFetch<void>(`/decks/${deckId}/items/${itemId}`, { method: 'DELETE' })
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { listDeckItems, addDeckItem, deleteDeckItem, lookupVocabWord, type DeckItemInput } from '../api/deckApi'
+import { listDeckItems, addDeckItem, updateDeckItem, deleteDeckItem, lookupVocabWord, type DeckItemInput } from '../api/deckApi'
 import type { DeckItem } from '../api/types'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
@@ -23,6 +23,7 @@ export default function DeckDetailPage() {
 
   const [items, setItems] = useState<DeckItem[]>([])
   const [form, setForm] = useState<DeckItemInput>(EMPTY_FORM)
+  const [editingItemId, setEditingItemId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupError, setLookupError] = useState<string | null>(null)
@@ -56,15 +57,43 @@ export default function DeckDetailPage() {
     }
   }
 
-  async function handleAdd() {
+  async function handleSubmit() {
     setError(null)
     try {
-      const item = await addDeckItem(id, form)
-      setItems((prev) => [...prev, item])
+      if (editingItemId !== null) {
+        const updated = await updateDeckItem(id, editingItemId, form)
+        setItems((prev) => prev.map((i) => (i.id === editingItemId ? updated : i)))
+        setEditingItemId(null)
+      } else {
+        const item = await addDeckItem(id, form)
+        setItems((prev) => [...prev, item])
+      }
       setForm(EMPTY_FORM)
     } catch {
-      setError('Không thêm được từ')
+      setError(editingItemId !== null ? 'Không sửa được từ' : 'Không thêm được từ')
     }
+  }
+
+  function startEditItem(item: DeckItem) {
+    setEditingItemId(item.id)
+    setForm({
+      germanWord: item.germanWord,
+      vietnameseMeaning: item.vietnameseMeaning,
+      wordType: item.wordType ?? '',
+      exampleSentence: item.exampleSentence ?? '',
+      phonetic: item.phonetic ?? '',
+      englishMeaning: item.englishMeaning ?? '',
+      synonyms: item.synonyms ?? '',
+      antonyms: item.antonyms ?? '',
+    })
+    // The shared form sits at the top of the page -- bring it into view so the user sees
+    // the fields they're about to edit instead of wondering whether the button did anything.
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function cancelEditItem() {
+    setEditingItemId(null)
+    setForm(EMPTY_FORM)
   }
 
   async function handleDelete(itemId: number) {
@@ -87,6 +116,9 @@ export default function DeckDetailPage() {
       {error && <Alert tone="danger">{error}</Alert>}
 
       <div className="mb-8 space-y-3 rounded-lg border border-hairline bg-white p-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+          {editingItemId !== null ? 'Sửa từ' : 'Thêm từ mới'}
+        </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="min-w-0 flex-1">
             <Field
@@ -158,7 +190,14 @@ export default function DeckDetailPage() {
           />
         </div>
 
-        <Button onClick={handleAdd}>Thêm từ</Button>
+        <div className="flex gap-2">
+          <Button onClick={handleSubmit}>{editingItemId !== null ? 'Lưu thay đổi' : 'Thêm từ'}</Button>
+          {editingItemId !== null && (
+            <Button variant="secondary" onClick={cancelEditItem}>
+              Huỷ
+            </Button>
+          )}
+        </div>
       </div>
 
       <ul className="space-y-2">
@@ -172,9 +211,14 @@ export default function DeckDetailPage() {
                 {item.vietnameseMeaning}
                 {item.englishMeaning && <span className="text-muted"> ({item.englishMeaning})</span>}
               </span>
-              <button onClick={() => handleDelete(item.id)} className="shrink-0 text-sm text-danger hover:underline">
-                Xoá
-              </button>
+              <span className="flex shrink-0 gap-3">
+                <button onClick={() => startEditItem(item)} className="text-sm text-primary hover:underline">
+                  Sửa
+                </button>
+                <button onClick={() => handleDelete(item.id)} className="text-sm text-danger hover:underline">
+                  Xoá
+                </button>
+              </span>
             </div>
             {item.exampleSentence && <p className="mt-1 text-sm italic text-muted">{item.exampleSentence}</p>}
             {(item.synonyms || item.antonyms) && (
