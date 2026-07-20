@@ -176,10 +176,10 @@ export default function UserListeningPracticePage() {
 
           {item.sentences.length > 0 && (
             <div className="min-w-0 lg:w-3/5">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setMode('shadowing')}
-                  className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                     mode === 'shadowing' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
                   }`}
                 >
@@ -187,7 +187,7 @@ export default function UserListeningPracticePage() {
                 </button>
                 <button
                   onClick={() => setMode('dictation')}
-                  className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                     mode === 'dictation' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
                   }`}
                 >
@@ -195,7 +195,7 @@ export default function UserListeningPracticePage() {
                 </button>
                 <button
                   onClick={() => setMode('cloze')}
-                  className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                     mode === 'cloze' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
                   }`}
                 >

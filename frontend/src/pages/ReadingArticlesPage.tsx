@@ -37,13 +37,15 @@ export default function ReadingArticlesPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="mb-4 flex items-start justify-between gap-3">
+      {/* Stacks on phones: the breadcrumb needs the full 390px row to fit on one line; keeping
+          the link beside it squeezed the breadcrumb into an awkward mid-item wrap. */}
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <ListeningBreadcrumb
           items={[{ label: '📖 Đọc', to: '/app/reading' }, { label: '📰 Đọc qua Sách, Báo' }]}
         />
         <Link
           to="/app/reading/mine"
-          className="shrink-0 rounded-full border border-hairline bg-surface px-3 py-1 text-sm font-semibold text-primary transition-colors hover:border-primary/40"
+          className="self-start shrink-0 rounded-full border border-hairline bg-surface px-3 py-1 text-sm font-semibold text-primary transition-colors hover:border-primary/40"
         >
           📚 Bài đọc của tôi
         </Link>

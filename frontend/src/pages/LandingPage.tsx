@@ -27,16 +27,16 @@ const FEATURES = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="border-b border-hairline px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="font-display text-lg font-bold text-ink">DeutschPfad</span>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link to="/login" className="text-primary hover:text-primary-deep">
+      <header className="border-b border-hairline px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+          <span className="shrink-0 font-display text-lg font-bold text-ink">DeutschPfad</span>
+          <nav className="flex items-center gap-3 text-sm sm:gap-4">
+            <Link to="/login" className="whitespace-nowrap text-primary hover:text-primary-deep">
               Đăng nhập
             </Link>
             <Link
               to="/register"
-              className="rounded-md bg-primary px-4 py-2 font-medium text-canvas transition-colors hover:bg-primary-deep"
+              className="whitespace-nowrap rounded-md bg-primary px-3 py-2 font-medium text-canvas transition-colors hover:bg-primary-deep sm:px-4"
             >
               Đăng ký miễn phí
             </Link>
@@ -61,16 +61,16 @@ export default function LandingPage() {
             Học từ vựng, luyện nghe nói và chuẩn bị thi chứng chỉ Goethe, telc, TestDaF — tất cả
             trong một nền tảng dành riêng cho người Việt.
           </p>
-          <div className="mt-8 flex justify-center gap-3">
+          <div className="mx-auto mt-8 flex max-w-xs flex-col justify-center gap-3 sm:max-w-none sm:flex-row">
             <Link
               to="/register"
-              className="rounded-md bg-primary px-6 py-3 font-medium text-canvas transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-deep hover:shadow-lifted"
+              className="whitespace-nowrap rounded-md bg-primary px-6 py-3 text-center font-medium text-canvas transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-deep hover:shadow-lifted"
             >
               Bắt đầu học miễn phí
             </Link>
             <Link
               to="/login"
-              className="rounded-md border border-hairline px-6 py-3 font-medium text-ink transition-colors hover:bg-surface"
+              className="whitespace-nowrap rounded-md border border-hairline px-6 py-3 text-center font-medium text-ink transition-colors hover:bg-surface"
             >
               Đăng nhập
             </Link>
