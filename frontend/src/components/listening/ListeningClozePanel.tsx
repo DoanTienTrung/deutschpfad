@@ -224,7 +224,7 @@ export default function ListeningClozePanel({
           </div>
         )}
 
-        <div className="mt-6 flex justify-center gap-2">
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={handleReveal}
             className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
@@ -250,14 +250,27 @@ export default function ListeningClozePanel({
         )}
       </div>
 
-      <div className="mt-3 grid grid-cols-1 items-center gap-2 sm:grid-cols-3">
-        <button
-          onClick={() => goTo(Math.max(0, index - 1))}
-          disabled={index === 0}
-          className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          ⏮ Câu trước
-        </button>
+      {/* Mobile: nav buttons side by side, toggle on its own row below. Desktop: sm:contents
+          dissolves the wrapper so its 2 children rejoin the grid directly, with sm:order-3
+          putting "Câu sau" back after the toggle -- same 3-column layout as before. */}
+      <div className="mt-3 flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:items-center sm:gap-2">
+        <div className="flex items-center justify-between gap-2 sm:contents">
+          <button
+            onClick={() => goTo(Math.max(0, index - 1))}
+            disabled={index === 0}
+            className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
+          >
+            ⏮ Câu trước
+          </button>
+
+          <button
+            onClick={() => goTo(Math.min(sentences.length - 1, index + 1))}
+            disabled={index === sentences.length - 1}
+            className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40 sm:order-3"
+          >
+            Câu sau ⏭
+          </button>
+        </div>
 
         <label className="flex cursor-pointer items-center justify-center gap-2 text-sm font-medium text-ink">
           <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${autoAdvance ? 'bg-primary' : 'bg-hairline'}`}>
@@ -275,14 +288,6 @@ export default function ListeningClozePanel({
           />
           Tự động chuyển câu
         </label>
-
-        <button
-          onClick={() => goTo(Math.min(sentences.length - 1, index + 1))}
-          disabled={index === sentences.length - 1}
-          className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          Câu sau ⏭
-        </button>
       </div>
 
       <p className="mt-2 text-center text-xs text-muted">

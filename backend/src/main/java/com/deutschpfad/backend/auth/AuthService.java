@@ -129,6 +129,14 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    public User updateProfile(User user, UpdateProfileRequest request) {
+        user.setFullName(request.fullName());
+        user.setGoal(request.goal());
+        user.setTargetCertificate(request.targetCertificate());
+        user.setCurrentLevel(request.currentLevel());
+        return userRepository.save(user);
+    }
+
     public LoginResult login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
             .orElseThrow(() -> new InvalidCredentialsException("Email hoặc mật khẩu không đúng"));

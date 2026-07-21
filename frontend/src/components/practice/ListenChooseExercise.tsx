@@ -22,13 +22,19 @@ export default function ListenChooseExercise({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- notify exactly once when the first full pass is done
   }, [completedOnePass])
 
+  // Fewer answer choices on phones -- 9 options stacked in a single column (no room for the
+  // sm:grid-cols-3 layout) makes for a long scroll per question. Read once at mount, matching
+  // the same mobile-detection pattern used in MatchingExercise.
+  const maxChoices = window.matchMedia('(max-width: 639px)').matches ? 4 : 9
+
   const choiceWords = useMemo(() => {
     if (order.length === 0) return []
     return buildChoices(
       order[index].germanWord,
       order.map((item) => item.germanWord),
-      Math.min(9, order.length)
+      Math.min(maxChoices, order.length)
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- maxChoices is fixed per mount (viewport doesn't change mid-session)
   }, [index, order])
 
   if (items.length < 4) {

@@ -2,9 +2,24 @@ import { useEffect, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
 import { shuffle } from '../../lib/quiz'
 
-const ROUND_COUNT = 20
+const MIN_ROUND_COUNT = 20
 
 type Tile = { key: string; id: number; text: string; side: 'left' | 'right' }
+
+// Deals rounds from a shuffled deck instead of drawing each round independently at random --
+// independent draws can (and with few pairs per round, will) skip some words entirely purely by
+// bad luck, since nothing stops the same handful of words from being picked over and over. Once
+// the deck runs low, it's replenished with a fresh shuffled pass, so every word is guaranteed to
+// reappear before any word repeats a second time within a pass.
+function dealRounds(items: VocabularyItem[], pairsPerRound: number, roundCount: number) {
+  const rounds: VocabularyItem[][] = []
+  let deck: VocabularyItem[] = []
+  for (let i = 0; i < roundCount; i++) {
+    if (deck.length < pairsPerRound) deck = [...deck, ...shuffle(items)]
+    rounds.push(deck.splice(0, pairsPerRound))
+  }
+  return rounds
+}
 
 export default function MatchingExercise({
   items,
@@ -13,11 +28,16 @@ export default function MatchingExercise({
   items: VocabularyItem[]
   onComplete?: () => void
 }) {
-  const pairsPerRound = Math.min(8, items.length)
+  // Fewer pairs per round on phones -- 8 pairs (16 tiles) in a 2-column grid runs to 8 rows tall
+  // on a narrow screen, which is a lot of scrolling and visual noise for one round. Read once at
+  // mount (matches how `rounds`/`tiles` below are also lazily computed only on first render).
+  const pairsPerRound = Math.min(window.matchMedia('(max-width: 639px)').matches ? 2 : 8, items.length)
+  // More, smaller rounds on mobile so the total pairs shown (roundCount * pairsPerRound) still
+  // covers every word at least once -- otherwise a 50-word lesson at 2 pairs/round would run out
+  // after just 40 of them across the fixed 20 rounds, silently never showing the rest.
+  const roundCount = Math.max(MIN_ROUND_COUNT, Math.ceil(items.length / pairsPerRound))
 
-  const [rounds] = useState(() =>
-    Array.from({ length: ROUND_COUNT }, () => shuffle(items).slice(0, pairsPerRound))
-  )
+  const [rounds] = useState(() => dealRounds(items, pairsPerRound, roundCount))
   const [roundIndex, setRoundIndex] = useState(0)
   const [matchedByRound, setMatchedByRound] = useState<Record<number, Set<number>>>({})
   const [fadingByRound, setFadingByRound] = useState<Record<number, Set<number>>>({})
@@ -37,7 +57,7 @@ export default function MatchingExercise({
   )
 
   const completedRounds = rounds.filter((pairs, i) => (matchedByRound[i]?.size ?? 0) === pairs.length).length
-  const finished = pairsPerRound >= 2 && completedRounds === ROUND_COUNT
+  const finished = pairsPerRound >= 2 && completedRounds === roundCount
 
   useEffect(() => {
     if (finished) onComplete?.()
@@ -67,9 +87,9 @@ export default function MatchingExercise({
       setMatchedByRound((prev) => {
         const next = new Set(prev[roundIndex] ?? [])
         next.add(tile.id)
-        if (next.size === pairsPerRound && roundIndex < ROUND_COUNT - 1) {
+        if (next.size === pairsPerRound && roundIndex < roundCount - 1) {
           setTimeout(() => {
-            setRoundIndex((i) => Math.min(ROUND_COUNT - 1, i + 1))
+            setRoundIndex((i) => Math.min(roundCount - 1, i + 1))
             setSelected(null)
           }, 900)
         }
@@ -121,14 +141,14 @@ export default function MatchingExercise({
           ← Vòng trước
         </button>
         <p className="text-sm text-muted">
-          Đã hoàn thành {completedRounds}/{ROUND_COUNT} vòng
+          Đã hoàn thành {completedRounds}/{roundCount} vòng
         </p>
         <button
           onClick={() => {
-            setRoundIndex((i) => Math.min(ROUND_COUNT - 1, i + 1))
+            setRoundIndex((i) => Math.min(roundCount - 1, i + 1))
             setSelected(null)
           }}
-          disabled={roundIndex === ROUND_COUNT - 1}
+          disabled={roundIndex === roundCount - 1}
           className="rounded-sm border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
         >
           Vòng sau →

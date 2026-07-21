@@ -174,27 +174,9 @@ export default function ShadowingPanel({
 
   return (
     <div className="mt-4 rounded-md border border-hairline bg-white p-4">
-      <div className="mb-3 flex items-center justify-between text-sm text-muted">
-        <span>
-          Câu {index + 1}/{sentences.length}
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => goTo(index - 1)}
-            disabled={index === 0}
-            className="rounded-sm border border-hairline px-3 py-1 text-ink hover:bg-surface disabled:opacity-40"
-          >
-            ← Câu trước
-          </button>
-          <button
-            onClick={() => goTo(index + 1)}
-            disabled={index === sentences.length - 1}
-            className="rounded-sm border border-hairline px-3 py-1 text-ink hover:bg-surface disabled:opacity-40"
-          >
-            Câu tiếp theo →
-          </button>
-        </div>
-      </div>
+      <p className="mb-3 text-sm text-muted">
+        Câu {index + 1}/{sentences.length}
+      </p>
 
       <p className="mb-1 text-xs text-muted">Bấm vào 1 từ để xem nghĩa riêng</p>
       <p className="mb-1 text-base font-medium text-ink">
@@ -309,6 +291,23 @@ export default function ShadowingPanel({
           </button>
         </div>
       )}
+
+      <div className="mt-4 flex items-center justify-between gap-2 border-t border-hairline pt-4">
+        <button
+          onClick={() => goTo(index - 1)}
+          disabled={index === 0}
+          className="rounded-sm border border-hairline px-3 py-1.5 text-sm text-ink hover:bg-surface disabled:opacity-40"
+        >
+          ← Câu trước
+        </button>
+        <button
+          onClick={() => goTo(index + 1)}
+          disabled={index === sentences.length - 1}
+          className="rounded-sm border border-hairline px-3 py-1.5 text-sm text-ink hover:bg-surface disabled:opacity-40"
+        >
+          Câu tiếp theo →
+        </button>
+      </div>
     </div>
   )
 }

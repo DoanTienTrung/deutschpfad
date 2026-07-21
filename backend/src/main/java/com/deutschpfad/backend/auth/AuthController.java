@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(
+    public ResponseEntity<UserProfileResponse> login(
         @Valid @RequestBody LoginRequest request,
         HttpServletResponse response
     ) {
@@ -60,12 +61,7 @@ public class AuthController {
         RefreshToken refreshToken = refreshTokenService.generate(result.user());
         cookieUtil.setRefreshCookie(response, refreshToken.getToken());
 
-        return ResponseEntity.ok(Map.of(
-            "id", result.user().getId(),
-            "email", result.user().getEmail(),
-            "fullName", result.user().getFullName(),
-            "role", result.user().getRole().name()
-        ));
+        return ResponseEntity.ok(UserProfileResponse.from(result.user()));
     }
 
     @PostMapping("/refresh")
@@ -88,15 +84,20 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> me(Authentication authentication) {
+    public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())
             .orElseThrow(() -> new InvalidCredentialsException("Không tìm thấy user"));
-        return ResponseEntity.ok(Map.of(
-            "id", user.getId(),
-            "email", user.getEmail(),
-            "fullName", user.getFullName(),
-            "role", user.getRole().name()
-        ));
+        return ResponseEntity.ok(UserProfileResponse.from(user));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<UserProfileResponse> updateProfile(
+        @Valid @RequestBody UpdateProfileRequest request, Authentication authentication
+    ) {
+        User user = userRepository.findByEmail(authentication.getName())
+            .orElseThrow(() -> new InvalidCredentialsException("Không tìm thấy user"));
+        User updated = authService.updateProfile(user, request);
+        return ResponseEntity.ok(UserProfileResponse.from(updated));
     }
 
     @PostMapping("/verify-email")

@@ -3,6 +3,9 @@ export type User = {
   email: string
   fullName: string
   role: 'USER' | 'ADMIN'
+  goal: string | null
+  targetCertificate: string | null
+  currentLevel: string | null
 }
 
 export type Topic = {

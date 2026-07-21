@@ -6,10 +6,26 @@ import Button from '../components/ui/Button'
 import Field from '../components/ui/Field'
 import Alert from '../components/ui/Alert'
 
+const GOAL_OPTIONS = ['Du học', 'Làm việc', 'Khác']
+const CERTIFICATE_OPTIONS = ['Goethe-Zertifikat', 'telc', 'TestDaF']
+const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
+const selectClass =
+  'w-full rounded-sm border border-hairline bg-canvas px-3.5 py-2.5 text-ink transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/20'
+
 export default function AccountPage() {
-  const { user, logout } = useAuth()
+  const { user, logout, refetchUser } = useAuth()
   const navigate = useNavigate()
   const [loggingOut, setLoggingOut] = useState(false)
+
+  const [showProfileForm, setShowProfileForm] = useState(false)
+  const [fullName, setFullName] = useState(user?.fullName ?? '')
+  const [goal, setGoal] = useState(user?.goal ?? '')
+  const [targetCertificate, setTargetCertificate] = useState(user?.targetCertificate ?? '')
+  const [currentLevel, setCurrentLevel] = useState(user?.currentLevel ?? '')
+  const [profileError, setProfileError] = useState<string | null>(null)
+  const [profileSuccess, setProfileSuccess] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
 
   const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
@@ -25,6 +41,48 @@ export default function AccountPage() {
     } finally {
       logout()
       navigate('/login')
+    }
+  }
+
+  function toggleProfileForm() {
+    if (!showProfileForm && user) {
+      // Re-seed from the latest known user data each time the form opens, in case it was
+      // edited elsewhere (unlikely today, but avoids stale values if that ever changes).
+      setFullName(user.fullName)
+      setGoal(user.goal ?? '')
+      setTargetCertificate(user.targetCertificate ?? '')
+      setCurrentLevel(user.currentLevel ?? '')
+    }
+    setShowProfileForm((v) => !v)
+    setProfileError(null)
+    setProfileSuccess(false)
+  }
+
+  async function handleSaveProfile(e: FormEvent) {
+    e.preventDefault()
+    setProfileError(null)
+    setProfileSuccess(false)
+    setSavingProfile(true)
+    try {
+      await apiFetch('/auth/me', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          fullName,
+          goal: goal || null,
+          targetCertificate: targetCertificate || null,
+          currentLevel: currentLevel || null,
+        }),
+      })
+      await refetchUser()
+      setProfileSuccess(true)
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setProfileError((err.data as { message?: string })?.message ?? 'Có lỗi xảy ra')
+      } else {
+        setProfileError('Có lỗi xảy ra, vui lòng thử lại')
+      }
+    } finally {
+      setSavingProfile(false)
     }
   }
 
@@ -80,13 +138,94 @@ export default function AccountPage() {
             <dt className="text-sm text-muted">Email</dt>
             <dd className="font-medium text-ink">{user.email}</dd>
           </div>
+          <div className="flex items-center justify-between border-b border-hairline pb-4">
+            <dt className="text-sm text-muted">Mục tiêu</dt>
+            <dd className="font-medium text-ink">{user.goal || <span className="text-muted">Chưa đặt</span>}</dd>
+          </div>
+          <div className="flex items-center justify-between border-b border-hairline pb-4">
+            <dt className="text-sm text-muted">Chứng chỉ mục tiêu</dt>
+            <dd className="font-medium text-ink">
+              {user.targetCertificate || <span className="text-muted">Chưa đặt</span>}
+            </dd>
+          </div>
           <div className="flex items-center justify-between">
-            <dt className="text-sm text-muted">Vai trò</dt>
-            <dd className="font-medium text-ink">{user.role}</dd>
+            <dt className="text-sm text-muted">Trình độ hiện tại</dt>
+            <dd className="font-medium text-ink">
+              {user.currentLevel || <span className="text-muted">Chưa đặt</span>}
+            </dd>
           </div>
         </dl>
 
         <div className="mt-8 border-t border-hairline pt-6">
+          <button
+            onClick={toggleProfileForm}
+            className="text-sm font-medium text-primary hover:text-primary-deep"
+          >
+            {showProfileForm ? 'Đóng' : 'Sửa hồ sơ'}
+          </button>
+
+          {showProfileForm && (
+            <form onSubmit={handleSaveProfile} className="mt-4 space-y-4">
+              {profileError && <Alert tone="danger">{profileError}</Alert>}
+              {profileSuccess && <Alert tone="success">Cập nhật hồ sơ thành công</Alert>}
+              <Field
+                id="fullName"
+                label="Họ tên"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+              <div>
+                <label htmlFor="goal" className="mb-1 block text-sm font-medium text-ink">
+                  Mục tiêu
+                </label>
+                <select id="goal" className={selectClass} value={goal} onChange={(e) => setGoal(e.target.value)}>
+                  <option value="">Chưa đặt</option>
+                  {GOAL_OPTIONS.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="targetCertificate" className="mb-1 block text-sm font-medium text-ink">
+                  Chứng chỉ mục tiêu
+                </label>
+                <select
+                  id="targetCertificate"
+                  className={selectClass}
+                  value={targetCertificate}
+                  onChange={(e) => setTargetCertificate(e.target.value)}
+                >
+                  <option value="">Chưa đặt</option>
+                  {CERTIFICATE_OPTIONS.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="currentLevel" className="mb-1 block text-sm font-medium text-ink">
+                  Trình độ hiện tại
+                </label>
+                <select
+                  id="currentLevel"
+                  className={selectClass}
+                  value={currentLevel}
+                  onChange={(e) => setCurrentLevel(e.target.value)}
+                >
+                  <option value="">Chưa đặt</option>
+                  {LEVEL_OPTIONS.map((l) => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+              <Button type="submit" loading={savingProfile}>
+                {savingProfile ? 'Đang lưu...' : 'Lưu hồ sơ'}
+              </Button>
+            </form>
+          )}
+        </div>
+
+        <div className="mt-6 border-t border-hairline pt-6">
           <button
             onClick={() => {
               setShowPasswordForm((v) => !v)

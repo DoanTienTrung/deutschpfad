@@ -9,6 +9,10 @@ import ListeningDictationPanel from '../components/listening/ListeningDictationP
 import ListeningClozePanel from '../components/listening/ListeningClozePanel'
 
 type Mode = 'shadowing' | 'dictation' | 'cloze'
+// Mobile shows exactly one of these four panels at a time (picked via a single unified tab
+// strip right under the video); desktop keeps showing the transcript and the mode panel
+// side-by-side always, independent of this state -- see the `lg:` overrides in the JSX below.
+type MobileTab = 'transcript' | Mode
 
 export default function UserListeningPracticePage() {
   const { itemId } = useParams<{ itemId: string }>()
@@ -19,6 +23,7 @@ export default function UserListeningPracticePage() {
   const [loading, setLoading] = useState(true)
   const [currentTime, setCurrentTime] = useState(0)
   const [mode, setMode] = useState<Mode>('shadowing')
+  const [mobileTab, setMobileTab] = useState<MobileTab>('transcript')
   const [practiceIndex, setPracticeIndex] = useState(0)
   const [completedIndexes, setCompletedIndexes] = useState<Set<number>>(new Set())
 
@@ -73,7 +78,16 @@ export default function UserListeningPracticePage() {
     playerRef.current?.play()
   }
 
+  function selectMobileTab(tab: MobileTab) {
+    setMobileTab(tab)
+    if (tab !== 'transcript') setMode(tab)
+  }
+
   const blurTranscript = mode === 'dictation' || mode === 'cloze'
+  const mobileTabClass = (active: boolean) =>
+    `rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+      active ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
+    }`
 
   return (
     <div className="mx-auto max-w-[1800px]">
@@ -100,10 +114,32 @@ export default function UserListeningPracticePage() {
             {item.sentences.length === 0 ? (
               <p className="mt-4 text-sm text-muted">Video này chưa có phụ đề.</p>
             ) : (
-              <ul
-                ref={listContainerRef}
-                className="mt-4 max-h-[32rem] space-y-2 overflow-y-auto rounded-md border border-hairline bg-white p-3"
-              >
+              <>
+                {/* Unified 4-tab strip -- mobile only. Desktop keeps showing the transcript and
+                    the mode panel side-by-side always (see the lg: overrides below), so this
+                    tab bar (and the single-panel-at-a-time behavior it drives) is redundant
+                    there and hidden. */}
+                <div className="mt-4 flex flex-nowrap gap-2 overflow-x-auto lg:hidden">
+                  <button onClick={() => selectMobileTab('transcript')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'transcript')}`}>
+                    Phụ đề
+                  </button>
+                  <button onClick={() => selectMobileTab('shadowing')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'shadowing')}`}>
+                    Shadowing
+                  </button>
+                  <button onClick={() => selectMobileTab('dictation')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'dictation')}`}>
+                    Chép chính tả
+                  </button>
+                  <button onClick={() => selectMobileTab('cloze')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'cloze')}`}>
+                    Điền từ
+                  </button>
+                </div>
+
+                <ul
+                  ref={listContainerRef}
+                  className={`mt-4 max-h-[32rem] space-y-2 overflow-y-auto rounded-md border border-hairline bg-white p-3 ${
+                    mobileTab === 'transcript' ? 'block' : 'hidden'
+                  } lg:block`}
+                >
                 {item.sentences.map((sentence, i) => {
                   const isActive = i === practiceIndex
                   const isCompleted = completedIndexes.has(i)
@@ -170,13 +206,15 @@ export default function UserListeningPracticePage() {
                     </li>
                   )
                 })}
-              </ul>
+                </ul>
+              </>
             )}
           </div>
 
           {item.sentences.length > 0 && (
-            <div className="min-w-0 lg:w-3/5">
-              <div className="flex flex-wrap gap-2">
+            <div className={`min-w-0 lg:w-3/5 ${mobileTab === 'transcript' ? 'hidden' : 'block'} lg:block`}>
+              {/* Desktop-only -- mobile switches mode via the unified tab strip above instead. */}
+              <div className="hidden flex-wrap gap-2 lg:flex">
                 <button
                   onClick={() => setMode('shadowing')}
                   className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
