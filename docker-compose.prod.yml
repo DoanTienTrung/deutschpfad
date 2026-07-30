@@ -35,7 +35,10 @@ services:
       # bot check — not committed to git, lives only on the host. YtDlpHealthCheckService
       # emails an alert when this goes stale; re-export from a browser and overwrite in place
       # (no restart needed, the path is read fresh on every yt-dlp call).
-      - ./cookies.txt:/app/cookies.txt:ro
+      # Read-write (not :ro): yt-dlp rewrites the file with rotated cookie values after every
+      # call, which is a free partial self-refresh — mounting read-only made it crash instead
+      # (it tries to save on exit regardless of whether anything actually changed).
+      - ./cookies.txt:/app/cookies.txt
     depends_on:
       - bgutil-provider
 

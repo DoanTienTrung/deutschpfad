@@ -73,6 +73,12 @@ public class YtDlpService {
             List<String> command = new ArrayList<>(List.of(
                 "yt-dlp",
                 "--skip-download",
+                // Some videos only expose image formats to yt-dlp once real cookies are used
+                // (YouTube's SABR streaming restrictions on certain clients) — yt-dlp normally
+                // treats "no downloadable formats" as fatal even with --skip-download, before
+                // it gets to write the subtitle. This flag makes that non-fatal, since we never
+                // wanted the video/audio format in the first place.
+                "--ignore-no-formats-error",
                 "--write-auto-sub", "--write-sub",
                 "--sub-lang", "de",
                 "--sub-format", "vtt",
@@ -116,7 +122,9 @@ public class YtDlpService {
     public Integer fetchDurationSeconds(String videoId) {
         try {
             String url = "https://www.youtube.com/watch?v=" + videoId;
-            List<String> command = new ArrayList<>(List.of("yt-dlp", "--skip-download", "--print", "duration"));
+            List<String> command = new ArrayList<>(List.of(
+                "yt-dlp", "--skip-download", "--ignore-no-formats-error", "--print", "duration"
+            ));
             command.addAll(potExtractorArgs());
             command.addAll(cookiesArgs());
             command.add(url);
