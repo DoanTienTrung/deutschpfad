@@ -2,12 +2,14 @@ package com.deutschpfad.backend.listening;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,23 @@ public class YtDlpService {
     private static final Logger log = LoggerFactory.getLogger(YtDlpService.class);
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
+    private final String potBaseUrl;
+
+    public YtDlpService(@Value("${app.ytdlp-pot-base-url:}") String potBaseUrl) {
+        this.potBaseUrl = potBaseUrl;
+    }
+
+    /**
+     * Datacenter IPs (e.g. our EC2 host) get blocked by YouTube's "Sign in to confirm you're
+     * not a bot" check; a bgutil-ytdlp-pot-provider HTTP server (see docker-compose.prod.yml)
+     * generates a proof-of-origin token that works around it. Omitted entirely when
+     * app.ytdlp-pot-base-url is unset (local dev — home IPs aren't flagged).
+     */
+    private List<String> potExtractorArgs() {
+        if (potBaseUrl == null || potBaseUrl.isBlank()) return List.of();
+        return List.of("--extractor-args", "youtubepot-bgutilhttp:base_url=" + potBaseUrl);
+    }
+
     public List<TranscriptParser.SentenceData> fetchAutoTranscript(String videoId) {
         Path tempDir = null;
         try {
@@ -33,15 +52,18 @@ public class YtDlpService {
             String url = "https://www.youtube.com/watch?v=" + videoId;
             String outputTemplate = tempDir.resolve("sub").toString() + ".%(ext)s";
 
-            ProcessBuilder pb = new ProcessBuilder(
+            List<String> command = new ArrayList<>(List.of(
                 "yt-dlp",
                 "--skip-download",
                 "--write-auto-sub", "--write-sub",
                 "--sub-lang", "de",
                 "--sub-format", "vtt",
-                "-o", outputTemplate,
-                url
-            );
+                "-o", outputTemplate
+            ));
+            command.addAll(potExtractorArgs());
+            command.add(url);
+
+            ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
             Process process = pb.start();
             boolean finished = process.waitFor(TIMEOUT.toSeconds(), TimeUnit.SECONDS);
@@ -75,7 +97,11 @@ public class YtDlpService {
     public Integer fetchDurationSeconds(String videoId) {
         try {
             String url = "https://www.youtube.com/watch?v=" + videoId;
-            ProcessBuilder pb = new ProcessBuilder("yt-dlp", "--skip-download", "--print", "duration", url);
+            List<String> command = new ArrayList<>(List.of("yt-dlp", "--skip-download", "--print", "duration"));
+            command.addAll(potExtractorArgs());
+            command.add(url);
+
+            ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 

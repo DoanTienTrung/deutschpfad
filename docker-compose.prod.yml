@@ -25,8 +25,19 @@ services:
       UNSPLASH_API_KEY: ${UNSPLASH_API_KEY}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       JWT_SECRET: ${JWT_SECRET}
+      YTDLP_POT_BASE_URL: http://bgutil-provider:4416
     ports:
       - "8080:8080"
+    depends_on:
+      - bgutil-provider
+
+  # PO-token generator for yt-dlp — works around YouTube's "Sign in to confirm you're not a
+  # bot" block on this EC2 IP. No ports published to the host: only the backend container
+  # needs to reach it, over the internal compose network at bgutil-provider:4416.
+  bgutil-provider:
+    image: brainicism/bgutil-ytdlp-pot-provider:latest
+    container_name: deutschpfad-bgutil-provider
+    restart: unless-stopped
 
   frontend:
     image: ghcr.io/doantientrung/deutschpfad-frontend:latest

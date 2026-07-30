@@ -57,5 +57,9 @@ app:
   gemini-api-key: ${GEMINI_API_KEY:}
   unsplash-api-key: ${UNSPLASH_API_KEY:}
   openrouter-api-key: ${OPENROUTER_API_KEY:}
+  # Base URL of the bgutil-ytdlp-pot-provider HTTP server (PO token generator) used to work
+  # around YouTube's "Sign in to confirm you're not a bot" block on datacenter IPs (e.g. EC2).
+  # Empty on local dev — home IPs aren't flagged, so yt-dlp works without it.
+  ytdlp-pot-base-url: ${YTDLP_POT_BASE_URL:}
 
 
