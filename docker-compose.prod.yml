@@ -27,22 +27,24 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       YTDLP_POT_BASE_URL: http://bgutil-provider:4416
       YTDLP_COOKIES_FILE: /app/cookies.txt
+      YTDLP_BROWSER_PROFILE_DIR: /data/browser-profile
       YTDLP_HEALTHCHECK_ALERT_EMAIL: ${YTDLP_HEALTHCHECK_ALERT_EMAIL:-${MAIL_FROM}}
     ports:
       - "8080:8080"
     volumes:
-      # Real Google session cookies (Netscape cookies.txt format) so yt-dlp passes YouTube's
-      # bot check — not committed to git, lives only on the host. YtDlpHealthCheckService
-      # emails an alert when this goes stale; re-export from a browser and overwrite in place
-      # (no restart needed, the path is read fresh on every yt-dlp call).
-      # Deliberately :ro — letting yt-dlp write rotated cookies back in place (tried once)
-      # silently degraded the file on every call until the session stopped authenticating at
-      # all. Read-only means yt-dlp throws on exit trying to save it back (harmless: by then
-      # the subtitle file it was asked for is already written — see YtDlpService for why the
-      # code doesn't check the exit code) but the cookie file itself never gets corrupted.
+      # Fallback static cookie export — kept as a secondary option (YtDlpService tries the
+      # live browser profile below first) but proved too fragile as the primary mechanism:
+      # Google rotates session cookies within hours, and a frozen snapshot can't follow that.
       - ./cookies.txt:/app/cookies.txt:ro
+      # A persistent, logged-in Chromium profile that the browser-session service keeps alive
+      # by periodically visiting youtube.com (see browser-session/keepalive.js) — its cookies
+      # rotate the same way a real browser's would, so yt-dlp reads them live via
+      # --cookies-from-browser instead of trusting a point-in-time export. Read-only: only
+      # browser-session should ever write to the profile.
+      - ./browser-profile:/data/browser-profile:ro
     depends_on:
       - bgutil-provider
+      - browser-session
 
   # PO-token generator for yt-dlp — works around YouTube's "Sign in to confirm you're not a
   # bot" block on this EC2 IP. No ports published to the host: only the backend container
@@ -51,6 +53,19 @@ services:
     image: brainicism/bgutil-ytdlp-pot-provider:latest
     container_name: deutschpfad-bgutil-provider
     restart: unless-stopped
+
+  # Keeps a logged-in Google/YouTube session "warm" in a persistent Chromium profile by
+  # visiting youtube.com every ~30 minutes (see browser-session/keepalive.js) — this is what
+  # lets the cookies self-refresh instead of going stale like the static cookies.txt export
+  # did within hours. The profile itself is seeded once, offline, from a real browser session
+  # (see README in browser-session/) — this service only keeps it alive, it never logs in.
+  browser-session:
+    build: ./browser-session
+    container_name: deutschpfad-browser-session
+    restart: unless-stopped
+    volumes:
+      - ./browser-profile:/data/profile
+    shm_size: "1gb"
 
   frontend:
     image: ghcr.io/doantientrung/deutschpfad-frontend:latest

@@ -1,0 +1,14 @@
+{
+  "name": "deutschpfad-browser-session",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Keeps a persistent, logged-in Chromium profile's YouTube/Google session cookies rotating naturally, so yt-dlp can read them live via --cookies-from-browser instead of a static exported file that goes stale within hours.",
+  "type": "commonjs",
+  "scripts": {
+    "keepalive": "node keepalive.js"
+  },
+  "dependencies": {
+    "playwright": "^1.62.0",
+    "playwright-core": "^1.48.0"
+  }
+}

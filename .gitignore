@@ -2,6 +2,11 @@
 .env
 cookies.txt
 
+# Chromium profiles for browser-session (chứa phiên đăng nhập Google thật, không commit)
+browser-profile/
+browser-session/local-profile/
+browser-session/node_modules/
+
 # DB dumps (chứa dữ liệu user thật -- email, password hash, refresh token)
 *.sql
 

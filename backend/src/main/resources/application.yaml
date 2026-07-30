@@ -63,10 +63,17 @@ app:
   ytdlp-pot-base-url: ${YTDLP_POT_BASE_URL:}
   # Path to a Netscape-format cookies.txt (exported from a real logged-in browser session) that
   # yt-dlp uses to look like an authenticated user instead of anonymous datacenter traffic — as
-  # of 2026, YouTube's bot check on EC2 IPs no longer yields to a PO token alone (see
-  # YtDlpHealthCheckService for the daily check that alerts by email when this cookie goes
-  # stale, since real Google sessions do expire and there's no safe way to auto-refresh them).
+  # of 2026, YouTube's bot check on EC2 IPs no longer yields to a PO token alone. Fallback only
+  # (see ytdlp-browser-profile-dir below, which is tried first): a frozen export like this goes
+  # stale within hours as Google rotates the session, since nothing here keeps it moving.
   ytdlp-cookies-file: ${YTDLP_COOKIES_FILE:}
+  # Directory of a persistent Chromium profile kept logged in by the browser-session service
+  # (docker-compose.prod.yml) — yt-dlp reads its cookies live via --cookies-from-browser. This
+  # is the primary mechanism: because a real (headless) browser is what's rotating them, they
+  # stay valid the way a person's browser cookies would, instead of drifting out of sync like a
+  # one-time file export. See YtDlpHealthCheckService for the daily check that alerts by email
+  # if neither this nor the cookies-file fallback above is working.
+  ytdlp-browser-profile-dir: ${YTDLP_BROWSER_PROFILE_DIR:}
   # Where the daily yt-dlp health check (YtDlpHealthCheckService) sends an alert email if the
   # cookies file above has gone stale. Defaults to mail-from so it's never silently unset.
   ytdlp-healthcheck-alert-email: ${YTDLP_HEALTHCHECK_ALERT_EMAIL:${MAIL_FROM:no-reply@deutschpfad.local}}

@@ -30,13 +30,16 @@ public class YtDlpService {
 
     private final String potBaseUrl;
     private final String cookiesFile;
+    private final String browserProfileDir;
 
     public YtDlpService(
         @Value("${app.ytdlp-pot-base-url:}") String potBaseUrl,
-        @Value("${app.ytdlp-cookies-file:}") String cookiesFile
+        @Value("${app.ytdlp-cookies-file:}") String cookiesFile,
+        @Value("${app.ytdlp-browser-profile-dir:}") String browserProfileDir
     ) {
         this.potBaseUrl = potBaseUrl;
         this.cookiesFile = cookiesFile;
+        this.browserProfileDir = browserProfileDir;
     }
 
     /**
@@ -52,15 +55,25 @@ public class YtDlpService {
 
     /**
      * As of 2026 a PO token alone no longer satisfies YouTube's bot check for datacenter IPs —
-     * real session cookies (exported from a logged-in browser) are required too. This file is
-     * not committed (see docker-compose.prod.yml volume mount); YtDlpHealthCheckService alerts
-     * by email when it goes stale, since there's no safe way to auto-refresh it unattended.
+     * real session cookies are required too. Two sources, tried in order:
+     *
+     * 1. A persistent Chromium profile kept logged in by the browser-session service (see
+     *    docker-compose.prod.yml), read live via --cookies-from-browser. Preferred: its cookies
+     *    rotate the same way a real browser's would, because that service actually is one.
+     * 2. A static cookies.txt export, as a fallback. Proved too fragile as the primary
+     *    mechanism on its own — Google rotates session cookies within hours of export, and a
+     *    frozen file can't follow that — but harmless to keep as a second attempt.
+     *
+     * YtDlpHealthCheckService alerts by email when neither works.
      */
-    private List<String> cookiesArgs() {
-        if (cookiesFile == null || cookiesFile.isBlank() || !Files.isReadable(Path.of(cookiesFile))) {
-            return List.of();
+    private List<String> authArgs() {
+        if (browserProfileDir != null && !browserProfileDir.isBlank() && Files.isDirectory(Path.of(browserProfileDir))) {
+            return List.of("--cookies-from-browser", "chromium:" + browserProfileDir);
         }
-        return List.of("--cookies", cookiesFile);
+        if (cookiesFile != null && !cookiesFile.isBlank() && Files.isReadable(Path.of(cookiesFile))) {
+            return List.of("--cookies", cookiesFile);
+        }
+        return List.of();
     }
 
     public List<TranscriptParser.SentenceData> fetchAutoTranscript(String videoId) {
@@ -85,7 +98,7 @@ public class YtDlpService {
                 "-o", outputTemplate
             ));
             command.addAll(potExtractorArgs());
-            command.addAll(cookiesArgs());
+            command.addAll(authArgs());
             command.add(url);
 
             ProcessBuilder pb = new ProcessBuilder(command);
@@ -126,7 +139,7 @@ public class YtDlpService {
                 "yt-dlp", "--skip-download", "--ignore-no-formats-error", "--print", "duration"
             ));
             command.addAll(potExtractorArgs());
-            command.addAll(cookiesArgs());
+            command.addAll(authArgs());
             command.add(url);
 
             ProcessBuilder pb = new ProcessBuilder(command);
