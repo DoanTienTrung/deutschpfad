@@ -26,8 +26,16 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       JWT_SECRET: ${JWT_SECRET}
       YTDLP_POT_BASE_URL: http://bgutil-provider:4416
+      YTDLP_COOKIES_FILE: /app/cookies.txt
+      YTDLP_HEALTHCHECK_ALERT_EMAIL: ${YTDLP_HEALTHCHECK_ALERT_EMAIL:-${MAIL_FROM}}
     ports:
       - "8080:8080"
+    volumes:
+      # Real Google session cookies (Netscape cookies.txt format) so yt-dlp passes YouTube's
+      # bot check — not committed to git, lives only on the host. YtDlpHealthCheckService
+      # emails an alert when this goes stale; re-export from a browser and overwrite in place
+      # (no restart needed, the path is read fresh on every yt-dlp call).
+      - ./cookies.txt:/app/cookies.txt:ro
     depends_on:
       - bgutil-provider
 

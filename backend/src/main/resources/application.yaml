@@ -61,5 +61,14 @@ app:
   # around YouTube's "Sign in to confirm you're not a bot" block on datacenter IPs (e.g. EC2).
   # Empty on local dev — home IPs aren't flagged, so yt-dlp works without it.
   ytdlp-pot-base-url: ${YTDLP_POT_BASE_URL:}
+  # Path to a Netscape-format cookies.txt (exported from a real logged-in browser session) that
+  # yt-dlp uses to look like an authenticated user instead of anonymous datacenter traffic — as
+  # of 2026, YouTube's bot check on EC2 IPs no longer yields to a PO token alone (see
+  # YtDlpHealthCheckService for the daily check that alerts by email when this cookie goes
+  # stale, since real Google sessions do expire and there's no safe way to auto-refresh them).
+  ytdlp-cookies-file: ${YTDLP_COOKIES_FILE:}
+  # Where the daily yt-dlp health check (YtDlpHealthCheckService) sends an alert email if the
+  # cookies file above has gone stale. Defaults to mail-from so it's never silently unset.
+  ytdlp-healthcheck-alert-email: ${YTDLP_HEALTHCHECK_ALERT_EMAIL:${MAIL_FROM:no-reply@deutschpfad.local}}
 
 

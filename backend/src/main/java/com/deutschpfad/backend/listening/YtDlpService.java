@@ -29,9 +29,14 @@ public class YtDlpService {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
     private final String potBaseUrl;
+    private final String cookiesFile;
 
-    public YtDlpService(@Value("${app.ytdlp-pot-base-url:}") String potBaseUrl) {
+    public YtDlpService(
+        @Value("${app.ytdlp-pot-base-url:}") String potBaseUrl,
+        @Value("${app.ytdlp-cookies-file:}") String cookiesFile
+    ) {
         this.potBaseUrl = potBaseUrl;
+        this.cookiesFile = cookiesFile;
     }
 
     /**
@@ -43,6 +48,19 @@ public class YtDlpService {
     private List<String> potExtractorArgs() {
         if (potBaseUrl == null || potBaseUrl.isBlank()) return List.of();
         return List.of("--extractor-args", "youtubepot-bgutilhttp:base_url=" + potBaseUrl);
+    }
+
+    /**
+     * As of 2026 a PO token alone no longer satisfies YouTube's bot check for datacenter IPs —
+     * real session cookies (exported from a logged-in browser) are required too. This file is
+     * not committed (see docker-compose.prod.yml volume mount); YtDlpHealthCheckService alerts
+     * by email when it goes stale, since there's no safe way to auto-refresh it unattended.
+     */
+    private List<String> cookiesArgs() {
+        if (cookiesFile == null || cookiesFile.isBlank() || !Files.isReadable(Path.of(cookiesFile))) {
+            return List.of();
+        }
+        return List.of("--cookies", cookiesFile);
     }
 
     public List<TranscriptParser.SentenceData> fetchAutoTranscript(String videoId) {
@@ -61,6 +79,7 @@ public class YtDlpService {
                 "-o", outputTemplate
             ));
             command.addAll(potExtractorArgs());
+            command.addAll(cookiesArgs());
             command.add(url);
 
             ProcessBuilder pb = new ProcessBuilder(command);
@@ -99,6 +118,7 @@ public class YtDlpService {
             String url = "https://www.youtube.com/watch?v=" + videoId;
             List<String> command = new ArrayList<>(List.of("yt-dlp", "--skip-download", "--print", "duration"));
             command.addAll(potExtractorArgs());
+            command.addAll(cookiesArgs());
             command.add(url);
 
             ProcessBuilder pb = new ProcessBuilder(command);
