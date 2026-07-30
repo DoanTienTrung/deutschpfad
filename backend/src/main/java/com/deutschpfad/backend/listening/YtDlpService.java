@@ -76,6 +76,21 @@ public class YtDlpService {
         return List.of();
     }
 
+    /**
+     * By default yt-dlp presents itself as an Android app client, a different identity than the
+     * real browser that actually holds the session cookies passed in authArgs() above. Google
+     * appears to treat that mismatch — the same cookies suddenly used by what looks like a
+     * different device — as a compromised-session signal and invalidates them within minutes,
+     * even though the real browser keeping the session alive is left untouched. Matching yt-dlp's
+     * presented client to "web" keeps the identity consistent with the cookie source. Only
+     * applied when real auth is actually in play — no reason to change local-dev behavior, which
+     * already works fine with the default client on an unflagged home IP.
+     */
+    private List<String> playerClientArgs() {
+        if (authArgs().isEmpty()) return List.of();
+        return List.of("--extractor-args", "youtube:player_client=web");
+    }
+
     public List<TranscriptParser.SentenceData> fetchAutoTranscript(String videoId) {
         Path tempDir = null;
         try {
@@ -98,6 +113,7 @@ public class YtDlpService {
                 "-o", outputTemplate
             ));
             command.addAll(potExtractorArgs());
+            command.addAll(playerClientArgs());
             command.addAll(authArgs());
             command.add(url);
 
@@ -139,6 +155,7 @@ public class YtDlpService {
                 "yt-dlp", "--skip-download", "--ignore-no-formats-error", "--print", "duration"
             ));
             command.addAll(potExtractorArgs());
+            command.addAll(playerClientArgs());
             command.addAll(authArgs());
             command.add(url);
 
