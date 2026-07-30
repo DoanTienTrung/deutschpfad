@@ -70,5 +70,8 @@ jobs:
             git pull
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d
+            # --build: browser-session has no registry image (built from its Dockerfile locally,
+            # see docker-compose.prod.yml) -- without this flag, `up -d` reuses whatever image was
+            # built the first time and silently ignores later Dockerfile/package.json changes.
+            docker compose -f docker-compose.prod.yml up -d --build
             docker image prune -f

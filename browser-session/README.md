@@ -9,7 +9,7 @@ within hours because nothing keeps it in sync with Google's own cookie rotation.
 1. **On your own machine** (not the server):
    ```
    cd browser-session
-   npm install playwright
+   npm install
    node local-login.js
    ```
    This opens your real installed Chrome (Google blocks Playwright's own bundled Chromium

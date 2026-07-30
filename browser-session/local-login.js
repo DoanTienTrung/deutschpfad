@@ -7,8 +7,8 @@
 //
 // Usage:
 //   cd browser-session
-//   npm install playwright   (one-off local install — the server uses playwright-core instead,
-//                              see package.json, so this does not affect what gets deployed)
+//   npm install               (installs playwright, a devDependency here — the server image
+//                               only installs playwright-core, see package.json/Dockerfile)
 //   node local-login.js
 //
 // Uses your real installed Chrome by default (Google blocks Playwright's own bundled Chromium

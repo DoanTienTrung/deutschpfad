@@ -8,7 +8,9 @@
     "keepalive": "node keepalive.js"
   },
   "dependencies": {
-    "playwright": "^1.62.0",
-    "playwright-core": "^1.48.0"
+    "playwright-core": "1.48.0"
+  },
+  "devDependencies": {
+    "playwright": "1.48.0"
   }
 }
