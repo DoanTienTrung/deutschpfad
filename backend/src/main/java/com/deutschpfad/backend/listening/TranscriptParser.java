@@ -16,7 +16,9 @@ public final class TranscriptParser {
 
     public record SentenceData(String text, int startSeconds, int endSeconds) {}
 
-    private record RawEntry(String text, int startSeconds) {}
+    // endSeconds is the cue's own end timestamp — present for VTT (every cue has one), absent
+    // for a pasted transcript (only a start-time prefix per line, see parsePasted).
+    private record RawEntry(String text, int startSeconds, Integer endSeconds) {}
 
     private static final Pattern VTT_TIME_LINE =
         Pattern.compile("(\\d{2}:\\d{2}:\\d{2}[.,]\\d{3})\\s*-->\\s*(\\d{2}:\\d{2}:\\d{2}[.,]\\d{3})");
@@ -41,6 +43,7 @@ public final class TranscriptParser {
             Matcher m = VTT_TIME_LINE.matcher(lines[i]);
             if (m.find()) {
                 int start = toSeconds(m.group(1));
+                int end = toSeconds(m.group(2));
                 StringBuilder text = new StringBuilder();
                 i++;
                 while (i < lines.length && !lines[i].isBlank() && !VTT_TIME_LINE.matcher(lines[i]).find()) {
@@ -48,7 +51,7 @@ public final class TranscriptParser {
                     text.append(stripVttTags(lines[i].trim()));
                     i++;
                 }
-                if (!text.isEmpty()) entries.add(new RawEntry(text.toString(), start));
+                if (!text.isEmpty()) entries.add(new RawEntry(text.toString(), start, end));
             } else {
                 i++;
             }
@@ -74,7 +77,7 @@ public final class TranscriptParser {
                     flushPending(entries, pendingStart, pendingText);
                     pendingStart = null;
                     pendingText.setLength(0);
-                    entries.add(new RawEntry(rest, toSeconds(m.group(1))));
+                    entries.add(new RawEntry(rest, toSeconds(m.group(1)), null));
                 } else {
                     // pure timestamp line — text follows on next line(s)
                     flushPending(entries, pendingStart, pendingText);
@@ -92,7 +95,7 @@ public final class TranscriptParser {
 
     private static void flushPending(List<RawEntry> entries, Integer start, StringBuilder text) {
         if (start != null && !text.isEmpty()) {
-            entries.add(new RawEntry(text.toString(), start));
+            entries.add(new RawEntry(text.toString(), start, null));
         }
     }
 
@@ -100,7 +103,19 @@ public final class TranscriptParser {
         List<SentenceData> result = new ArrayList<>();
         for (int i = 0; i < raw.size(); i++) {
             RawEntry current = raw.get(i);
-            int end = i + 1 < raw.size() ? raw.get(i + 1).startSeconds() : current.startSeconds() + 5;
+            Integer nextStart = i + 1 < raw.size() ? raw.get(i + 1).startSeconds() : null;
+            int end;
+            if (current.endSeconds() != null) {
+                // VTT gives every cue its own end time — trust it over guessing from the next
+                // cue's start, which used to stretch a sentence across any silence/pause before
+                // the next one begins (reported bug: a sentence's audio "bled" into the next
+                // sentence's opening word because of exactly this). Still capped at nextStart
+                // so a cue can never run past where the next one actually starts.
+                end = nextStart != null ? Math.min(current.endSeconds(), nextStart) : current.endSeconds();
+            } else {
+                // Pasted transcript: no end timestamp per line, only next-start is available.
+                end = nextStart != null ? nextStart : current.startSeconds() + 5;
+            }
             if (end <= current.startSeconds()) end = current.startSeconds() + 1;
             result.add(new SentenceData(current.text(), current.startSeconds(), end));
         }
