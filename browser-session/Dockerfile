@@ -9,7 +9,7 @@ COPY package.json ./
 # launchPersistentContext() fails at runtime looking for a browser build that isn't there. Bump
 # both together.
 RUN npm install --omit=dev
-COPY keepalive.js ./
+COPY keepalive.js import-cookies.js ./
 
 # PROFILE_DIR is a bind mount from the host (see docker-compose.prod.yml) so the logged-in
 # session survives container rebuilds/restarts — it is not baked into the image.

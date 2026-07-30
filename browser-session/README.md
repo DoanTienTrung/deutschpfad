@@ -6,33 +6,36 @@ within hours because nothing keeps it in sync with Google's own cookie rotation.
 
 ## One-time setup (do this once, not on every deploy)
 
-1. **On your own machine** (not the server):
-   ```
-   cd browser-session
-   npm install
-   node local-login.js
-   ```
-   This opens your real installed Chrome (Google blocks Playwright's own bundled Chromium
-   during login — it detects the automation flags and refuses to sign in). If Chrome isn't
-   installed, use Edge instead (preinstalled on Windows):
-   `BROWSER_CHANNEL=msedge node local-login.js` (PowerShell:
-   `$env:BROWSER_CHANNEL="msedge"; node local-login.js`).
+A profile can only be *created* on the same OS it will be *used* on — a cookie's value is
+encrypted with a key tied to the OS/account that created it (Windows DPAPI on Windows, something
+else on Linux), so a profile logged into on your Windows machine and copied to the Linux server
+can't be decrypted there; the real session cookies silently vanish. So the login has to happen on
+Linux from the start — done here by seeding an empty Linux profile with a cookie export instead
+of copying a whole profile folder over.
 
-   Log into your Google account normally (solve any CAPTCHA/2FA yourself), then just close
-   the window.
+1. **Export a fresh `cookies.txt`** the same way as before (browser extension, e.g. "Get
+   cookies.txt LOCALLY", exporting `youtube.com` + `google.com` while logged in). Send Claude the
+   local file path — it gets uploaded to the server, used once, and can be deleted afterward.
 
-2. This creates a `browser-session/local-profile/` folder — send that whole folder up to the
-   server as `./browser-profile` (same level as `docker-compose.prod.yml`), e.g.:
+2. **On the server**, with the `browser-session` service stopped (only one process may hold a
+   given profile directory open at a time):
    ```
-   scp -r browser-session/local-profile ubuntu@<host>:~/deutschpfad/browser-profile
+   docker compose -f docker-compose.prod.yml stop browser-session
+   docker compose -f docker-compose.prod.yml run --rm \
+     -v /path/to/cookies.txt:/tmp/cookies.txt:ro \
+     browser-session node import-cookies.js /tmp/cookies.txt
+   docker compose -f docker-compose.prod.yml start browser-session
    ```
+   `import-cookies.js` injects the cookies through Chromium itself (via Playwright, not a raw
+   file copy), so they get persisted re-encrypted with this machine's own key — readable from now
+   on by both this container and by yt-dlp.
 
-3. Deploy as normal (`docker compose up -d`). The `browser-session` service picks up that
-   profile and starts visiting youtube.com every ~30 minutes to keep the session's cookies
-   rotating; the backend reads cookies from the same profile directory (read-only).
+3. From here, `browser-session`'s keepalive loop (visits youtube.com every ~30 minutes) is what
+   keeps the session's cookies rotating going forward, the same way a person's own browser would.
 
 ## If it ever needs to be redone
 
 Google may eventually flag the profile again regardless (there's no permanent guarantee here —
-see YtDlpHealthCheckService, which emails an alert the day this stops working). If that
-happens, repeat the steps above with a fresh `local-login.js` run.
+see `YtDlpHealthCheckService`, which emails an alert the day this stops working). If that
+happens, delete `./browser-profile` on the server and repeat the steps above with a fresh
+`cookies.txt` export.
