@@ -158,7 +158,8 @@ export default function AdminReadingPage() {
       resetForm()
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     } finally {
       setSaving(false)
     }
@@ -172,7 +173,8 @@ export default function AdminReadingPage() {
       setContent(result.content)
       if (!topic) setTopic(draftTopic)
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Không soạn được bài đọc, thử lại sau')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Không soạn được bài đọc, thử lại sau')
     } finally {
       setDrafting(false)
     }
@@ -184,7 +186,8 @@ export default function AdminReadingPage() {
       await deleteReadingPassage(id)
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     }
   }
 

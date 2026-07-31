@@ -56,7 +56,8 @@ export default function UserListeningHubPage() {
 
       navigate(`/app/listening/mine/${result.id}`)
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     } finally {
       setSaving(false)
     }
@@ -68,7 +69,8 @@ export default function UserListeningHubPage() {
       await deleteMyListeningItem(id)
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     }
   }
 

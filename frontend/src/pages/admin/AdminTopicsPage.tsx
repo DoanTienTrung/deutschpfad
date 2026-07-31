@@ -24,7 +24,8 @@ export default function AdminTopicsPage() {
       setName('')
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     }
   }
 
@@ -34,7 +35,8 @@ export default function AdminTopicsPage() {
       await deleteTopic(id)
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     }
   }
 

@@ -51,18 +51,37 @@ public class GroqAiService {
         this.geminiAiService = geminiAiService;
     }
 
+    // A single chat completion covering the whole transcript works fine for a normal-length
+    // exercise, but a long compilation video (a "ganzer Film" cut, hundreds+ of sentences) blows
+    // past the model's practical output length and callChat's 30s timeout in one shot -- the call
+    // fails outright and every sentence silently ends up with no translation at all. Chunking
+    // keeps each request small enough to reliably complete regardless of transcript length.
+    private static final int ANNOTATE_BATCH_SIZE = 40;
+
     /**
      * Groq first; if the key is missing or the call fails (including the free-tier daily token
      * quota, which this project has hit repeatedly), fall back to Gemini so annotation can keep
      * working without a manual retry loop.
      */
     public List<SentenceAnnotation> annotateSentences(List<String> germanSentences) {
+        if (germanSentences.isEmpty()) {
+            return List.of();
+        }
+        if (germanSentences.size() <= ANNOTATE_BATCH_SIZE) {
+            return annotateSentencesBatch(germanSentences);
+        }
+
+        List<SentenceAnnotation> result = new ArrayList<>(germanSentences.size());
+        for (int start = 0; start < germanSentences.size(); start += ANNOTATE_BATCH_SIZE) {
+            List<String> chunk = germanSentences.subList(start, Math.min(start + ANNOTATE_BATCH_SIZE, germanSentences.size()));
+            result.addAll(annotateSentencesBatch(chunk));
+        }
+        return result;
+    }
+
+    private List<SentenceAnnotation> annotateSentencesBatch(List<String> germanSentences) {
         List<SentenceAnnotation> blank = new ArrayList<>();
         germanSentences.forEach(s -> blank.add(SentenceAnnotation.empty()));
-
-        if (germanSentences.isEmpty()) {
-            return blank;
-        }
 
         if (apiKey != null && !apiKey.isBlank()) {
             try {

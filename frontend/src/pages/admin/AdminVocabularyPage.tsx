@@ -80,7 +80,8 @@ export default function AdminVocabularyPage() {
       cancelEdit()
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     }
   }
 
@@ -90,7 +91,8 @@ export default function AdminVocabularyPage() {
       await deleteVocabularyItem(id)
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? String((err.data as { message?: string })?.message) : 'Có lỗi xảy ra')
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
     }
   }
 
