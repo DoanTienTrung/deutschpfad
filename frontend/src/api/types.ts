@@ -13,7 +13,7 @@ export type Topic = {
   name: string
 }
 
-export type VocabularySource = 'FREQUENCY' | 'GOETHE'
+export type VocabularySource = 'FREQUENCY' | 'GOETHE' | 'TEXTBOOK'
 
 export type Lesson = {
   id: number

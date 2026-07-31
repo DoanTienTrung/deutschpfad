@@ -8,10 +8,10 @@ import { ListCardSkeleton } from '../components/ui/Skeleton'
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const GOETHE_LEVELS = ['A1', 'A2', 'B1']
 
-type Mode = 'level' | 'topic' | 'goethe'
+type Mode = 'level' | 'topic' | 'goethe' | 'textbook'
 
 function isMode(value: string | null): value is Mode {
-  return value === 'level' || value === 'topic' || value === 'goethe'
+  return value === 'level' || value === 'topic' || value === 'goethe' || value === 'textbook'
 }
 
 export default function VocabularyHubPage() {
@@ -43,6 +43,7 @@ export default function VocabularyHubPage() {
     if (mode === 'level') next.level = level
     if (mode === 'goethe') next.goetheLevel = goetheLevel
     if (mode === 'topic' && topicId !== null) next.topicId = String(topicId)
+    // 'textbook' has no extra selector (only one level exists so far) -- nothing to sync
     setSearchParams(next, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync URL when selection actually changes
   }, [mode, level, goetheLevel, topicId])
@@ -56,6 +57,10 @@ export default function VocabularyHubPage() {
         .finally(() => setLoading(false))
     } else if (mode === 'goethe') {
       listLessonsByLevel(goetheLevel, 'GOETHE')
+        .then(setLessons)
+        .finally(() => setLoading(false))
+    } else if (mode === 'textbook') {
+      listLessonsByLevel('A1', 'TEXTBOOK')
         .then(setLessons)
         .finally(() => setLoading(false))
     } else if (topicId !== null) {
@@ -107,6 +112,14 @@ export default function VocabularyHubPage() {
           }`}
         >
           Ôn thi Goethe
+        </button>
+        <button
+          onClick={() => setMode('textbook')}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            mode === 'textbook' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
+          }`}
+        >
+          Bộ từ của Giang
         </button>
       </div>
 
