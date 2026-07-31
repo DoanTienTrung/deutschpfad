@@ -108,7 +108,10 @@ public class YtDlpService {
                 // wanted the video/audio format in the first place.
                 "--ignore-no-formats-error",
                 "--write-auto-sub", "--write-sub",
-                "--sub-lang", "de",
+                // Some channels tag their German track "de-DE" instead of plain "de" (yt-dlp
+                // matches language codes exactly, not by prefix) -- requesting both catches
+                // either case.
+                "--sub-lang", "de,de-DE",
                 "--sub-format", "vtt",
                 "-o", outputTemplate
             ));

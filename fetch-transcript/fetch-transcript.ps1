@@ -36,7 +36,9 @@ New-Item -ItemType Directory -Path $tempDir | Out-Null
 
 try {
     $outputTemplate = Join-Path $tempDir "sub.%(ext)s"
-    & yt-dlp --write-auto-sub --write-sub --sub-lang de --sub-format vtt --skip-download -o $outputTemplate "https://www.youtube.com/watch?v=$videoId"
+    # Some channels tag their German track "de-DE" instead of plain "de" (yt-dlp matches
+    # language codes exactly, not by prefix) -- requesting both catches either case.
+    & yt-dlp --write-auto-sub --write-sub --sub-lang "de,de-DE" --sub-format vtt --skip-download -o $outputTemplate "https://www.youtube.com/watch?v=$videoId"
 
     $vttFile = Get-ChildItem -Path $tempDir -Filter '*.vtt' | Select-Object -First 1
     if (-not $vttFile) {
