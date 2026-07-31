@@ -64,6 +64,6 @@ public class VocabularyItem {
     }
 
     public enum Source {
-        FREQUENCY, GOETHE
+        FREQUENCY, GOETHE, TEXTBOOK
     }
 }
