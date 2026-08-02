@@ -26,10 +26,6 @@ import ListeningYoutubePage from './pages/ListeningYoutubePage'
 import ListeningExamPage from './pages/ListeningExamPage'
 import ListeningPracticePage from './pages/ListeningPracticePage'
 import AdminListeningPage from './pages/admin/AdminListeningPage'
-import UserListeningHubPage from './pages/UserListeningHubPage'
-import UserListeningPracticePage from './pages/UserListeningPracticePage'
-import SpeakingHubPage from './pages/SpeakingHubPage'
-import SpeakingPracticePage from './pages/SpeakingPracticePage'
 import AdminSpeakingPage from './pages/admin/AdminSpeakingPage'
 import ReadingHubPage from './pages/ReadingHubPage'
 import ReadingExamPage from './pages/ReadingExamPage'
@@ -37,6 +33,7 @@ import ReadingArticlesPage from './pages/ReadingArticlesPage'
 import ReadingPracticePage from './pages/ReadingPracticePage'
 import UserReadingHubPage from './pages/UserReadingHubPage'
 import AdminReadingPage from './pages/admin/AdminReadingPage'
+import ComingSoonPage from './pages/ComingSoonPage'
 
 
 function App() {
@@ -70,11 +67,13 @@ function App() {
             <Route path="listening" element={<ListeningHubPage />} />
             <Route path="listening/youtube" element={<ListeningYoutubePage />} />
             <Route path="listening/exam" element={<ListeningExamPage />} />
-            <Route path="listening/mine" element={<UserListeningHubPage />} />
-            <Route path="listening/mine/:itemId" element={<UserListeningPracticePage />} />
+            {/* Nói + Video của tôi chưa hoàn thiện -- chặn tạm bằng ComingSoonPage, đổi lại
+                <UserListeningHubPage />/<SpeakingHubPage />... khi xong. */}
+            <Route path="listening/mine" element={<ComingSoonPage title="Video của tôi" icon="🎬" />} />
+            <Route path="listening/mine/:itemId" element={<ComingSoonPage title="Video của tôi" icon="🎬" />} />
             <Route path="listening/:exerciseId" element={<ListeningPracticePage />} />
-            <Route path="speaking" element={<SpeakingHubPage />} />
-            <Route path="speaking/:promptId" element={<SpeakingPracticePage />} />
+            <Route path="speaking" element={<ComingSoonPage title="Luyện nói" icon="🎤" />} />
+            <Route path="speaking/:promptId" element={<ComingSoonPage title="Luyện nói" icon="🎤" />} />
             <Route path="reading" element={<ReadingHubPage />} />
             <Route path="reading/exam" element={<ReadingExamPage />} />
             <Route path="reading/articles" element={<ReadingArticlesPage />} />
