@@ -6,6 +6,13 @@ import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 import Field from '../components/ui/Field'
 
+// Same list the backend AI prompt uses (GroqAiService.buildVocabLookupPrompt) -- picking one here
+// before hitting "Tự động điền AI" pins the word type so the AI can't mis-guess it (eg. turning
+// an adjective into a nominalized noun with a der/die/das it shouldn't have).
+const WORD_TYPES = [
+  'Nomen', 'Verb', 'Adjektiv', 'Adverb', 'Präposition', 'Konjunktion', 'Pronomen', 'Zahl', 'Interjektion',
+]
+
 const EMPTY_FORM: DeckItemInput = {
   germanWord: '',
   vietnameseMeaning: '',
@@ -39,7 +46,7 @@ export default function DeckDetailPage() {
     setLookupError(null)
     setLookupLoading(true)
     try {
-      const result = await lookupVocabWord(form.germanWord.trim())
+      const result = await lookupVocabWord(form.germanWord.trim(), form.wordType)
       setForm({
         germanWord: result.germanWord,
         vietnameseMeaning: result.vietnameseMeaning,
@@ -129,6 +136,22 @@ export default function DeckDetailPage() {
               placeholder="Nhập hoặc dán từ tiếng Đức"
             />
           </div>
+          <div className="sm:w-40">
+            <label htmlFor="deck-item-word-type" className="mb-1 block text-sm font-medium text-ink">
+              Loại từ
+            </label>
+            <select
+              id="deck-item-word-type"
+              value={form.wordType}
+              onChange={(e) => setForm({ ...form, wordType: e.target.value })}
+              className="w-full rounded-sm border border-hairline bg-canvas px-3.5 py-2.5 text-ink transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/20"
+            >
+              <option value="">Để AI tự đoán</option>
+              {WORD_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
           <button
             type="button"
             onClick={handleLookup}
@@ -138,6 +161,9 @@ export default function DeckDetailPage() {
             {lookupLoading ? 'Đang điền...' : '✨ Tự động điền AI'}
           </button>
         </div>
+        <p className="text-xs text-muted">
+          Chọn loại từ trước khi bấm "Tự động điền AI" để AI không đoán nhầm (vd. tính từ bị biến thành danh từ).
+        </p>
 
         {lookupError && <p className="text-sm text-danger">{lookupError}</p>}
 
@@ -153,12 +179,6 @@ export default function DeckDetailPage() {
             label="Nghĩa tiếng Anh (tuỳ chọn)"
             value={form.englishMeaning}
             onChange={(e) => setForm({ ...form, englishMeaning: e.target.value })}
-          />
-          <Field
-            id="deck-item-word-type"
-            label="Loại từ (tuỳ chọn)"
-            value={form.wordType}
-            onChange={(e) => setForm({ ...form, wordType: e.target.value })}
           />
           <Field
             id="deck-item-phonetic"

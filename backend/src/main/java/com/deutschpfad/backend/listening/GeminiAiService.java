@@ -107,12 +107,12 @@ public class GeminiAiService {
      * exhausted. Reuses Groq's exact prompt/parsing (same "8 fields separated by |||" format) so
      * the two providers stay interchangeable from the caller's perspective.
      */
-    public VocabLookupResult lookupNewWord(String germanWord) {
+    public VocabLookupResult lookupNewWord(String germanWord, String wordTypeHint) {
         if (germanWord == null || germanWord.isBlank()) return null;
 
         if (apiKey != null && !apiKey.isBlank()) {
             try {
-                String content = callGenerateContent(GroqAiService.buildVocabLookupPrompt(germanWord));
+                String content = callGenerateContent(GroqAiService.buildVocabLookupPrompt(germanWord, wordTypeHint));
                 if (content != null) {
                     VocabLookupResult result = GroqAiService.parseVocabLookupLine(content);
                     if (result != null) return result;
@@ -123,7 +123,7 @@ public class GeminiAiService {
         }
 
         log.warn("Falling back to OpenRouter for vocab lookup ({})", germanWord);
-        return openRouterAiService.lookupNewWord(germanWord);
+        return openRouterAiService.lookupNewWord(germanWord, wordTypeHint);
     }
 
     /** Fallback path for {@link GroqAiService#generateReadingQuestions}, used when Groq's daily quota is exhausted. */

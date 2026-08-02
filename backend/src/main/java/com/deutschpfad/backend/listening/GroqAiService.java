@@ -188,14 +188,16 @@ public class GroqAiService {
      * generates the full set of vocab fields from scratch: word type, VI/EN meaning, IPA,
      * an example sentence, and synonyms/antonyms (left blank rather than invented if none fit).
      * Also normalizes the word itself (e.g. adds the correct article for a noun typed without
-     * one). Returns null if AI lookup is unavailable or the response couldn't be parsed.
+     * one). {@code wordTypeHint} is the type the user already picked in the form (or null to let
+     * the AI determine it) -- passing it prevents the AI from mis-guessing and mangling the word
+     * (eg. nominalizing an adjective). Returns null if AI lookup is unavailable or unparseable.
      */
-    public VocabLookupResult lookupNewWord(String germanWord) {
+    public VocabLookupResult lookupNewWord(String germanWord, String wordTypeHint) {
         if (germanWord == null || germanWord.isBlank()) return null;
 
         if (apiKey != null && !apiKey.isBlank()) {
             try {
-                String content = callChat(buildVocabLookupPrompt(germanWord));
+                String content = callChat(buildVocabLookupPrompt(germanWord, wordTypeHint));
                 if (content != null) {
                     VocabLookupResult result = parseVocabLookupLine(content);
                     if (result != null) return result;
@@ -206,19 +208,30 @@ public class GroqAiService {
         }
 
         log.warn("Falling back to Gemini for vocab lookup ({})", germanWord);
-        return geminiAiService.lookupNewWord(germanWord);
+        return geminiAiService.lookupNewWord(germanWord, wordTypeHint);
     }
 
-    static String buildVocabLookupPrompt(String germanWord) {
+    static String buildVocabLookupPrompt(String germanWord, String wordTypeHint) {
+        boolean hasHint = wordTypeHint != null && !wordTypeHint.isBlank();
+        // The AI otherwise sometimes over-applies the "nouns get an article" rule to non-nouns
+        // (eg. turning the adjective "freundlich" into the nominalized "der Freundliche") -- when
+        // the caller already knows the type, pin it down instead of asking the AI to guess.
+        String hintLine = hasHint
+            ? "Từ loại của từ này ĐÃ được xác định trước là: " + wordTypeHint + ". Giữ NGUYÊN từ loại này, "
+                + "không tự đổi hay suy luận lại.\n"
+            : "";
         return "Bạn là chuyên gia tiếng Đức. Cho từ tiếng Đức (có thể người dùng gõ thiếu mạo từ hoặc sai "
             + "chính tả nhẹ): \"" + germanWord + "\"\n"
+            + hintLine
             + "Hãy cung cấp đầy đủ thông tin từ vựng cho từ này:\n"
-            + "1. Từ tiếng Đức chuẩn (nếu là danh từ, PHẢI thêm đúng mạo từ der/die/das ở đầu; sửa lỗi "
-            + "chính tả nếu có).\n"
-            + "2. Loại từ: Nomen/Verb/Adjektiv/Adverb/Präposition/Konjunktion/Pronomen/Zahl/Interjektion...\n"
+            + "1. Từ tiếng Đức chuẩn (chỉ thêm mạo từ der/die/das ở đầu NẾU từ loại là Nomen; các từ loại "
+            + "khác giữ nguyên dạng gốc, không thêm mạo từ, không danh từ hóa; sửa lỗi chính tả nếu có).\n"
+            + "2. Loại từ" + (hasHint ? " (xác nhận lại đúng là " + wordTypeHint + ")" : "")
+            + ": Nomen/Verb/Adjektiv/Adverb/Präposition/Konjunktion/Pronomen/Zahl/Interjektion...\n"
             + "3. Nghĩa tiếng Việt (ngắn gọn, tự nhiên).\n"
             + "4. Nghĩa tiếng Anh (ngắn gọn).\n"
-            + "5. Phiên âm IPA chuẩn (không có dấu / hay [ ] bao quanh).\n"
+            + "5. Phiên âm IPA chuẩn (không có dấu / hay [ ] bao quanh; PHẢI là ký hiệu IPA thật, KHÔNG "
+            + "được chép lại nguyên văn chữ viết của từ).\n"
             + "6. Một câu ví dụ tiếng Đức tự nhiên, đúng ngữ pháp, có dùng từ này.\n"
             + "7. Từ đồng nghĩa tiếng Đức (1-3 từ, cách nhau bởi dấu phẩy; để trống nếu không có từ nào "
             + "thực sự phù hợp, không bịa ra).\n"

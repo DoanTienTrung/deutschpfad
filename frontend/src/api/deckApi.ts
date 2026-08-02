@@ -45,10 +45,10 @@ export function addDeckItem(deckId: number, input: DeckItemInput) {
   })
 }
 
-export function lookupVocabWord(germanWord: string) {
+export function lookupVocabWord(germanWord: string, wordType?: string) {
   return apiFetch<VocabLookupResult>('/decks/lookup', {
     method: 'POST',
-    body: JSON.stringify({ germanWord }),
+    body: JSON.stringify({ germanWord, wordType: wordType || undefined }),
   })
 }
 

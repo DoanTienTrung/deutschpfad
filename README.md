@@ -8,6 +8,13 @@ Website học tiếng Đức và luyện thi chứng chỉ (Goethe/telc/TestDaF)
 - **Frontend**: React + TypeScript + Vite
 - **Hạ tầng**: Docker, Docker Compose (local) → AWS Free Tier (production, xem `docs/phase-8-aws-deployment.md`)
 
+## Nguồn dữ liệu
+
+- Bảng tra cứu giống danh từ tiếng Đức (`german_noun_genders`, dùng để tự sửa khi AI đoán nhầm
+  der/die/das) được biên soạn từ [WiktionaryDE](https://de.wiktionary.org) qua dự án
+  [gambolputty/german-nouns](https://github.com/gambolputty/german-nouns), giấy phép
+  [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
 ## Cấu trúc dự án
 
 ```

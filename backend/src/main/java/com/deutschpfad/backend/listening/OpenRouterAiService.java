@@ -85,10 +85,10 @@ public class OpenRouterAiService {
         }
     }
 
-    public VocabLookupResult lookupNewWord(String germanWord) {
+    public VocabLookupResult lookupNewWord(String germanWord, String wordTypeHint) {
         if (germanWord == null || germanWord.isBlank()) return null;
         try {
-            String content = callChat(GroqAiService.buildVocabLookupPrompt(germanWord));
+            String content = callChat(GroqAiService.buildVocabLookupPrompt(germanWord, wordTypeHint));
             if (content == null) return null;
             return GroqAiService.parseVocabLookupLine(content);
         } catch (Exception e) {

@@ -20,8 +20,14 @@ public class VocabLookupCache {
     private Long id;
 
     // Lowercased lookup key so "Haus" and "haus" share one cache entry.
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String word;
+
+    // Empty string when the caller let the AI guess the word type; otherwise the type the user
+    // picked before looking up, so a hinted lookup never returns a stale unhinted (or differently
+    // hinted) cache entry for the same word -- see V39 migration for the composite unique index.
+    @Column(name = "word_type_hint", nullable = false)
+    private String wordTypeHint = "";
 
     @Column(name = "german_word", nullable = false)
     private String germanWord;
@@ -55,9 +61,10 @@ public class VocabLookupCache {
         );
     }
 
-    public static VocabLookupCache from(String word, VocabLookupResult result) {
+    public static VocabLookupCache from(String word, String wordTypeHint, VocabLookupResult result) {
         VocabLookupCache entry = new VocabLookupCache();
         entry.setWord(word);
+        entry.setWordTypeHint(wordTypeHint);
         entry.setGermanWord(result.germanWord());
         entry.setWordType(result.wordType());
         entry.setVietnameseMeaning(result.vietnameseMeaning());

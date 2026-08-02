@@ -20,19 +20,22 @@ public class UserDeckController {
     private final UserRepository userRepository;
     private final GroqAiService aiService;
     private final VocabLookupCacheRepository lookupCacheRepository;
+    private final GermanNounGenderService genderService;
 
     public UserDeckController(
         UserDeckRepository deckRepository,
         UserDeckItemRepository itemRepository,
         UserRepository userRepository,
         GroqAiService aiService,
-        VocabLookupCacheRepository lookupCacheRepository
+        VocabLookupCacheRepository lookupCacheRepository,
+        GermanNounGenderService genderService
     ) {
         this.deckRepository = deckRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.aiService = aiService;
         this.lookupCacheRepository = lookupCacheRepository;
+        this.genderService = genderService;
     }
 
     @PostMapping("/lookup")
@@ -42,17 +45,19 @@ public class UserDeckController {
     ) {
         currentUser(authentication);
         String normalizedWord = request.germanWord().trim().toLowerCase();
+        String wordTypeHint = request.wordType() == null ? "" : request.wordType().trim();
 
-        var cached = lookupCacheRepository.findByWord(normalizedWord);
+        var cached = lookupCacheRepository.findByWordAndWordTypeHint(normalizedWord, wordTypeHint);
         if (cached.isPresent()) {
             return ResponseEntity.ok(cached.get().toResult());
         }
 
-        VocabLookupResult result = aiService.lookupNewWord(request.germanWord());
+        VocabLookupResult result = aiService.lookupNewWord(request.germanWord(), wordTypeHint.isEmpty() ? null : wordTypeHint);
         if (result == null) {
             return ResponseEntity.unprocessableEntity().build();
         }
-        lookupCacheRepository.save(VocabLookupCache.from(normalizedWord, result));
+        result = genderService.correctArticle(result);
+        lookupCacheRepository.save(VocabLookupCache.from(normalizedWord, wordTypeHint, result));
         return ResponseEntity.ok(result);
     }
 
