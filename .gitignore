@@ -9,6 +9,7 @@ browser-session/node_modules/
 
 # DB dumps (chứa dữ liệu user thật -- email, password hash, refresh token)
 *.sql
+!backend/src/main/resources/db/migration/*.sql
 
 # Let's Encrypt cert files + ACME challenge webroot (chỉ tồn tại trên server, không commit)
 certbot-etc/
