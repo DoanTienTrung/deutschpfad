@@ -57,6 +57,7 @@ app:
   gemini-api-key: ${GEMINI_API_KEY:}
   unsplash-api-key: ${UNSPLASH_API_KEY:}
   openrouter-api-key: ${OPENROUTER_API_KEY:}
+  cohere-api-key: ${COHERE_API_KEY:}
   # Base URL of the bgutil-ytdlp-pot-provider HTTP server (PO token generator) used to work
   # around YouTube's "Sign in to confirm you're not a bot" block on datacenter IPs (e.g. EC2).
   # Empty on local dev — home IPs aren't flagged, so yt-dlp works without it.
@@ -77,5 +78,11 @@ app:
   # Where the daily yt-dlp health check (YtDlpHealthCheckService) sends an alert email if the
   # cookies file above has gone stale. Defaults to mail-from so it's never silently unset.
   ytdlp-healthcheck-alert-email: ${YTDLP_HEALTHCHECK_ALERT_EMAIL:${MAIL_FROM:no-reply@deutschpfad.local}}
+  tutor:
+    onnx-model-path: ${TUTOR_ONNX_MODEL_PATH:models-scratch/model.onnx}
+    onnx-tokenizer-path: ${TUTOR_ONNX_TOKENIZER_PATH:models-scratch/tokenizer.json}
+    chunk-size: ${TUTOR_CHUNK_SIZE:800}
+    chunk-overlap: ${TUTOR_CHUNK_OVERLAP:100}
+
 
 

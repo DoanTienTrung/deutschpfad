@@ -82,9 +82,14 @@ Toàn bộ kế hoạch phát triển được chia theo phase, mỗi phase có 
 - [phase-6-exam-engine.md](./docs/phase-6-exam-engine.md) — Luyện thi chứng chỉ đầy đủ + chấm AI
 - [phase-7-community-personalization.md](./docs/phase-7-community-personalization.md) — Cộng đồng & lộ trình cá nhân hoá
 - [phase-8-aws-deployment.md](./docs/phase-8-aws-deployment.md) — Triển khai AWS
+- [phase-9-tutor-chatbot.md](./docs/phase-9-tutor-chatbot.md) — Chatbot gia sư (RAG)
 
 ## Ôn tập kiến thức
 
 [docs/kien-thuc-da-hoc.md](./docs/kien-thuc-da-hoc.md) — tổng hợp khái niệm/kỹ thuật/bẫy thực
 tế đã gặp qua từng phase (Docker, Spring Security, JWT, Testing...), cập nhật sau mỗi phase
 hoàn thành, dùng để ôn lại khi cần.
+
+[docs/phase-10-tutor-chatbot-kien-thuc.md](./docs/phase-10-tutor-chatbot-kien-thuc.md) — kiến
+thức riêng cho Phase 9 (Chatbot gia sư — RAG/AI), tách riêng vì nhiều khái niệm mới không liên
+quan các phase trước (ONNX, embedding, vector search...), cập nhật dần theo từng Đợt.
