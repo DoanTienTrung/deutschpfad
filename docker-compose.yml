@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     container_name: deutschpfad-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -47,6 +47,8 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       UNSPLASH_API_KEY: ${UNSPLASH_API_KEY}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      COHERE_API_KEY: ${COHERE_API_KEY}
+      SPRING_PROFILES_ACTIVE: local
       JWT_SECRET: ${JWT_SECRET}
 
     ports:

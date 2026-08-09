@@ -32,7 +32,7 @@ public class GroqAiService {
 
     private static final Logger log = LoggerFactory.getLogger(GroqAiService.class);
     private static final String ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String MODEL = "llama-3.3-70b-versatile";
+    private static final String MODEL = "openai/gpt-oss-120b";
     private static final Pattern NUMBERED_LINE = Pattern.compile("^\\s*(\\d+)[.)]\\s*(.+?)\\s*\\|\\|\\|\\s*(.+)$");
 
     private final String apiKey;
