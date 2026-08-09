@@ -28,6 +28,10 @@ import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metad
 public class TutorKnowledgeIngestionService {
 
     private static final int VOCAB_EMBED_BATCH_SIZE = 40;
+    // Cohere Trial key giới hạn 100 call/phút. Với ~9700 từ vựng hiện có (243 lô), chạy liên tục
+    // không nghỉ sẽ chạm trần ở khoảng lô thứ 100 và ném lỗi 429 giữa chừng. Giãn cách 700ms/lô
+    // giữ nhịp ~85 call/phút — chừa margin cho traffic thật (câu hỏi user khác cũng gọi Cohere).
+    private static final long VOCAB_EMBED_DELAY_MS = 700;
 
     private final EmbeddingModel documentEmbeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
@@ -96,12 +100,22 @@ public class TutorKnowledgeIngestionService {
         embeddingStore.removeAll(metadataKey("sourceType").isEqualTo("VOCAB"));
 
         List<VocabularyItem> items = vocabularyItemRepository.findAll();
+        List<List<VocabularyItem>> batches = partition(items, VOCAB_EMBED_BATCH_SIZE);
         int total = 0;
-        for (List<VocabularyItem> batch : partition(items, VOCAB_EMBED_BATCH_SIZE)) {
-            List<TextSegment> segments = batch.stream().map(this::toVocabSegment).toList();
+        for (int i = 0; i < batches.size(); i++) {
+            List<TextSegment> segments = batches.get(i).stream().map(this::toVocabSegment).toList();
             List<Embedding> embeddings = documentEmbeddingModel.embedAll(segments).content();
             embeddingStore.addAll(embeddings, segments);
             total += segments.size();
+
+            if (i < batches.size() - 1) {
+                try {
+                    Thread.sleep(VOCAB_EMBED_DELAY_MS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Đồng bộ từ vựng bị gián đoạn", e);
+                }
+            }
         }
         return total;
     }
