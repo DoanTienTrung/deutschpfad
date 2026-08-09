@@ -27,14 +27,7 @@ class SafeContentRetriever implements ContentRetriever {
     @Override
     public List<Content> retrieve(Query query) {
         try {
-            List<Content> results = delegate.retrieve(query);
-            // TODO(debug tạm): xoá khối log này sau khi chẩn đoán xong vấn đề retrieval trên prod.
-            log.info("RAG retrieve: câu hỏi='{}' -> {} kết quả", query.text(), results.size());
-            for (Content c : results) {
-                String text = c.textSegment().text();
-                log.info("  preview: {}", text.substring(0, Math.min(120, text.length())).replace("\n", " | "));
-            }
-            return results;
+            return delegate.retrieve(query);
         } catch (RuntimeException e) {
             log.warn("ContentRetriever lỗi, bỏ qua RAG context cho câu hỏi này: {}", e.getMessage());
             return List.of();
