@@ -21,7 +21,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Map<String, Supplier<Bucket>> limitedPaths = Map.of(
         "/api/auth/login", () -> newBucket(5, Duration.ofMinutes(1)),
         "/api/auth/register", () -> newBucket(5, Duration.ofMinutes(1)),
-        "/api/auth/forgot-password", () -> newBucket(3, Duration.ofMinutes(5))
+        "/api/auth/forgot-password", () -> newBucket(3, Duration.ofMinutes(5)),
+        "/api/tutor/ask", () -> newBucket(20, Duration.ofMinutes(5))
     );
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();

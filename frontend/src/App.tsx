@@ -34,6 +34,7 @@ import ReadingPracticePage from './pages/ReadingPracticePage'
 import UserReadingHubPage from './pages/UserReadingHubPage'
 import AdminReadingPage from './pages/admin/AdminReadingPage'
 import ComingSoonPage from './pages/ComingSoonPage'
+import AdminTutorKnowledgePage from './pages/admin/AdminTutorKnowledgePage'
 
 
 function App() {
@@ -79,6 +80,7 @@ function App() {
             <Route path="reading/articles" element={<ReadingArticlesPage />} />
             <Route path="reading/mine" element={<UserReadingHubPage />} />
             <Route path="reading/:passageId" element={<ReadingPracticePage />} />
+            <Route path="reading/:passageId" element={<ReadingPracticePage />} />
           </Route>
           <Route
             path="/admin"
@@ -94,6 +96,7 @@ function App() {
             <Route path="listening" element={<AdminListeningPage />} />
             <Route path="speaking" element={<AdminSpeakingPage />} />
             <Route path="reading" element={<AdminReadingPage />} />
+            <Route path="tutor-knowledge" element={<AdminTutorKnowledgePage />} />
           </Route>
 
         </Routes>

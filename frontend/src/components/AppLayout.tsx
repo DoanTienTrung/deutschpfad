@@ -5,6 +5,8 @@ import type { Streak } from '../api/types'
 import { StudyTimeProvider, useStudyTime } from '../context/StudyTimeContext'
 import { formatStudyTimeClock } from '../lib/studyTime'
 import { useAuth } from '../context/AuthContext'
+import TutorChatWidget from './TutorChatWidget'
+
 
 // Simple 18px stroke icons keep the sidebar scannable without pulling in an icon library.
 const NAV_ICONS: Record<string, React.ReactNode> = {
@@ -229,6 +231,7 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <TutorChatWidget />
     </div>
     </StudyTimeProvider>
   )

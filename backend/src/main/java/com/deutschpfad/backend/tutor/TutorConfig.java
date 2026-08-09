@@ -15,6 +15,15 @@ import dev.langchain4j.store.embedding.pgvector.MetadataStorageMode;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import javax.sql.DataSource;
 import java.util.List;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import dev.langchain4j.rag.content.retriever.ContentRetriever;
+import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
+
+
 
 @Configuration
 public class TutorConfig {
@@ -80,5 +89,81 @@ public class TutorConfig {
                         .build())
                 .build();
     }
+    // ===== 3 tầng ChatModel riêng cho tutor — không đụng GroqAiService/GeminiAiService/
+    // OpenRouterAiService cũ (3 service đó giữ nguyên, phục vụ tính năng khác) =====
+
+    @Bean("groqChatModel")
+    public ChatModel groqChatModel(
+            @Value("${app.groq-api-key:}") String groqApiKey,
+            @Value("${app.tutor.temperature}") Double temperature,
+            @Value("${app.tutor.max-output-tokens}") Integer maxOutputTokens) {
+        return OpenAiChatModel.builder()
+                .baseUrl("https://api.groq.com/openai/v1")
+                .apiKey(groqApiKey)
+                .modelName("openai/gpt-oss-120b")
+                .temperature(temperature)
+                .maxTokens(maxOutputTokens)
+                .build();
+    }
+
+
+    @Bean("geminiChatModel")
+    public ChatModel geminiChatModel(
+            @Value("${app.gemini-api-key:}") String geminiApiKey,
+            @Value("${app.tutor.temperature}") Double temperature,
+            @Value("${app.tutor.max-output-tokens}") Integer maxOutputTokens) {
+        return GoogleAiGeminiChatModel.builder()
+                .apiKey(geminiApiKey)
+                .modelName("gemini-2.5-flash-lite")
+                .temperature(temperature)
+                .maxOutputTokens(maxOutputTokens)
+                .build();
+    }
+
+
+    @Bean("openRouterChatModel")
+    public ChatModel openRouterChatModel(
+            @Value("${app.openrouter-api-key:}") String openRouterApiKey,
+            @Value("${app.tutor.temperature}") Double temperature,
+            @Value("${app.tutor.max-output-tokens}") Integer maxOutputTokens) {
+        return OpenAiChatModel.builder()
+                .baseUrl("https://openrouter.ai/api/v1")
+                .apiKey(openRouterApiKey)
+                .modelName("openrouter/free")
+                .temperature(temperature)
+                .maxTokens(maxOutputTokens)
+                .build();
+    }
+
+
+
+    // Ghép 3 tầng lại — thứ tự ưu tiên: Groq trước (rẻ/nhanh), Gemini dự phòng, OpenRouter cuối
+    // cùng. @Primary để chỗ nào tiêm ChatModel không chỉ định rõ tên sẽ tự lấy đúng bean này.
+    @Bean
+    @Primary
+    public ChatModel fallbackChatModel(
+            @Qualifier("groqChatModel") ChatModel groqChatModel,
+            @Qualifier("geminiChatModel") ChatModel geminiChatModel,
+            @Qualifier("openRouterChatModel") ChatModel openRouterChatModel) {
+        return new FallbackChatModel(List.of(groqChatModel, geminiChatModel, openRouterChatModel));
+    }
+
+    // Dùng đúng bean queryEmbeddingModel (không phải documentEmbeddingModel) — đang mô phỏng
+    // phía hỏi, không phải phía nạp dữ liệu. Xem lý do bất đối xứng ở khối bean Cohere phía trên.
+    @Bean
+    public ContentRetriever contentRetriever(
+            EmbeddingStore<TextSegment> embeddingStore,
+            @Qualifier("queryEmbeddingModel") EmbeddingModel queryEmbeddingModel,
+            @Value("${app.tutor.rag-max-results}") Integer maxResults,
+            @Value("${app.tutor.rag-min-score}") Double minScore) {
+        ContentRetriever delegate = EmbeddingStoreContentRetriever.builder()
+                .embeddingStore(embeddingStore)
+                .embeddingModel(queryEmbeddingModel)
+                .maxResults(maxResults)
+                .minScore(minScore)
+                .build();
+        return new SafeContentRetriever(delegate);
+    }
+
 
 }

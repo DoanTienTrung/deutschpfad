@@ -332,3 +332,27 @@ export type RecordingHistory = {
   createdAt: string
   turns: ConversationTurnDto[]
 }
+
+export type TutorKnowledgeBatch = {
+  batchId: string
+  title: string
+  level: string
+  topic: string
+  chunkCount: number
+  createdAt: string
+}
+
+export type TutorIngestResult = {
+  batchId: string
+  chunksCreated: number
+}
+
+export type TutorHistoryTurn = {
+  role: 'user' | 'assistant'
+  text: string
+}
+
+export type TutorAnswer = {
+  answer: string
+}
+
