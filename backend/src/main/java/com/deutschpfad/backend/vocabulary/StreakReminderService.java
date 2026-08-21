@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class StreakReminderService {
 
     private static final Logger log = LoggerFactory.getLogger(StreakReminderService.class);
+    private static final ZoneId REMINDER_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final UserRepository userRepository;
     private final LearningStreakRepository streakRepository;
@@ -33,9 +35,24 @@ public class StreakReminderService {
         this.emailService = emailService;
     }
 
-    @Scheduled(cron = "0 0 20 * * *")
-    public void sendDailyReminders() {
-        LocalDate today = LocalDate.now();
+    @Scheduled(cron = "0 0 7 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void sendMorningReminders() {
+        sendReminders(
+            "Dậy học từ vựng nào!",
+            "Bạn chưa ôn từ vựng hôm nay. Dành vài phút ôn flashcard đầu ngày để giữ streak học tập nhé!"
+        );
+    }
+
+    @Scheduled(cron = "0 0 22 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void sendEveningReminders() {
+        sendReminders(
+            "Học thêm chút từ vựng rồi ngủ nha",
+            "Bạn chưa ôn từ vựng hôm nay. Ôn vài từ trước khi ngủ để giữ streak học tập nhé!"
+        );
+    }
+
+    private void sendReminders(String subject, String message) {
+        LocalDate today = LocalDate.now(REMINDER_ZONE);
         Map<Long, LearningStreak> streaksByUserId = streakRepository.findAll().stream()
             .collect(Collectors.toMap(s -> s.getUser().getId(), Function.identity()));
 
@@ -50,14 +67,14 @@ public class StreakReminderService {
             if (!studiedToday) {
                 emailService.send(
                     user.getEmail(),
-                    "Đừng quên học tiếng Đức hôm nay!",
+                    subject,
                     "Chào " + user.getFullName() + ",\n\n"
-                        + "Bạn chưa ôn từ vựng hôm nay. Dành vài phút ôn flashcard để giữ streak học tập nhé!\n\n"
+                        + message + "\n\n"
                         + "— DeutschPfad"
                 );
                 sentCount++;
             }
         }
-        log.info("Streak reminder: đã gửi email nhắc học cho {}/{} user", sentCount, verifiedUsers.size());
+        log.info("Streak reminder ({}): đã gửi email nhắc học cho {}/{} user", subject, sentCount, verifiedUsers.size());
     }
 }
