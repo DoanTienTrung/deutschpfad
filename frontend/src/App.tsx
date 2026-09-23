@@ -35,6 +35,10 @@ import UserReadingHubPage from './pages/UserReadingHubPage'
 import AdminReadingPage from './pages/admin/AdminReadingPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import AdminTutorKnowledgePage from './pages/admin/AdminTutorKnowledgePage'
+import GrammarHubPage from './pages/GrammarHubPage'
+import GrammarTopicPage from './pages/GrammarTopicPage'
+import GrammarReferencePage from './pages/GrammarReferencePage'
+import AdminGrammarPage from './pages/admin/AdminGrammarPage'
 
 
 function App() {
@@ -75,6 +79,10 @@ function App() {
             <Route path="listening/:exerciseId" element={<ListeningPracticePage />} />
             <Route path="speaking" element={<ComingSoonPage title="Luyện nói" icon="🎤" />} />
             <Route path="speaking/:promptId" element={<ComingSoonPage title="Luyện nói" icon="🎤" />} />
+            <Route path="grammar" element={<GrammarHubPage />} />
+            {/* Đặt trước grammar/:slug — "reference" là slug cấm ở backend nên không đụng nhau. */}
+            <Route path="grammar/reference" element={<GrammarReferencePage />} />
+            <Route path="grammar/:slug" element={<GrammarTopicPage />} />
             <Route path="reading" element={<ReadingHubPage />} />
             <Route path="reading/exam" element={<ReadingExamPage />} />
             <Route path="reading/articles" element={<ReadingArticlesPage />} />
@@ -96,6 +104,7 @@ function App() {
             <Route path="listening" element={<AdminListeningPage />} />
             <Route path="speaking" element={<AdminSpeakingPage />} />
             <Route path="reading" element={<AdminReadingPage />} />
+            <Route path="grammar" element={<AdminGrammarPage />} />
             <Route path="tutor-knowledge" element={<AdminTutorKnowledgePage />} />
           </Route>
 

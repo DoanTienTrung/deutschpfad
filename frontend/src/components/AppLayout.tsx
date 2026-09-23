@@ -25,6 +25,11 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   reading: (
     <path d="M12 6.5C10.5 5 8.5 4 6 4H3v15h3c2.5 0 4.5 1 6 2.5 1.5-1.5 3.5-2.5 6-2.5h3V4h-3c-2.5 0-4.5 1-6 2.5Zm0 0V21" />
   ),
+  // Thước kẻ eke — ngữ pháp là bộ "quy tắc dựng câu", nên hình thước hợp hơn biểu tượng sách
+  // (đã dùng cho Từ vựng).
+  grammar: (
+    <path d="M4 20 20 4M6.5 20H4v-2.5L17.5 4H20v2.5L6.5 20ZM9 13l2 2m2-5 2 2" />
+  ),
   layers: (
     <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5m-18 4 9 5 9-5" />
   ),
@@ -58,6 +63,7 @@ const NAV_ITEMS = [
   { to: '/app/listening', label: 'Nghe', icon: 'headphones', end: false },
   { to: '/app/speaking', label: 'Nói', icon: 'mic', end: false },
   { to: '/app/reading', label: 'Đọc', icon: 'reading', end: false },
+  { to: '/app/grammar', label: 'Ngữ pháp', icon: 'grammar', end: false },
 ]
 
 // Header-only on desktop (there's room); folded into the mobile drawer nav since the header row

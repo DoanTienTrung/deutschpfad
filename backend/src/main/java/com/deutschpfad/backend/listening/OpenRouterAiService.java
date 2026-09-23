@@ -120,6 +120,36 @@ public class OpenRouterAiService {
         }
     }
 
+    /** Tầng cuối cho {@link GroqAiService#generateGrammarTheory} — hết đường lui, lỗi thì trả null. */
+    public String generateGrammarTheory(String titleDe, String titleVi, String level) {
+        if (titleDe == null || titleDe.isBlank()) return null;
+        try {
+            String response = callChat(
+                com.deutschpfad.backend.grammar.GrammarAiPrompts.theory(titleDe, titleVi, level)
+            );
+            return response == null || response.isBlank() ? null : response.strip();
+        } catch (Exception e) {
+            log.warn("OpenRouter grammar theory generation failed", e);
+            return null;
+        }
+    }
+
+    /** Tầng cuối cho {@link GroqAiService#generateGrammarExercises}. */
+    public List<com.deutschpfad.backend.grammar.GrammarExerciseDraft> generateGrammarExercises(
+        String titleDe, String level, String theoryMd, int count
+    ) {
+        if (titleDe == null || titleDe.isBlank()) return List.of();
+        try {
+            String response = callChat(
+                com.deutschpfad.backend.grammar.GrammarAiPrompts.exercises(titleDe, level, theoryMd, count)
+            );
+            return com.deutschpfad.backend.grammar.GrammarAiPrompts.parseExercises(response);
+        } catch (Exception e) {
+            log.warn("OpenRouter grammar exercise generation failed", e);
+            return List.of();
+        }
+    }
+
     private String callChat(String prompt) throws Exception {
         if (apiKey == null || apiKey.isBlank()) return null;
 

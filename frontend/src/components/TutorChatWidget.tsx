@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm'
 import { askTutor } from '../api/tutorApi'
 import type { TutorHistoryTurn } from '../api/types'
 import { ApiError } from '../api/client'
+import { onOpenTutor } from '../lib/tutorChat'
 import Alert from './ui/Alert'
 
 export default function TutorChatWidget() {
@@ -17,6 +18,17 @@ export default function TutorChatWidget() {
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading, open])
+
+  // Các trang khác (vd. bài ngữ pháp) mở widget kèm sẵn câu hỏi. Chỉ điền vào ô nhập chứ không
+  // tự gửi, để người học còn sửa lại câu hỏi cho đúng ý mình trước khi hỏi.
+  useEffect(
+    () =>
+      onOpenTutor((question) => {
+        setOpen(true)
+        setInput(question)
+      }),
+    []
+  )
 
   async function handleSend() {
     const question = input.trim()

@@ -356,3 +356,112 @@ export type TutorAnswer = {
   answer: string
 }
 
+
+export type GrammarExerciseType = 'FILL_BLANK' | 'MULTIPLE_CHOICE' | 'CONJUGATE' | 'WORD_ORDER'
+
+export type GrammarGeneratedBy = 'MANUAL' | 'DATA' | 'AI'
+
+export type GrammarStatus = 'LEARNING' | 'MASTERED'
+
+export type GrammarTopicSummary = {
+  id: number
+  slug: string
+  titleDe: string
+  titleVi: string
+  level: string
+  groupLabel: string | null
+  orderIndex: number
+  summaryVi: string | null
+  exerciseCount: number
+  hasTheory: boolean
+  // null = chua tung nop bai o chu diem nay
+  status: GrammarStatus | null
+  correctCount: number
+  totalCount: number
+}
+
+export type GrammarProgressSummary = {
+  levels: {
+    level: string
+    totalTopics: number
+    mastered: number
+    learning: number
+    notStarted: number
+  }[]
+}
+
+// Không có correctAnswer -- backend cố tình giấu đáp án cho tới lúc nộp bài.
+export type GrammarExercisePractice = {
+  id: number
+  orderIndex: number
+  exerciseType: GrammarExerciseType
+  promptDe: string
+  hintVi: string | null
+  optionA: string | null
+  optionB: string | null
+  optionC: string | null
+  optionD: string | null
+}
+
+export type GrammarTopicDetail = {
+  id: number
+  slug: string
+  titleDe: string
+  titleVi: string
+  level: string
+  groupLabel: string | null
+  summaryVi: string | null
+  theoryMd: string | null
+  exercises: GrammarExercisePractice[]
+}
+
+export type GrammarSubmitResult = {
+  correctCount: number
+  totalCount: number
+  results: {
+    exerciseId: number
+    correct: boolean
+    submittedAnswer: string | null
+    correctAnswer: string
+    explanationVi: string | null
+  }[]
+}
+
+export type GrammarExerciseAdmin = {
+  id: number
+  orderIndex: number
+  exerciseType: GrammarExerciseType
+  promptDe: string
+  hintVi: string | null
+  optionA: string | null
+  optionB: string | null
+  optionC: string | null
+  optionD: string | null
+  correctAnswer: string
+  explanationVi: string | null
+  generatedBy: GrammarGeneratedBy
+  reviewed: boolean
+}
+
+export type GrammarTopicAdmin = {
+  id: number
+  slug: string
+  titleDe: string
+  titleVi: string
+  level: string
+  groupLabel: string | null
+  orderIndex: number
+  summaryVi: string | null
+  theoryMd: string | null
+  exercises: GrammarExerciseAdmin[]
+}
+
+export type GrammarReferenceTable = {
+  id: number
+  slug: string
+  titleVi: string
+  category: string
+  level: string | null
+  orderIndex: number
+  contentMd: string
+}

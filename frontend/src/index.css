@@ -227,3 +227,93 @@
   padding: 0.1rem 0.3rem;
   font-size: 0.8125rem;
 }
+
+/* Lý thuyết ngữ pháp + bảng tra cứu: bản đọc dài của .prose-chat -- to hơn, thoáng hơn, và giới
+   hạn ~70ch theo đúng nguyên tắc typography trong DESIGN.md. Bảng được bọc riêng bằng
+   .prose-theory-table (xem GrammarMarkdown) để cuộn ngang trên điện thoại thay vì tràn trang. */
+.prose-theory {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  max-width: 70ch;
+  color: var(--color-ink, #1a1a1a);
+}
+.prose-theory p {
+  margin-bottom: 0.75rem;
+}
+.prose-theory p:last-child {
+  margin-bottom: 0;
+}
+.prose-theory strong {
+  font-weight: 600;
+}
+.prose-theory em {
+  font-style: italic;
+}
+.prose-theory ul,
+.prose-theory ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+.prose-theory ul {
+  list-style-type: disc;
+}
+.prose-theory ol {
+  list-style-type: decimal;
+}
+.prose-theory li {
+  margin-bottom: 0.25rem;
+}
+.prose-theory h1,
+.prose-theory h2,
+.prose-theory h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-weight: 700;
+}
+.prose-theory h1:first-child,
+.prose-theory h2:first-child,
+.prose-theory h3:first-child {
+  margin-top: 0;
+}
+.prose-theory h2 {
+  font-size: 1.0625rem;
+}
+.prose-theory h3 {
+  font-size: 0.9375rem;
+}
+/* Gạch dọc dùng màu trung tính chứ không dùng accent: theo "The One Warm Color Rule" trong
+   DESIGN.md, amber chỉ dành cho streak/mốc thành tích, không dùng làm trang trí. */
+.prose-theory blockquote {
+  margin: 0.75rem 0;
+  border-left: 2px solid var(--color-hairline, #e5e5e5);
+  padding-left: 0.875rem;
+  color: var(--color-muted, #6b6b6b);
+}
+.prose-theory code {
+  background: var(--color-surface, #f5f5f5);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.875rem;
+}
+.prose-theory-table {
+  margin: 0.75rem 0;
+  max-width: 100%;
+  overflow-x: auto;
+  /* Thanh cuộn mảnh nhưng luôn hiện trên desktop — dấu hiệu duy nhất cho biết bảng còn cột bị
+     cắt ở mép phải. Trên mobile hệ điều hành vẫn tự ẩn/hiện theo thao tác cuộn. */
+  scrollbar-width: thin;
+}
+.prose-theory-table table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.prose-theory-table th,
+.prose-theory-table td {
+  border: 1px solid var(--color-hairline, #e5e5e5);
+  padding: 0.375rem 0.625rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.prose-theory-table th {
+  background: var(--color-surface, #f5f5f5);
+  font-weight: 600;
+}

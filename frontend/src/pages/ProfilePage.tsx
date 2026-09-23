@@ -4,11 +4,19 @@ import { useAuth } from '../context/AuthContext'
 import { getStreak } from '../api/streakApi'
 import { getProgressSummary, getHeatmap } from '../api/progressApi'
 import { getVocabularyStats } from '../api/vocabularyApi'
+import { getGrammarProgressSummary } from '../api/grammarApi'
 import { listDecks } from '../api/deckApi'
 import { getStudyTimeSummary, type StudyTimeSummary } from '../api/studyTimeApi'
 import { formatStudyTime } from '../lib/studyTime'
 import { useStudyTime } from '../context/StudyTimeContext'
-import type { Streak, ProgressSummary, HeatmapDay, VocabularyStats, Deck } from '../api/types'
+import type {
+  Streak,
+  ProgressSummary,
+  HeatmapDay,
+  VocabularyStats,
+  Deck,
+  GrammarProgressSummary,
+} from '../api/types'
 import ContributionHeatmap from '../components/progress/ContributionHeatmap'
 import ProgressBars from '../components/progress/ProgressBars'
 
@@ -17,6 +25,7 @@ export default function ProfilePage() {
   const { todaySeconds } = useStudyTime()
   const [streak, setStreak] = useState<Streak | null>(null)
   const [summary, setSummary] = useState<ProgressSummary[]>([])
+  const [grammar, setGrammar] = useState<GrammarProgressSummary | null>(null)
   const [heatmap, setHeatmap] = useState<HeatmapDay[]>([])
   const [stats, setStats] = useState<VocabularyStats | null>(null)
   const [decks, setDecks] = useState<Deck[]>([])
@@ -29,6 +38,7 @@ export default function ProfilePage() {
   useEffect(() => {
     getStreak().then(setStreak).catch(() => {})
     getProgressSummary().then(setSummary).catch(() => {})
+    getGrammarProgressSummary().then(setGrammar).catch(() => {})
     getHeatmap().then(setHeatmap).catch(() => {})
     getVocabularyStats().then(setStats).catch(() => {})
     listDecks().then(setDecks).catch(() => {})
@@ -135,8 +145,41 @@ export default function ProfilePage() {
         <ProgressBars summary={summary} />
       </div>
 
+      {grammar && grammar.levels.length > 0 && (
+        <div className="stagger-in mb-4 rounded-lg bg-surface p-5" style={{ '--stagger-index': 4 } as React.CSSProperties}>
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className={cardHeading}>Tiến độ ngữ pháp</p>
+            <Link to="/app/grammar" className="text-sm font-medium text-primary hover:underline">
+              Học tiếp →
+            </Link>
+          </div>
+          <ul className="space-y-3">
+            {grammar.levels.map((lv) => {
+              const percent = lv.totalTopics === 0 ? 0 : Math.round((lv.mastered / lv.totalTopics) * 100)
+              return (
+                <li key={lv.level}>
+                  <div className="mb-1 flex items-baseline justify-between text-sm">
+                    <span className="font-medium text-ink">{lv.level}</span>
+                    <span className="text-muted">
+                      Thành thạo {lv.mastered}/{lv.totalTopics} chủ điểm
+                      {lv.learning > 0 && ` · đang học ${lv.learning}`}
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-canvas">
+                    <div
+                      className="h-full rounded-full bg-accent transition-[width] duration-500"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+
       {decks.length > 0 && (
-        <div className="stagger-in mb-6" style={{ '--stagger-index': 4 } as React.CSSProperties}>
+        <div className="stagger-in mb-6" style={{ '--stagger-index': 5 } as React.CSSProperties}>
           <div className="mb-3 flex items-baseline justify-between">
             <p className="font-display text-lg font-semibold text-ink">Bộ từ bạn đang học</p>
             <Link to="/app/decks" className="text-sm font-medium text-primary hover:underline">

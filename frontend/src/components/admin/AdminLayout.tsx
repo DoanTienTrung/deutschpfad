@@ -39,6 +39,9 @@ export default function AdminLayout() {
             <Link to="/admin/reading" className="text-primary hover:text-primary-deep">
               Bài đọc
             </Link>
+            <Link to="/admin/grammar" className="text-primary hover:text-primary-deep">
+              Ngữ pháp
+            </Link>
             <Link to="/admin/tutor-knowledge" className="text-primary hover:text-primary-deep">
               Kiến thức Gia sư
             </Link>

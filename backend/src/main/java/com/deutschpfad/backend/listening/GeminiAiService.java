@@ -164,6 +164,50 @@ public class GeminiAiService {
         return openRouterAiService.generateReadingPassage(topic, level);
     }
 
+    /** Fallback path for {@link GroqAiService#generateGrammarTheory}. */
+    public String generateGrammarTheory(String titleDe, String titleVi, String level) {
+        if (titleDe == null || titleDe.isBlank()) return null;
+
+        if (apiKey != null && !apiKey.isBlank()) {
+            try {
+                String response = callGenerateContent(
+                    com.deutschpfad.backend.grammar.GrammarAiPrompts.theory(titleDe, titleVi, level)
+                );
+                if (response != null && !response.isBlank()) return response.strip();
+            } catch (Exception e) {
+                log.warn("Gemini grammar theory generation failed", e);
+            }
+        }
+
+        log.warn("Falling back to OpenRouter for grammar theory generation");
+        return openRouterAiService.generateGrammarTheory(titleDe, titleVi, level);
+    }
+
+    /** Fallback path for {@link GroqAiService#generateGrammarExercises}. */
+    public List<com.deutschpfad.backend.grammar.GrammarExerciseDraft> generateGrammarExercises(
+        String titleDe, String level, String theoryMd, int count
+    ) {
+        if (titleDe == null || titleDe.isBlank()) return List.of();
+
+        if (apiKey != null && !apiKey.isBlank()) {
+            try {
+                String response = callGenerateContent(
+                    com.deutschpfad.backend.grammar.GrammarAiPrompts.exercises(titleDe, level, theoryMd, count)
+                );
+                if (response != null) {
+                    List<com.deutschpfad.backend.grammar.GrammarExerciseDraft> parsed =
+                        com.deutschpfad.backend.grammar.GrammarAiPrompts.parseExercises(response);
+                    if (!parsed.isEmpty()) return parsed;
+                }
+            } catch (Exception e) {
+                log.warn("Gemini grammar exercise generation failed", e);
+            }
+        }
+
+        log.warn("Falling back to OpenRouter for grammar exercise generation");
+        return openRouterAiService.generateGrammarExercises(titleDe, level, theoryMd, count);
+    }
+
     /** Fallback path for {@link GroqAiService#translateSentencesPlain}, used when Groq's daily quota is exhausted. */
     public List<String> translateSentencesPlain(List<String> sentences) {
         List<String> blank = new ArrayList<>();

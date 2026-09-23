@@ -443,6 +443,52 @@ public class GroqAiService {
             + "không thêm lời giải thích, không thêm ghi chú, không dùng markdown.";
     }
 
+    // ===== Ngữ pháp (Phase 5, Đợt 2) — prompt/parser dùng chung ở GrammarAiPrompts =====
+
+    /** Soạn nháp lý thuyết ngữ pháp tiếng Việt cho 1 chủ điểm; luôn phải admin duyệt trước khi lưu. */
+    public String generateGrammarTheory(String titleDe, String titleVi, String level) {
+        if (titleDe == null || titleDe.isBlank()) return null;
+
+        if (apiKey != null && !apiKey.isBlank()) {
+            try {
+                String response = callChat(
+                    com.deutschpfad.backend.grammar.GrammarAiPrompts.theory(titleDe, titleVi, level)
+                );
+                if (response != null && !response.isBlank()) return response.strip();
+            } catch (Exception e) {
+                log.warn("Groq grammar theory generation failed", e);
+            }
+        }
+
+        log.warn("Falling back to Gemini for grammar theory generation");
+        return geminiAiService.generateGrammarTheory(titleDe, titleVi, level);
+    }
+
+    /** Soạn nháp bài tập cho các dạng cần ngữ cảnh; kết quả luôn vào DB với reviewed = false. */
+    public List<com.deutschpfad.backend.grammar.GrammarExerciseDraft> generateGrammarExercises(
+        String titleDe, String level, String theoryMd, int count
+    ) {
+        if (titleDe == null || titleDe.isBlank()) return List.of();
+
+        if (apiKey != null && !apiKey.isBlank()) {
+            try {
+                String response = callChat(
+                    com.deutschpfad.backend.grammar.GrammarAiPrompts.exercises(titleDe, level, theoryMd, count)
+                );
+                if (response != null) {
+                    List<com.deutschpfad.backend.grammar.GrammarExerciseDraft> parsed =
+                        com.deutschpfad.backend.grammar.GrammarAiPrompts.parseExercises(response);
+                    if (!parsed.isEmpty()) return parsed;
+                }
+            } catch (Exception e) {
+                log.warn("Groq grammar exercise generation failed", e);
+            }
+        }
+
+        log.warn("Falling back to Gemini for grammar exercise generation");
+        return geminiAiService.generateGrammarExercises(titleDe, level, theoryMd, count);
+    }
+
     private static final Pattern READING_QUESTION_LINE =
         Pattern.compile("^\\s*\\d+[.)]\\s*(.+?)\\s*\\|\\|\\|\\s*(.+?)\\s*\\|\\|\\|\\s*(.+?)\\s*\\|\\|\\|\\s*(.+?)\\s*\\|\\|\\|\\s*([ABCabc])\\s*\\|\\|\\|\\s*(.+)$");
 

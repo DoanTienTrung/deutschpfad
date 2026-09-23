@@ -9,6 +9,10 @@ import java.util.List;
 
 public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, Long> {
     List<VocabularyItem> findByLevel(VocabularyItem.Level level);
+
+    // Nguồn từ cho bộ sinh bài tập ngữ pháp deterministic: lấy đúng loại từ (Nomen/Verb) ở các
+    // level không vượt quá level của chủ điểm, để bài tập chỉ dùng từ người học đã gặp.
+    List<VocabularyItem> findByWordTypeIgnoreCaseAndLevelIn(String wordType, List<VocabularyItem.Level> levels);
     List<VocabularyItem> findByLessonId(Long lessonId);
     List<VocabularyItem> findByExampleSentenceIsNotNull();
     List<VocabularyItem> findByExampleSentenceIsNotNullAndExampleSentenceHighlightIsNull();
