@@ -4,7 +4,7 @@ import { listGrammarTopics } from '../api/grammarApi'
 import type { GrammarTopicSummary } from '../api/types'
 import { ListCardSkeleton } from '../components/ui/Skeleton'
 
-const LEVELS = ['A1', 'A2', 'B1']
+const LEVELS = ['A1', 'A2', 'B1', 'B2']
 
 export default function GrammarHubPage() {
   const [searchParams, setSearchParams] = useSearchParams()
