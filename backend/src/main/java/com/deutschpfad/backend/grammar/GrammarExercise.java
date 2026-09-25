@@ -16,7 +16,9 @@ public class GrammarExercise {
     // MULTIPLE_CHOICE: chọn 1 trong optionA..optionD, correctAnswer là "A"/"B"/"C"/"D".
     // WORD_ORDER: sắp xếp các từ (promptDe liệt kê các từ xáo trộn ngăn bằng " / "), correctAnswer
     // là câu hoàn chỉnh.
-    public enum ExerciseType { FILL_BLANK, MULTIPLE_CHOICE, CONJUGATE, WORD_ORDER }
+    // ERROR_CORRECTION: prompt_de là câu SAI, correct_answer là câu đã sửa. Dạng này bắt người
+    // học tự phát hiện lỗi thay vì chỉ điền vào chỗ đã được chỉ sẵn — sát với lúc tự viết.
+    public enum ExerciseType { FILL_BLANK, MULTIPLE_CHOICE, CONJUGATE, WORD_ORDER, ERROR_CORRECTION }
 
     // MANUAL: admin gõ tay. DATA: sinh deterministic từ german_noun_genders/vocabulary_items
     // (đúng 100%, tự duyệt luôn). AI: model soạn nháp, phải được admin duyệt mới hiển thị.

@@ -28,7 +28,7 @@ public class GrammarAdminController {
      * Slug trùng với một đoạn đường dẫn cố định dưới /api/grammar sẽ khiến chủ điểm đó không bao
      * giờ mở được (route cố định luôn thắng biến {slug}), nên chặn ngay từ lúc tạo.
      */
-    private static final List<String> RESERVED_SLUGS = List.of("reference", "progress");
+    private static final List<String> RESERVED_SLUGS = List.of("reference", "progress", "review");
 
     private final GrammarTopicRepository topicRepository;
     private final GrammarExerciseRepository exerciseRepository;

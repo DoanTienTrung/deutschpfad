@@ -45,6 +45,10 @@ public class GrammarTopic {
     @Column(name = "theory_md", columnDefinition = "TEXT")
     private String theoryMd;
 
+    /** Slug của bảng tra cứu liên quan, để nút "Mở bảng tra cứu" nhảy thẳng tới đúng bảng. */
+    @Column(name = "reference_slug")
+    private String referenceSlug;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

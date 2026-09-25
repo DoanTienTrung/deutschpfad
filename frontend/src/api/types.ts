@@ -357,7 +357,12 @@ export type TutorAnswer = {
 }
 
 
-export type GrammarExerciseType = 'FILL_BLANK' | 'MULTIPLE_CHOICE' | 'CONJUGATE' | 'WORD_ORDER'
+export type GrammarExerciseType =
+  | 'FILL_BLANK'
+  | 'MULTIPLE_CHOICE'
+  | 'CONJUGATE'
+  | 'WORD_ORDER'
+  | 'ERROR_CORRECTION'
 
 export type GrammarGeneratedBy = 'MANUAL' | 'DATA' | 'AI'
 
@@ -412,7 +417,14 @@ export type GrammarTopicDetail = {
   groupLabel: string | null
   summaryVi: string | null
   theoryMd: string | null
+  // Bảng tra cứu liên quan, để nút mở thẳng tới đúng bảng thay vì danh sách chung.
+  referenceSlug: string | null
   exercises: GrammarExercisePractice[]
+}
+
+export type GrammarReview = {
+  due: GrammarTopicSummary[]
+  next: GrammarTopicSummary | null
 }
 
 export type GrammarSubmitResult = {

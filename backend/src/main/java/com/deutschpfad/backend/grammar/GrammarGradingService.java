@@ -26,6 +26,10 @@ public class GrammarGradingService {
      *   <li>bỏ khoảng trắng thừa (gồm cả khoảng trắng lặp giữa các từ ở bài WORD_ORDER)</li>
      *   <li>không phân biệt hoa/thường</li>
      *   <li>bỏ dấu câu cuối câu — thiếu dấu chấm không phải lỗi ngữ pháp</li>
+     *   <li><b>bỏ dấu phẩy ở mọi vị trí</b> — tiếng Đức bắt buộc dấu phẩy trước mệnh đề phụ
+     *       ("Ich lerne, um ... zu ..."), nên người học viết đúng ngữ pháp sẽ có dấu phẩy còn đáp
+     *       án lưu trong DB thì có thể không. Dạng bài WORD_ORDER kiểm tra <i>trật tự từ</i>, không
+     *       kiểm tra dấu câu — chấm sai vì dấu phẩy là phạt người viết đúng.</li>
      *   <li>chấp nhận cách gõ thay thế ae/oe/ue/ss cho ä/ö/ü/ß, vì bàn phím tiếng Việt không có
      *       sẵn ký tự Đức. Lưu ý chiều biến đổi: "älter" thành "aelter", nên người gõ "alter"
      *       (thiếu Umlaut hẳn) vẫn bị tính sai — đúng ý đồ với các bài luyện Umlaut.</li>
@@ -34,6 +38,7 @@ public class GrammarGradingService {
     static String normalize(String raw) {
         String text = raw.trim().toLowerCase();
         text = text.replaceAll("[.!?]+$", "");
+        text = text.replace(",", " ").replace(";", " ");
         text = text.replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss");
         text = text.replaceAll("\\s+", " ");
         return text.trim();

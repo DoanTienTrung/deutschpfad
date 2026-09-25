@@ -13,6 +13,7 @@ public record GrammarTopicDetailResponse(
     String groupLabel,
     String summaryVi,
     String theoryMd,
+    String referenceSlug,
     List<GrammarExercisePracticeResponse> exercises
 ) {
     public static GrammarTopicDetailResponse from(GrammarTopic topic, List<GrammarExercise> exercises) {
@@ -25,6 +26,7 @@ public record GrammarTopicDetailResponse(
             topic.getGroupLabel(),
             topic.getSummaryVi(),
             topic.getTheoryMd(),
+            topic.getReferenceSlug(),
             exercises.stream().map(GrammarExercisePracticeResponse::from).toList()
         );
     }

@@ -1,10 +1,12 @@
 package com.deutschpfad.backend.grammar;
 
 import com.deutschpfad.backend.auth.User;
+import com.deutschpfad.backend.vocabulary.Sm2Calculator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -49,6 +51,19 @@ public class UserGrammarProgress {
     @Column(name = "last_practiced_at")
     private LocalDateTime lastPracticedAt;
 
+    // Bộ tham số SM-2, cùng thuật toán với module Từ vựng (xem Sm2Calculator).
+    @Column(nullable = false)
+    private int repetitions;
+
+    @Column(name = "ease_factor", nullable = false)
+    private double easeFactor = 2.5;
+
+    @Column(name = "interval_days", nullable = false)
+    private int intervalDays;
+
+    @Column(name = "next_review_date")
+    private LocalDate nextReviewDate;
+
     public double accuracy() {
         return totalCount == 0 ? 0 : (double) correctCount / totalCount;
     }
@@ -66,5 +81,26 @@ public class UserGrammarProgress {
             && accuracy() >= MASTERY_MIN_ACCURACY) {
             status = Status.MASTERED;
         }
+        scheduleNextReview(correct, total);
+    }
+
+    /**
+     * Lên lịch ôn lại bằng chính thuật toán SM-2 của module Từ vựng.
+     *
+     * <p>SM-2 nhận điểm chất lượng 0-5; ở đây quy đổi từ tỉ lệ đúng của LẦN NỘP NÀY (không phải
+     * tỉ lệ cộng dồn): làm tốt thì giãn lịch ra, làm kém thì kéo về ôn lại sớm. Ngưỡng 3 là mốc
+     * SM-2 coi là "nhớ được" — dưới đó thuật toán tự đặt lại chuỗi lặp về 0.
+     */
+    private void scheduleNextReview(int correct, int total) {
+        int quality = total == 0 ? 0 : (int) Math.round((double) correct / total * 5);
+        Sm2Calculator.Result result = Sm2Calculator.calculate(repetitions, easeFactor, intervalDays, quality);
+        repetitions = result.repetitions();
+        easeFactor = result.easeFactor();
+        intervalDays = result.intervalDays();
+        nextReviewDate = result.nextReviewDate();
+    }
+
+    public boolean isDue() {
+        return nextReviewDate != null && !nextReviewDate.isAfter(LocalDate.now());
     }
 }

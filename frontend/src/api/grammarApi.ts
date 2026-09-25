@@ -2,6 +2,7 @@ import { apiFetch } from './client'
 import type {
   GrammarExerciseType,
   GrammarProgressSummary,
+  GrammarReview,
   GrammarReferenceTable,
   GrammarSubmitResult,
   GrammarTopicAdmin,
@@ -15,6 +16,10 @@ export function listGrammarTopics(level?: string) {
 
 export function getGrammarProgressSummary() {
   return apiFetch<GrammarProgressSummary>('/grammar/progress/summary')
+}
+
+export function getGrammarReview(level?: string) {
+  return apiFetch<GrammarReview>(`/grammar/review${level ? `?level=${level}` : ''}`)
 }
 
 export function getGrammarTopic(slug: string) {

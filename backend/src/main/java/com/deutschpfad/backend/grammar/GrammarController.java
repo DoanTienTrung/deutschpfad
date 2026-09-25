@@ -22,6 +22,7 @@ public class GrammarController {
     private final GrammarExerciseRepository exerciseRepository;
     private final GrammarReferenceTableRepository referenceTableRepository;
     private final UserGrammarProgressRepository progressRepository;
+    private final GrammarExerciseAttemptRepository attemptRepository;
     private final GrammarGradingService gradingService;
     private final UserRepository userRepository;
     private final LearningStreakService learningStreakService;
@@ -31,6 +32,7 @@ public class GrammarController {
         GrammarExerciseRepository exerciseRepository,
         GrammarReferenceTableRepository referenceTableRepository,
         UserGrammarProgressRepository progressRepository,
+        GrammarExerciseAttemptRepository attemptRepository,
         GrammarGradingService gradingService,
         UserRepository userRepository,
         LearningStreakService learningStreakService
@@ -39,6 +41,7 @@ public class GrammarController {
         this.exerciseRepository = exerciseRepository;
         this.referenceTableRepository = referenceTableRepository;
         this.progressRepository = progressRepository;
+        this.attemptRepository = attemptRepository;
         this.gradingService = gradingService;
         this.userRepository = userRepository;
         this.learningStreakService = learningStreakService;
@@ -103,6 +106,40 @@ public class GrammarController {
         return new GrammarProgressSummaryResponse(levels);
     }
 
+    /**
+     * Chủ điểm cần ôn hôm nay + chủ điểm nên học tiếp.
+     *
+     * <p>Đặt ở "/review" nên "review" cũng là slug cấm — xem RESERVED_SLUGS bên admin.
+     */
+    @GetMapping("/review")
+    public GrammarReviewResponse review(
+        @RequestParam(required = false) VocabularyItem.Level level, Authentication authentication
+    ) {
+        User user = currentUser(authentication);
+        Map<Long, UserGrammarProgress> progressByTopic = progressByTopic(user);
+
+        List<GrammarTopic> topics = level != null
+            ? topicRepository.findByLevelOrderByOrderIndex(level)
+            : topicRepository.findAllByOrderByLevelAscOrderIndexAsc();
+
+        List<GrammarTopicSummaryResponse> due = new ArrayList<>();
+        GrammarTopicSummaryResponse next = null;
+
+        for (GrammarTopic topic : topics) {
+            int exerciseCount = exerciseRepository.countByTopicIdAndReviewedTrue(topic.getId());
+            // Chủ điểm chưa có bài thì không gợi ý — mở ra chỉ thấy lý thuyết rồi bí.
+            if (exerciseCount == 0) continue;
+
+            UserGrammarProgress progress = progressByTopic.get(topic.getId());
+            if (progress == null) {
+                if (next == null) next = GrammarTopicSummaryResponse.from(topic, exerciseCount, null);
+            } else if (progress.isDue()) {
+                due.add(GrammarTopicSummaryResponse.from(topic, exerciseCount, progress));
+            }
+        }
+        return new GrammarReviewResponse(due, next);
+    }
+
     private Map<Long, UserGrammarProgress> progressByTopic(User user) {
         Map<Long, UserGrammarProgress> byTopic = new HashMap<>();
         progressRepository.findByUser(user).forEach(p -> byTopic.put(p.getTopic().getId(), p));
@@ -130,12 +167,23 @@ public class GrammarController {
             request.answers().forEach(a -> submitted.put(a.exerciseId(), a.answer()));
         }
 
+        User user = currentUser(authentication);
+
         int correctCount = 0;
         List<GrammarSubmitResponse.ExerciseResult> results = new ArrayList<>();
+        List<GrammarExerciseAttempt> attempts = new ArrayList<>();
         for (GrammarExercise exercise : exercises) {
             String submittedAnswer = submitted.get(exercise.getId());
             boolean correct = gradingService.isCorrect(exercise, submittedAnswer);
             if (correct) correctCount++;
+
+            GrammarExerciseAttempt attempt = new GrammarExerciseAttempt();
+            attempt.setUser(user);
+            attempt.setExercise(exercise);
+            attempt.setCorrect(correct);
+            attempt.setSubmittedAnswer(submittedAnswer);
+            attempts.add(attempt);
+
             results.add(new GrammarSubmitResponse.ExerciseResult(
                 exercise.getId(),
                 correct,
@@ -145,7 +193,7 @@ public class GrammarController {
             ));
         }
 
-        User user = currentUser(authentication);
+        attemptRepository.saveAll(attempts);
 
         // Chỉ ghi nhận khi chủ điểm thật sự có bài — nộp một chủ điểm rỗng không phải là "đã luyện".
         if (!exercises.isEmpty()) {

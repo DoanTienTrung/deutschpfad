@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { listGrammarTopics } from '../api/grammarApi'
-import type { GrammarTopicSummary } from '../api/types'
+import { getGrammarReview, listGrammarTopics } from '../api/grammarApi'
+import type { GrammarReview, GrammarTopicSummary } from '../api/types'
 import { ListCardSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2']
@@ -12,6 +12,7 @@ export default function GrammarHubPage() {
   const [topics, setTopics] = useState<GrammarTopicSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [review, setReview] = useState<GrammarReview | null>(null)
 
   useEffect(() => {
     setSearchParams({ level }, { replace: true })
@@ -24,6 +25,10 @@ export default function GrammarHubPage() {
     listGrammarTopics(level)
       .then(setTopics)
       .finally(() => setLoading(false))
+    // Lỗi gợi ý ôn tập không nên chặn cả danh sách chủ điểm, nên để rơi vào null im lặng.
+    getGrammarReview(level)
+      .then(setReview)
+      .catch(() => setReview(null))
   }, [level])
 
   const query = search.trim().toLowerCase()
@@ -52,6 +57,67 @@ export default function GrammarHubPage() {
         Lý thuyết ngắn gọn bằng tiếng Việt cho từng chủ điểm, kèm bài tập chấm tự động ngay. Học
         từng chủ điểm một, không cần theo thứ tự.
       </p>
+
+      {/* Vào trang là biết ngay làm gì tiếp: chủ điểm tới hạn ôn (SM-2) đứng trước, hết hạn ôn
+          thì gợi ý chủ điểm chưa học. Không có gì thì giấu hẳn thẻ, tránh chiếm chỗ vô ích. */}
+      {review && (review.due.length > 0 || review.next) && (
+        <section className="mt-6 rounded-lg border border-hairline bg-surface p-4 shadow-lifted">
+          {review.due.length > 0 ? (
+            <>
+              <p className="text-xs font-bold uppercase tracking-widest text-accent-deep">
+                🔁 Cần ôn hôm nay · {review.due.length} chủ điểm
+              </p>
+              <ul className="mt-3 space-y-2">
+                {review.due.slice(0, 3).map((topic) => (
+                  <li key={topic.id}>
+                    <Link
+                      to={`/app/grammar/${topic.slug}`}
+                      className="group flex items-center justify-between gap-3 rounded-sm border border-hairline bg-canvas px-3 py-2 transition-colors hover:border-primary/40"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold text-ink">
+                          {topic.titleVi}
+                        </span>
+                        <span className="block truncate text-xs text-muted">{topic.titleDe}</span>
+                      </span>
+                      <span className="shrink-0 text-primary transition-transform group-hover:translate-x-1">
+                        →
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {review.due.length > 3 && (
+                <p className="mt-2 text-xs text-muted">
+                  …và {review.due.length - 3} chủ điểm nữa tới hạn ôn.
+                </p>
+              )}
+            </>
+          ) : (
+            review.next && (
+              <>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted">
+                  ▶ Học tiếp
+                </p>
+                <Link
+                  to={`/app/grammar/${review.next.slug}`}
+                  className="group mt-2 flex items-center justify-between gap-3"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold text-ink">
+                      {review.next.titleVi}
+                    </span>
+                    <span className="block truncate text-xs text-muted">{review.next.titleDe}</span>
+                  </span>
+                  <span className="shrink-0 text-lg text-primary transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
+                </Link>
+              </>
+            )
+          )}
+        </section>
+      )}
 
       <Link
         to="/app/grammar/reference"

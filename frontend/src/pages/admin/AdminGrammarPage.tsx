@@ -31,6 +31,11 @@ const EXERCISE_TYPES: { value: GrammarExerciseType; label: string; hint: string 
   { value: 'MULTIPLE_CHOICE', label: 'Trắc nghiệm', hint: 'Đáp án đúng ghi A/B/C/D' },
   { value: 'CONJUGATE', label: 'Chia động từ', hint: 'Dùng ___ , ghi dạng đã chia vào đáp án' },
   { value: 'WORD_ORDER', label: 'Sắp xếp câu', hint: 'Đề là các từ xáo trộn, đáp án là câu hoàn chỉnh' },
+  {
+    value: 'ERROR_CORRECTION',
+    label: 'Sửa lỗi sai',
+    hint: 'Đề là câu SAI, đáp án là câu đã sửa đúng',
+  },
 ]
 
 const EMPTY_TOPIC: GrammarTopicRequest = {

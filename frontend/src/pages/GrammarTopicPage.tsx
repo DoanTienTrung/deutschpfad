@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getGrammarTopic, submitGrammarAnswers } from '../api/grammarApi'
-import type { GrammarExercisePractice, GrammarSubmitResult, GrammarTopicDetail } from '../api/types'
+import type { GrammarSubmitResult, GrammarTopicDetail } from '../api/types'
+import { shuffleForPractice, type ShuffledExercise } from '../lib/shuffleExercises'
 import { ApiError } from '../api/client'
 import { openTutorWithQuestion } from '../lib/tutorChat'
 import GrammarMarkdown from '../components/grammar/GrammarMarkdown'
@@ -12,6 +13,8 @@ import { Skeleton } from '../components/ui/Skeleton'
 export default function GrammarTopicPage() {
   const { slug = '' } = useParams()
   const [topic, setTopic] = useState<GrammarTopicDetail | null>(null)
+  // Xáo lại mỗi lần vào trang và mỗi lần bấm "Làm lại" — xem lib/shuffleExercises.ts.
+  const [exercises, setExercises] = useState<ShuffledExercise[]>([])
   const [loading, setLoading] = useState(true)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [result, setResult] = useState<GrammarSubmitResult | null>(null)
@@ -24,7 +27,10 @@ export default function GrammarTopicPage() {
     setResult(null)
     setAnswers({})
     getGrammarTopic(slug)
-      .then(setTopic)
+      .then((d) => {
+        setTopic(d)
+        setExercises(shuffleForPractice(d.exercises))
+      })
       .catch(() => setError('Không tải được chủ điểm này.'))
       .finally(() => setLoading(false))
   }, [slug])
@@ -40,7 +46,12 @@ export default function GrammarTopicPage() {
     setError(null)
     setSubmitting(true)
     try {
-      const payload = topic.exercises.map((e) => ({ exerciseId: e.id, answer: answers[e.id] ?? '' }))
+      // Trắc nghiệm: đổi chữ cái đang hiển thị về chữ cái gốc mà backend lưu.
+      const payload = exercises.map((e) => {
+        const raw = answers[e.id] ?? ''
+        const answer = e.exerciseType === 'MULTIPLE_CHOICE' ? (e.letterMap[raw] ?? raw) : raw
+        return { exerciseId: e.id, answer }
+      })
       setResult(await submitGrammarAnswers(topic.slug, payload))
     } catch (err) {
       const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
@@ -53,6 +64,8 @@ export default function GrammarTopicPage() {
   function handleRetry() {
     setResult(null)
     setAnswers({})
+    // Xáo lại để lần làm thứ hai không chỉ là nhớ vị trí đáp án.
+    if (topic) setExercises(shuffleForPractice(topic.exercises))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -107,9 +120,14 @@ export default function GrammarTopicPage() {
             >
               💬 Hỏi gia sư về chủ điểm này
             </button>
-            {/* Mở tab mới: người học đang làm dở bài tập bên dưới, điều hướng đi là mất câu trả lời. */}
+            {/* Mở tab mới: người học đang làm dở bài tập bên dưới, điều hướng đi là mất câu trả lời.
+                Có referenceSlug thì nhảy thẳng tới đúng bảng thay vì bắt tự tìm trong 14 bảng. */}
             <a
-              href="/app/grammar/reference"
+              href={
+                topic.referenceSlug
+                  ? `/app/grammar/reference?open=${topic.referenceSlug}`
+                  : '/app/grammar/reference'
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full border border-hairline bg-canvas px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:border-primary/40 hover:bg-surface"
@@ -126,7 +144,7 @@ export default function GrammarTopicPage() {
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      {topic.exercises.length === 0 ? (
+      {exercises.length === 0 ? (
         <p className="rounded-lg border border-dashed border-hairline p-5 text-sm text-muted">
           Chủ điểm này chưa có bài tập nào.
         </p>
@@ -148,7 +166,7 @@ export default function GrammarTopicPage() {
           </div>
 
           <ol className="space-y-3">
-            {topic.exercises.map((exercise, index) => (
+            {exercises.map((exercise, index) => (
               <li key={exercise.id}>
                 <ExerciseCard
                   exercise={exercise}
@@ -194,7 +212,7 @@ function ExerciseCard({
   onChange,
   result,
 }: {
-  exercise: GrammarExercisePractice
+  exercise: ShuffledExercise
   index: number
   value: string
   onChange: (value: string) => void
@@ -215,6 +233,15 @@ function ExerciseCard({
         <span className="mr-2 text-muted">{index + 1}.</span>
         {exercise.exerciseType === 'WORD_ORDER' ? (
           <>Sắp xếp thành câu đúng: <span className="font-normal italic">{exercise.promptDe}</span></>
+        ) : exercise.exerciseType === 'ERROR_CORRECTION' ? (
+          <>
+            Câu sau có một lỗi — viết lại cho đúng:{' '}
+            {/* Gạch chân lượn sóng đỏ: ám hiệu "có lỗi ở đây" mà ai cũng đọc được ngay, nhưng
+                không chỉ ra lỗi nằm ở từ nào. */}
+            <span className="font-normal italic underline decoration-danger decoration-wavy underline-offset-4">
+              {exercise.promptDe}
+            </span>
+          </>
         ) : (
           exercise.promptDe
         )}
@@ -252,7 +279,11 @@ function ExerciseCard({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={graded}
-          placeholder={exercise.exerciseType === 'WORD_ORDER' ? 'Gõ cả câu...' : 'Điền vào chỗ trống...'}
+          placeholder={
+            exercise.exerciseType === 'WORD_ORDER' || exercise.exerciseType === 'ERROR_CORRECTION'
+              ? 'Gõ cả câu...'
+              : 'Điền vào chỗ trống...'
+          }
           className="mt-3 w-full rounded-sm border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface"
         />
       )}

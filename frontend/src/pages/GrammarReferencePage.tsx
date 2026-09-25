@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { listGrammarReferenceTables } from '../api/grammarApi'
 import type { GrammarReferenceTable } from '../api/types'
 import GrammarMarkdown from '../components/grammar/GrammarMarkdown'
@@ -11,11 +12,19 @@ export default function GrammarReferencePage() {
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState<number | null>(null)
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     listGrammarReferenceTables()
-      .then(setTables)
+      .then((loaded) => {
+        setTables(loaded)
+        // Mở sẵn bảng được chỉ định từ trang chủ điểm (?open=slug), để người học không phải
+        // tự dò trong danh sách.
+        const wanted = searchParams.get('open')
+        if (wanted) setOpenId(loaded.find((t) => t.slug === wanted)?.id ?? null)
+      })
       .finally(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chỉ đọc ?open= một lần lúc mở trang
   }, [])
 
   const categories = useMemo(() => [...new Set(tables.map((t) => t.category))], [tables])
