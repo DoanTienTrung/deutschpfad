@@ -14,4 +14,10 @@ public interface EmailVerificationTokenRepository extends JpaRepository<EmailVer
     @Modifying
     @Query("DELETE FROM EmailVerificationToken t WHERE t.expiresAt < :now")
     int deleteExpired(@Param("now") LocalDateTime now);
+
+    // Dùng khi gửi lại email xác thực: link cũ phải chết ngay. Nếu không, thư cũ và thư mới nằm
+    // cạnh nhau trong hộp thư và người dùng rất dễ bấm nhầm đúng cái link vừa báo hết hạn.
+    @Modifying
+    @Query("DELETE FROM EmailVerificationToken t WHERE t.user = :user")
+    int deleteByUser(@Param("user") User user);
 }

@@ -3,11 +3,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { ApiError } from '../api/client'
 import AuthCard from '../components/auth/AuthCard'
+import ResendVerification from '../components/auth/ResendVerification'
 import Field from '../components/ui/Field'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 
 const API_ORIGIN = import.meta.env.VITE_API_ORIGIN as string
+
+// Backend từ chối đăng nhập bằng đúng câu này khi tài khoản chưa xác thực. Nhận ra nó để hiện
+// thẳng nút gửi lại thư — thay vì bắt người dùng tự mò xem phải làm gì tiếp.
+const UNVERIFIED_MESSAGE = 'Vui lòng xác thực email trước khi đăng nhập'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -55,6 +60,15 @@ export default function LoginPage() {
       }
     >
       {error && <Alert tone="danger">{error}</Alert>}
+
+      {error === UNVERIFIED_MESSAGE && (
+        <div className="mb-4">
+          <p className="mb-2 text-sm text-muted">
+            Không tìm thấy thư, hoặc link cũ đã hết hạn?
+          </p>
+          <ResendVerification email={email} />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field

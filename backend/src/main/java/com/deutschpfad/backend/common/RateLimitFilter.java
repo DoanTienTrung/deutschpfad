@@ -22,6 +22,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
         "/api/auth/login", () -> newBucket(5, Duration.ofMinutes(1)),
         "/api/auth/register", () -> newBucket(5, Duration.ofMinutes(1)),
         "/api/auth/forgot-password", () -> newBucket(3, Duration.ofMinutes(5)),
+        // Mỗi lần gọi là một email thật được gửi đi -- giới hạn chặt như forgot-password.
+        "/api/auth/resend-verification", () -> newBucket(3, Duration.ofMinutes(5)),
         "/api/tutor/ask", () -> newBucket(20, Duration.ofMinutes(5))
     );
 

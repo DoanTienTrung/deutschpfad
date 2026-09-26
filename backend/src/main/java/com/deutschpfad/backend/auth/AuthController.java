@@ -106,6 +106,18 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Xác thực email thành công"));
     }
 
+    // Đường cứu khi link xác thực hết hạn hoặc email gõ sai: không có nó thì tài khoản chưa xác
+    // thực là ngõ cụt hoàn toàn (không đăng nhập được, đăng ký lại thì báo email đã dùng).
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, String>> resendVerification(
+        @Valid @RequestBody ResendVerificationRequest request
+    ) {
+        authService.resendVerification(request);
+        return ResponseEntity.ok(Map.of(
+            "message", "Nếu email này đã đăng ký và chưa xác thực, thư mới đã được gửi"
+        ));
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);

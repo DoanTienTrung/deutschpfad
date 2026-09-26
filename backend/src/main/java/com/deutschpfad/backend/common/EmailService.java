@@ -21,7 +21,9 @@ public class EmailService {
 
     public void send(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(mailFrom);
+        // Kèm tên hiển thị để hộp thư hiện "DeutschPfad" chứ không phải địa chỉ trần -- thư không
+        // có tên người gửi vừa khó tin vừa dễ bị đánh dấu rác.
+        message.setFrom("DeutschPfad <" + mailFrom + ">");
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body);

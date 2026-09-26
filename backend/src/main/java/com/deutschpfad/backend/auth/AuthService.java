@@ -1,15 +1,20 @@
 package com.deutschpfad.backend.auth;
 
 import com.deutschpfad.backend.common.EmailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final EmailVerificationTokenRepository tokenRepository;
@@ -48,9 +53,32 @@ public class AuthService {
         user.setFullName(request.fullName());
         user = userRepository.save(user);
 
-        sendVerificationEmail(user);
+        // Gửi mail KHÔNG được phép làm hỏng việc đăng ký: tài khoản đã lưu vào DB ở dòng trên, nếu
+        // để exception bay lên thì người dùng thấy "đăng ký thất bại" nhưng email đã bị chiếm chỗ
+        // — đăng ký lại sẽ báo "Email đã được sử dụng", thành ngõ cụt. Lỗi gửi mail đã có đường
+        // cứu riêng là nút "Gửi lại email xác thực".
+        try {
+            sendVerificationEmail(user);
+        } catch (Exception e) {
+            log.error("Không gửi được email xác thực tới {}: {}", user.getEmail(), e.getMessage());
+        }
 
         return user;
+    }
+
+    /**
+     * Gửi lại email xác thực.
+     *
+     * <p>Không cho phía gọi biết email có tồn tại hay không (cùng cách với {@link #forgotPassword})
+     * — nếu không, endpoint này thành công cụ dò xem địa chỉ nào đã đăng ký.
+     */
+    @Transactional
+    public void resendVerification(ResendVerificationRequest request) {
+        userRepository.findByEmail(request.email()).ifPresent(user -> {
+            if (user.isEmailVerified()) return;
+            tokenRepository.deleteByUser(user);
+            sendVerificationEmail(user);
+        });
     }
 
     private void sendVerificationEmail(User user) {
@@ -64,11 +92,15 @@ public class AuthService {
         emailService.send(
             user.getEmail(),
             "Xác thực tài khoản DeutschPfad",
-            "Chào " + user.getFullName() + ",\n\nBấm vào link sau để kích hoạt tài khoản:\n" + link
-                + "\n\nLink có hiệu lực trong 24 giờ."
+            "Chào " + user.getFullName() + ",\n\n"
+                + "Bấm vào link sau để kích hoạt tài khoản DeutschPfad của bạn:\n" + link
+                + "\n\nLink có hiệu lực trong 24 giờ. Nếu đã hết hạn, vào trang đăng nhập của"
+                + " DeutschPfad và bấm \"Gửi lại email xác thực\".\n\n"
+                + "Nếu bạn không đăng ký DeutschPfad, hãy bỏ qua email này."
         );
     }
 
+    @Transactional
     public void verifyEmail(String token) {
         EmailVerificationToken verificationToken = tokenRepository.findByToken(token)
             .orElseThrow(() -> new IllegalArgumentException("Token không hợp lệ"));
@@ -80,6 +112,11 @@ public class AuthService {
         User user = verificationToken.getUser();
         user.setEmailVerified(true);
         userRepository.save(user);
+
+        // Link xác thực là dùng một lần. Token nằm nguyên trong hộp thư người dùng (và trong log
+        // của mọi máy chủ mail thư đi qua), nên để nó sống tiếp chỉ kéo dài thời gian một chuỗi
+        // bí mật còn dùng được, mà không đổi lại được gì.
+        tokenRepository.delete(verificationToken);
     }
 
     public void forgotPassword(ForgotPasswordRequest request) {
