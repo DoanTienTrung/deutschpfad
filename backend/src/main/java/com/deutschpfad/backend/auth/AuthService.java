@@ -1,6 +1,7 @@
 package com.deutschpfad.backend.auth;
 
 import com.deutschpfad.backend.common.EmailService;
+import com.deutschpfad.backend.common.EmailTemplates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,14 +90,32 @@ public class AuthService {
         tokenRepository.save(verificationToken);
 
         String link = frontendUrl + "/verify-email?token=" + verificationToken.getToken();
-        emailService.send(
+        emailService.sendHtml(
             user.getEmail(),
             "Xác thực tài khoản DeutschPfad",
             "Chào " + user.getFullName() + ",\n\n"
                 + "Bấm vào link sau để kích hoạt tài khoản DeutschPfad của bạn:\n" + link
                 + "\n\nLink có hiệu lực trong 24 giờ. Nếu đã hết hạn, vào trang đăng nhập của"
                 + " DeutschPfad và bấm \"Gửi lại email xác thực\".\n\n"
-                + "Nếu bạn không đăng ký DeutschPfad, hãy bỏ qua email này."
+                + "Bạn nhận được thư này vì địa chỉ " + user.getEmail() + " vừa được dùng để đăng"
+                + " ký DeutschPfad. Nếu không phải bạn, hãy bỏ qua thư này — tài khoản sẽ không"
+                + " kích hoạt được nếu không bấm link trên.",
+            EmailTemplates.actionEmail(
+                user.getFullName(),
+                "Kích hoạt tài khoản DeutschPfad của bạn — link có hiệu lực trong 24 giờ.",
+                "<p style=\"margin:0;\">Cảm ơn bạn đã đăng ký DeutschPfad. Bấm nút bên dưới để"
+                    + " kích hoạt tài khoản và bắt đầu học.</p>",
+                "Kích hoạt tài khoản",
+                link,
+                "<p style=\"margin:0 0 8px 0;\">Link có hiệu lực trong <strong>24 giờ</strong>."
+                    + " Nếu đã hết hạn, vào trang đăng nhập và bấm"
+                    + " &ldquo;Gửi lại email xác thực&rdquo;.</p>"
+                    // Nói rõ vì sao người này nhận được thư: vừa là phép lịch sự, vừa là thứ các
+                    // bộ lọc thư rác tìm để phân biệt thư giao dịch thật với thư gửi hàng loạt.
+                    + "<p style=\"margin:0;\">Bạn nhận được thư này vì địa chỉ này vừa được dùng"
+                    + " để đăng ký DeutschPfad. Nếu không phải bạn, hãy bỏ qua thư — tài khoản sẽ"
+                    + " không kích hoạt được nếu không bấm nút trên.</p>"
+            )
         );
     }
 
@@ -128,11 +147,26 @@ public class AuthService {
             passwordResetTokenRepository.save(resetToken);
 
             String link = frontendUrl + "/reset-password?token=" + resetToken.getToken();
-            emailService.send(
+            emailService.sendHtml(
                 user.getEmail(),
                 "Đặt lại mật khẩu DeutschPfad",
                 "Chào " + user.getFullName() + ",\n\nBấm vào link sau để đặt lại mật khẩu:\n" + link
-                    + "\n\nLink có hiệu lực trong 1 giờ. Nếu bạn không yêu cầu, hãy bỏ qua email này."
+                    + "\n\nLink có hiệu lực trong 1 giờ.\n\n"
+                    + "Bạn nhận được thư này vì có người yêu cầu đặt lại mật khẩu cho tài khoản"
+                    + " DeutschPfad của địa chỉ " + user.getEmail() + ". Nếu không phải bạn, hãy"
+                    + " bỏ qua thư này — mật khẩu hiện tại vẫn giữ nguyên.",
+                EmailTemplates.actionEmail(
+                    user.getFullName(),
+                    "Đặt lại mật khẩu DeutschPfad — link có hiệu lực trong 1 giờ.",
+                    "<p style=\"margin:0;\">Bấm nút bên dưới để đặt mật khẩu mới cho tài khoản"
+                        + " DeutschPfad của bạn.</p>",
+                    "Đặt lại mật khẩu",
+                    link,
+                    "<p style=\"margin:0 0 8px 0;\">Link có hiệu lực trong <strong>1 giờ</strong>.</p>"
+                        + "<p style=\"margin:0;\">Bạn nhận được thư này vì có người yêu cầu đặt"
+                        + " lại mật khẩu cho tài khoản của địa chỉ này. Nếu không phải bạn, hãy bỏ"
+                        + " qua thư — mật khẩu hiện tại vẫn giữ nguyên.</p>"
+                )
             );
         });
     }
