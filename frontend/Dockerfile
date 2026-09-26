@@ -16,5 +16,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # nginx.dev.conf since the Let's Encrypt cert paths only exist on the production host.
 ARG NGINX_CONF=nginx.conf
 COPY ${NGINX_CONF} /etc/nginx/conf.d/default.conf
+# Dùng chung cho cả 2 config trên -- xem chú thích trong file.
+COPY nginx-notfound.conf /etc/nginx/snippets/notfound.conf
 
 EXPOSE 80

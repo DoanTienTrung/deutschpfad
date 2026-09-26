@@ -9,6 +9,7 @@ import VerifyEmailPage from './pages/VerifyEmailPage'
 import OAuth2CallbackPage from './pages/OAuth2CallbackPage'
 import ProfilePage from './pages/ProfilePage'
 import ReviewPage from './pages/ReviewPage'
+import NotFoundPage from './pages/NotFoundPage'
 import AccountPage from './pages/AccountPage'
 import AppLayout from './components/AppLayout'
 import AdminLayout from './components/admin/AdminLayout'
@@ -89,6 +90,7 @@ function App() {
             <Route path="reading/mine" element={<UserReadingHubPage />} />
             <Route path="reading/:passageId" element={<ReadingPracticePage />} />
             <Route path="reading/:passageId" element={<ReadingPracticePage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
           <Route
             path="/admin"
@@ -106,8 +108,11 @@ function App() {
             <Route path="reading" element={<AdminReadingPage />} />
             <Route path="grammar" element={<AdminGrammarPage />} />
             <Route path="tutor-knowledge" element={<AdminTutorKnowledgePage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
+          {/* Bắt mọi đường dẫn còn lại. Phải đứng cuối cùng. */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
