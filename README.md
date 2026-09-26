@@ -14,6 +14,9 @@ Website học tiếng Đức và luyện thi chứng chỉ (Goethe/telc/TestDaF)
   der/die/das) được biên soạn từ [WiktionaryDE](https://de.wiktionary.org) qua dự án
   [gambolputty/german-nouns](https://github.com/gambolputty/german-nouns), giấy phép
   [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+- Toàn bộ nội dung ngữ pháp (lý thuyết tiếng Việt, bài tập, bảng tra cứu) do dự án **tự biên
+  soạn**, không sao chép từ giáo trình nào. Danh sách chủ điểm và thứ tự theo cấp độ tham chiếu
+  mục lục giáo trình phổ biến — đây là danh sách dữ kiện, không phải nội dung được bảo hộ.
 
 ## Cấu trúc dự án
 
