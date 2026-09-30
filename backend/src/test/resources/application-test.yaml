@@ -1,0 +1,38 @@
+# Cấu hình cho profile "test" — nạp ĐÈ LÊN src/main/resources/application.yaml, không thay thế nó.
+#
+# Cố ý đặt tên application-test.yaml chứ không phải application.yaml: một file application.yaml
+# trong src/test/resources sẽ che khuất HOÀN TOÀN file cùng tên ở src/main (thư mục test đứng trước
+# trên classpath), và test sẽ chạy với một bộ cấu hình khác hẳn production mà không ai hay biết.
+#
+# Chỉ khai báo đúng những key trong application.yaml KHÔNG có giá trị mặc định (dạng ${VAR} trơn)
+# — thiếu chúng là Spring không khởi động được. Mọi thứ còn lại dùng nguyên mặc định của app.
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
+  jpa:
+    # application.yaml bật show-sql cho dev. Trong test nó in hàng nghìn dòng SQL làm chìm mất
+    # đúng dòng báo lỗi cần đọc.
+    show-sql: false
+
+app:
+  jwt:
+    # JwtService dùng thẳng byte UTF-8 của chuỗi này làm khoá HMAC-SHA256, nên cần tối thiểu
+    # 32 byte — ngắn hơn là Keys.hmacShaKeyFor() ném WeakKeyException lúc khởi động.
+    secret: test-only-jwt-secret-not-used-anywhere-else-0123456789
+
+  # Key GIẢ cho 3 tầng ChatModel của gia sư (TutorConfig). GoogleAiGeminiChatModel kiểm tra key
+  # ngay lúc khởi tạo bean và ném lỗi nếu rỗng — kéo sập cả context dù test không hề dùng tới gia
+  # sư. Đặt đủ cả 3 để không phụ thuộc vào việc thư viện nào kiểm tra lúc nào.
+  #
+  # Cố ý ghi đè ở key app.*, KHÔNG phải biến môi trường GEMINI_API_KEY: nhờ vậy dù máy dev có export
+  # key thật trong shell, test vẫn dùng key giả. Test lỡ đi tới đường gọi AI thì nhận 401 ngay, chứ
+  # không âm thầm tiêu quota thật.
+  groq-api-key: test-dummy-key
+  gemini-api-key: test-dummy-key
+  openrouter-api-key: test-dummy-key

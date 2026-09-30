@@ -33,10 +33,12 @@ public class TokenCleanupService {
         LocalDateTime now = LocalDateTime.now();
         int emailTokensDeleted = emailVerificationTokenRepository.deleteExpired(now);
         int passwordTokensDeleted = passwordResetTokenRepository.deleteExpiredOrUsed(now);
-        int refreshTokensDeleted = refreshTokenRepository.deleteExpiredOrRevoked(now);
+        // Refresh token chỉ xoá khi HẾT HẠN, không xoá khi mới bị thu hồi — giữ lại để còn phát hiện
+        // được token bị đánh cắp đưa ra dùng lại. Xem RefreshTokenRepository#deleteExpired.
+        int refreshTokensDeleted = refreshTokenRepository.deleteExpired(now);
         log.info(
             "Token cleanup: xoá {} email verification token hết hạn, {} password reset token "
-                + "hết hạn/đã dùng, {} refresh token hết hạn/đã thu hồi",
+                + "hết hạn/đã dùng, {} refresh token hết hạn",
             emailTokensDeleted, passwordTokensDeleted, refreshTokensDeleted
         );
     }

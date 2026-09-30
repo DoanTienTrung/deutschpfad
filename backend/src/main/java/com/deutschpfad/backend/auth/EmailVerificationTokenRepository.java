@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
-    Optional<EmailVerificationToken> findByToken(String token);
+    Optional<EmailVerificationToken> findByTokenHash(String tokenHash);
 
     @Modifying
     @Query("DELETE FROM EmailVerificationToken t WHERE t.expiresAt < :now")

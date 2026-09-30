@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -23,6 +22,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final RefreshTokenService refreshTokenService;
     private final String frontendUrl;
 
     public AuthService(
@@ -32,6 +32,7 @@ public class AuthService {
         PasswordEncoder passwordEncoder,
         JwtService jwtService,
         EmailService emailService,
+        RefreshTokenService refreshTokenService,
         @Value("${app.frontend-url}") String frontendUrl
     ) {
         this.userRepository = userRepository;
@@ -40,6 +41,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
+        this.refreshTokenService = refreshTokenService;
         this.frontendUrl = frontendUrl;
     }
 
@@ -83,13 +85,15 @@ public class AuthService {
     }
 
     private void sendVerificationEmail(User user) {
+        // Giá trị gốc chỉ đi vào link trong email; DB chỉ giữ hash — xem SecureTokens.
+        String rawToken = SecureTokens.newToken();
         EmailVerificationToken verificationToken = new EmailVerificationToken();
         verificationToken.setUser(user);
-        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationToken.setTokenHash(SecureTokens.hash(rawToken));
         verificationToken.setExpiresAt(LocalDateTime.now().plusHours(24));
         tokenRepository.save(verificationToken);
 
-        String link = frontendUrl + "/verify-email?token=" + verificationToken.getToken();
+        String link = frontendUrl + "/verify-email?token=" + rawToken;
         emailService.sendHtml(
             user.getEmail(),
             "Xác thực tài khoản DeutschPfad",
@@ -120,8 +124,8 @@ public class AuthService {
     }
 
     @Transactional
-    public void verifyEmail(String token) {
-        EmailVerificationToken verificationToken = tokenRepository.findByToken(token)
+    public void verifyEmail(String rawToken) {
+        EmailVerificationToken verificationToken = tokenRepository.findByTokenHash(SecureTokens.hash(rawToken))
             .orElseThrow(() -> new IllegalArgumentException("Token không hợp lệ"));
 
         if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -140,13 +144,14 @@ public class AuthService {
 
     public void forgotPassword(ForgotPasswordRequest request) {
         userRepository.findByEmail(request.email()).ifPresent(user -> {
+            String rawToken = SecureTokens.newToken();
             PasswordResetToken resetToken = new PasswordResetToken();
             resetToken.setUser(user);
-            resetToken.setToken(UUID.randomUUID().toString());
+            resetToken.setTokenHash(SecureTokens.hash(rawToken));
             resetToken.setExpiresAt(LocalDateTime.now().plusHours(1));
             passwordResetTokenRepository.save(resetToken);
 
-            String link = frontendUrl + "/reset-password?token=" + resetToken.getToken();
+            String link = frontendUrl + "/reset-password?token=" + rawToken;
             emailService.sendHtml(
                 user.getEmail(),
                 "Đặt lại mật khẩu DeutschPfad",
@@ -171,8 +176,10 @@ public class AuthService {
         });
     }
 
+    @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.token())
+        PasswordResetToken resetToken = passwordResetTokenRepository
+            .findByTokenHash(SecureTokens.hash(request.token()))
             .orElseThrow(() -> new IllegalArgumentException("Token không hợp lệ"));
 
         if (resetToken.isUsed()) {
@@ -181,23 +188,34 @@ public class AuthService {
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Token đã hết hạn");
         }
+        // Kiểm tra-và-ghi nguyên khối: hai request cùng một link thì chỉ một bên đặt được mật khẩu.
+        // Trả về 0 nghĩa là request khác vừa dùng token này sau lúc ta đọc ở trên.
+        if (passwordResetTokenRepository.markUsedIfUnused(resetToken.getId()) == 0) {
+            throw new IllegalArgumentException("Token đã được sử dụng");
+        }
 
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
-        resetToken.setUsed(true);
-        passwordResetTokenRepository.save(resetToken);
+        // Đặt lại mật khẩu thường là vì nghi bị lộ — phải đá mọi phiên đang mở, kể cả phiên của kẻ
+        // đã chiếm tài khoản. Trước đây refresh token cũ vẫn tiếp tục cấp access token mới.
+        refreshTokenService.endAllSessions(user);
     }
 
     // For an already-authenticated user changing their own password -- confirms identity via the
     // current password (no email round-trip needed, unlike forgotPassword/resetPassword above).
+    //
+    // Đăng xuất mọi thiết bị. Controller cấp lại phiên mới cho CHÍNH thiết bị đang đổi mật khẩu,
+    // nên người dùng không bị đá ra ở máy mình đang dùng — chỉ các máy khác.
+    @Transactional
     public void changePassword(User user, ChangePasswordRequest request) {
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
             throw new InvalidCredentialsException("Mật khẩu hiện tại không đúng");
         }
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
+        refreshTokenService.endAllSessions(user);
     }
 
     public User updateProfile(User user, UpdateProfileRequest request) {

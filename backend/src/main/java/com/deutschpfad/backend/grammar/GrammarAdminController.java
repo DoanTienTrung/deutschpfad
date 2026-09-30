@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * CRUD chủ điểm ngữ pháp + bài tập.
@@ -99,6 +100,8 @@ public class GrammarAdminController {
         );
     }
 
+    // Nhiều lệnh ghi trong một request: xoá bài tập rồi mới xoá chủ điểm — lỗi ở bước sau thì bước trước phải được hoàn lại.
+    @Transactional
     @DeleteMapping("/topics/{id}")
     public ResponseEntity<Void> deleteTopic(@PathVariable Long id) {
         exerciseRepository.deleteByTopicId(id);

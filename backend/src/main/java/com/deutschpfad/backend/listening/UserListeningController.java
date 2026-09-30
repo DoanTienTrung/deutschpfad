@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Lets a logged-in user maintain their own private list of YouTube videos (mirrors the
@@ -99,6 +100,8 @@ public class UserListeningController {
         return ResponseEntity.ok(applyTranscript(item, request.rawTranscript(), request.autoFetch()));
     }
 
+    // Nhiều lệnh ghi trong một request: xoá các câu rồi mới xoá mục — lỗi ở bước sau thì bước trước phải được hoàn lại.
+    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication authentication) {
         UserListeningItem item = getOwnedItem(id, currentUser(authentication));

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/reading")
@@ -221,6 +222,8 @@ public class ReadingController {
         return ResponseEntity.ok(ReadingPassageDetailResponse.from(passage, saved, List.of()));
     }
 
+    // Nhiều lệnh ghi trong một request: xoá câu hỏi rồi mới xoá bài đọc — lỗi ở bước sau thì bước trước phải được hoàn lại.
+    @Transactional
     @DeleteMapping("/mine/{id}")
     public ResponseEntity<Void> deleteMine(@PathVariable Long id, Authentication authentication) {
         ReadingPassage passage = findOwnedOrThrow(id, currentUser(authentication));

@@ -9,7 +9,33 @@ env:
   FRONTEND_IMAGE: ghcr.io/doantientrung/deutschpfad-frontend
 
 jobs:
+  # Chạy toàn bộ test backend TRƯỚC khi build bất kỳ image nào. Trước đây pipeline không có bước
+  # test (Dockerfile build bằng -DskipTests) nên code hỏng vẫn được deploy thẳng lên production.
+  #
+  # -DskipTests trong Dockerfile vẫn giữ nguyên, và đó là cách làm đúng: test cần Postgres thật
+  # (Testcontainers) nên không chạy được bên trong `docker build`. Chỗ thiếu là một job test riêng
+  # ở đây — không phải bỏ -DskipTests.
+  test-backend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # Testcontainers tự dựng Postgres (image pgvector) trong Docker — runner ubuntu-latest của
+      # GitHub có sẵn Docker. Test không cần secret nào: profile "test" dùng giá trị giả, xem
+      # backend/src/test/resources/application-test.yaml.
+      - name: Run backend tests
+        working-directory: backend
+        run: ./mvnw -B test
+
   build-backend:
+    # Không build (và không đẩy image :latest lên GHCR) khi test đỏ.
+    needs: test-backend
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,6 +56,10 @@ jobs:
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
 
   build-frontend:
+    # Cũng chờ test backend: nếu không, test đỏ thì backend bị chặn nhưng frontend vẫn đẩy image
+    # :latest lên GHCR — lần pull kế tiếp trên server sẽ lấy về một frontend không khớp backend.
+    # (Frontend có sẵn lớp chặn riêng: `npm run build` chạy `tsc -b` bên trong Docker build.)
+    needs: test-backend
     runs-on: ubuntu-latest
     permissions:
       contents: read

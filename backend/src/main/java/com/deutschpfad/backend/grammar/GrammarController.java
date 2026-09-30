@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/grammar")
@@ -154,6 +155,8 @@ public class GrammarController {
         );
     }
 
+    // Nhiều lệnh ghi trong một request: lưu lượt làm bài + cập nhật tiến độ + ghi streak phải cùng thành công hoặc cùng huỷ.
+    @Transactional
     @PostMapping("/{slug}/submit")
     public GrammarSubmitResponse submit(
         @PathVariable String slug, @Valid @RequestBody GrammarSubmitRequest request, Authentication authentication

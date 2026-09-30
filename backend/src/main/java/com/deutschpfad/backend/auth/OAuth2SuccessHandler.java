@@ -67,8 +67,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String token = jwtService.generateToken(user);
         cookieUtil.setAuthCookie(response, token);
 
-        RefreshToken refreshToken = refreshTokenService.generate(user);
-        cookieUtil.setRefreshCookie(response, refreshToken.getToken());
+        cookieUtil.setRefreshCookie(response, refreshTokenService.startSession(user));
 
         response.sendRedirect(frontendUrl + "/oauth2/callback");
     }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/lessons/{lessonId}/progress")
@@ -41,6 +42,8 @@ public class LessonProgressController {
             .collect(Collectors.toSet());
     }
 
+    // Nhiều lệnh ghi trong một request: lưu tiến độ bài học + ghi streak phải cùng thành công hoặc cùng huỷ.
+    @Transactional
     @PostMapping
     public Set<PracticeMode> markComplete(
         @PathVariable Long lessonId,

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/admin/listening-exercises")
@@ -76,6 +77,8 @@ public class ListeningExerciseAdminController {
         return ResponseEntity.ok(applyTranscript(exercise, request.rawTranscript(), request.autoFetch()));
     }
 
+    // Nhiều lệnh ghi trong một request: xoá các câu rồi mới xoá bài nghe — lỗi ở bước sau thì bước trước phải được hoàn lại.
+    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         sentenceRepository.deleteByExerciseId(id);

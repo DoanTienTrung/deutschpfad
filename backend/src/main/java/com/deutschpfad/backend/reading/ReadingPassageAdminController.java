@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/admin/reading-passages")
@@ -112,6 +113,8 @@ public class ReadingPassageAdminController {
         }
     }
 
+    // Nhiều lệnh ghi trong một request: xoá câu hỏi + phương án nối rồi mới xoá bài đọc — phải nguyên khối.
+    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         questionRepository.deleteByPassageId(id);

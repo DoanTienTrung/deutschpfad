@@ -58,8 +58,7 @@ public class AuthController {
         LoginResult result = authService.login(request);
         cookieUtil.setAuthCookie(response, result.token());
 
-        RefreshToken refreshToken = refreshTokenService.generate(result.user());
-        cookieUtil.setRefreshCookie(response, refreshToken.getToken());
+        cookieUtil.setRefreshCookie(response, refreshTokenService.startSession(result.user()));
 
         return ResponseEntity.ok(UserProfileResponse.from(result.user()));
     }
@@ -74,11 +73,10 @@ public class AuthController {
             throw new InvalidCredentialsException("Thiếu refresh token");
         }
 
-        RefreshToken newRefreshToken = refreshTokenService.validateAndRotate(refreshTokenValue);
-        String newAccessToken = jwtService.generateToken(newRefreshToken.getUser());
+        RefreshTokenService.RotatedSession session = refreshTokenService.validateAndRotate(refreshTokenValue);
 
-        cookieUtil.setAuthCookie(response, newAccessToken);
-        cookieUtil.setRefreshCookie(response, newRefreshToken.getToken());
+        cookieUtil.setAuthCookie(response, jwtService.generateToken(session.user()));
+        cookieUtil.setRefreshCookie(response, session.rawRefreshToken());
 
         return ResponseEntity.ok(Map.of("message", "Làm mới token thành công"));
     }
@@ -132,11 +130,19 @@ public class AuthController {
 
     @PostMapping("/change-password")
     public ResponseEntity<Map<String, String>> changePassword(
-        @Valid @RequestBody ChangePasswordRequest request, Authentication authentication
+        @Valid @RequestBody ChangePasswordRequest request,
+        Authentication authentication,
+        HttpServletResponse response
     ) {
         User user = userRepository.findByEmail(authentication.getName())
             .orElseThrow(() -> new InvalidCredentialsException("Không tìm thấy user"));
         authService.changePassword(user, request);
+
+        // changePassword() vừa đăng xuất MỌI thiết bị, kể cả thiết bị này. Cấp lại phiên mới để
+        // người dùng không bị đá ra ngay trên máy mình vừa đổi mật khẩu — chỉ các máy khác bị đá.
+        cookieUtil.setAuthCookie(response, jwtService.generateToken(user));
+        cookieUtil.setRefreshCookie(response, refreshTokenService.startSession(user));
+
         return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
     }
 
@@ -144,7 +150,7 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         String refreshTokenValue = cookieUtil.extractCookie(request, CookieUtil.REFRESH_COOKIE_NAME);
         if (refreshTokenValue != null) {
-            refreshTokenService.revoke(refreshTokenValue);
+            refreshTokenService.endSession(refreshTokenValue);
         }
         cookieUtil.clearAuthCookie(response);
         cookieUtil.clearRefreshCookie(response);

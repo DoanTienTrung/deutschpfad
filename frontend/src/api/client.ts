@@ -11,19 +11,40 @@ export class ApiError extends Error {
   }
 }
 
+// Chống gọi refresh trùng TRONG MỘT TAB: nhiều request cùng dính 401 thì chỉ refresh một lần,
+// các request còn lại chờ chung kết quả đó.
 let refreshPromise: Promise<boolean> | null = null
+
+function refreshOnce(): Promise<boolean> {
+  return fetch(`${API_BASE}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+    .then((res) => res.ok)
+    .catch(() => false)
+}
 
 function tryRefresh(): Promise<boolean> {
   if (!refreshPromise) {
-    refreshPromise = fetch(`${API_BASE}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
+    // Chống gọi refresh trùng GIỮA CÁC TAB. Biến refreshPromise ở trên chỉ sống trong một tab,
+    // mà cookie refresh token thì dùng chung. Mở 2 tab, access token hết hạn → cả hai cùng gửi
+    // đi CÙNG MỘT refresh token. Server coi đó là token đã xoay bị dùng lại (dấu hiệu bị đánh
+    // cắp) và thu hồi cả phiên → người dùng bị đăng xuất oan ở mọi tab.
+    //
+    // Web Locks xếp hàng các tab: chỉ một tab refresh tại một thời điểm. Trình duyệt đọc cookie
+    // lúc GỬI request, nên tab thứ hai tự động mang theo token MỚI mà tab thứ nhất vừa nhận về —
+    // không còn "dùng lại" nào cả, và server giữ được chế độ nghiêm ngặt.
+    //
+    // navigator.locks chỉ có trong secure context (HTTPS hoặc localhost). Không có thì lùi về
+    // cách cũ — chỉ chống trùng trong tab, vẫn chạy được.
+    const run =
+      'locks' in navigator
+        ? navigator.locks.request('deutschpfad-token-refresh', refreshOnce)
+        : refreshOnce()
+
+    refreshPromise = run.finally(() => {
+      refreshPromise = null
     })
-      .then((res) => res.ok)
-      .catch(() => false)
-      .finally(() => {
-        refreshPromise = null
-      })
   }
   return refreshPromise
 }
