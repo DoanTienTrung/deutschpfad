@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DeckItem } from '../../api/types'
 import { buildChoices, questionDisplay, shuffle } from '../../lib/quiz'
-import { isCorrectAnswer } from '../../lib/answer'
+import { isCorrectAnswer, spokenForm } from '../../lib/answer'
 import { speak } from '../../lib/speech'
 import Button from '../ui/Button'
 import Field from '../ui/Field'
@@ -134,7 +134,7 @@ export default function DeckFlashcardExercise({ items, onComplete }: { items: De
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  speak(card.germanWord)
+                  speak(spokenForm(card.germanWord))
                 }}
                 className="mt-4 text-primary hover:text-primary-deep"
                 aria-label="Phát âm"

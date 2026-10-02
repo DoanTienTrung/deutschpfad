@@ -1,3 +1,5 @@
+import { spokenForm } from './answer'
+
 export function shuffle<T>(items: T[]): T[] {
   const copy = [...items]
   for (let i = copy.length - 1; i > 0; i--) {
@@ -44,16 +46,20 @@ export function questionDisplay(item: {
 }): QuestionDisplay | null {
   if (!item.exampleSentence) return null
   const sentence = item.exampleSentence
+  // So với dạng từ THẬT, không phải chuỗi ký hiệu: germanWord của dữ liệu giáo trình là
+  // "das Bild, -er" — so nguyên chuỗi thì không câu nào chứa nó, nên ~832 từ có số nhiều không bao
+  // giờ được đục lỗ, và flashcard của chúng chỉ toàn kiểu lật thẻ.
+  const word = spokenForm(item.germanWord)
 
   if (!item.exampleSentenceHighlight) {
-    if (sentence.toLowerCase().includes(item.germanWord.toLowerCase())) {
-      return { text: blankOut(sentence, item.germanWord), highlightWord: null }
+    if (sentence.toLowerCase().includes(word.toLowerCase())) {
+      return { text: blankOut(sentence, word), highlightWord: null }
     }
     return { text: sentence, highlightWord: null }
   }
 
   const isDictionaryForm =
-    item.exampleSentenceHighlight.toLowerCase() === stripArticle(item.germanWord).toLowerCase()
+    item.exampleSentenceHighlight.toLowerCase() === stripArticle(word).toLowerCase()
   if (isDictionaryForm) {
     return { text: blankOut(sentence, item.exampleSentenceHighlight), highlightWord: null }
   }

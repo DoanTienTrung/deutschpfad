@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
 import { speak } from '../../lib/speech'
+import { spokenForm } from '../../lib/answer'
 
 const PAGE_SIZE = 25
 
@@ -34,7 +35,7 @@ export default function FlashcardBrowseList({
               {item.wordType && <span className="text-sm text-muted">({item.wordType})</span>}
               {item.phonetic && <span className="text-sm text-muted">/{item.phonetic}/</span>}
               <button
-                onClick={() => speak(item.germanWord)}
+                onClick={() => speak(spokenForm(item.germanWord))}
                 aria-label="Phát âm"
                 className="text-lg text-primary"
               >

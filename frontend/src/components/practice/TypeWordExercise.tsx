@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
 import { questionDisplay, shuffle } from '../../lib/quiz'
-import { isCorrectAnswer } from '../../lib/answer'
+import { checkAnswer } from '../../lib/answer'
 import Field from '../ui/Field'
 import QuestionSentence from './QuestionSentence'
 
@@ -18,6 +18,7 @@ export default function TypeWordExercise({
   const [index, setIndex] = useState(0)
   const [input, setInput] = useState('')
   const [revealAnswer, setRevealAnswer] = useState(false)
+  const [articleHint, setArticleHint] = useState<string | null>(null)
   const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -38,11 +39,13 @@ export default function TypeWordExercise({
     setIndex(i)
     setInput('')
     setRevealAnswer(false)
+    setArticleHint(null)
   }
 
   function handleSubmit() {
     if (answeredIndexes.has(index) || !input.trim()) return
-    if (isCorrectAnswer(input, current.germanWord)) {
+    const result = checkAnswer(input, current.germanWord)
+    if (result.correct) {
       setAnsweredIndexes((prev) => new Set(prev).add(index))
       if (index < order.length - 1) {
         goTo(index + 1)
@@ -52,6 +55,7 @@ export default function TypeWordExercise({
       }
     } else {
       setRevealAnswer(true)
+      setArticleHint(result.articleHint)
       setInput('')
     }
   }
@@ -136,7 +140,10 @@ export default function TypeWordExercise({
 
       {revealAnswer && !answeredIndexes.has(index) && (
         <p className="mt-3 text-sm font-medium text-danger">
-          Chưa đúng — đáp án là "{current.germanWord}". Gõ lại cho đúng để qua câu mới.
+          {articleHint
+            ? `${articleHint}. Đáp án đầy đủ: "${current.germanWord}".`
+            : `Chưa đúng — đáp án là "${current.germanWord}".`}{' '}
+          Gõ lại cho đúng để qua câu mới.
         </p>
       )}
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
 import { questionDisplay, shuffle } from '../../lib/quiz'
-import { isCorrectAnswer } from '../../lib/answer'
+import { checkAnswer, spokenForm } from '../../lib/answer'
 import AudioBar from './AudioBar'
 import Field from '../ui/Field'
 import QuestionSentence from './QuestionSentence'
@@ -22,6 +22,7 @@ export default function DictationExercise({
   const [attemptFailed, setAttemptFailed] = useState(false)
   const [revealAnswer, setRevealAnswer] = useState(false)
   const [justCorrect, setJustCorrect] = useState(false)
+  const [articleHint, setArticleHint] = useState<string | null>(null)
   const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
   const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -52,11 +53,14 @@ export default function DictationExercise({
     setAttemptFailed(false)
     setRevealAnswer(false)
     setJustCorrect(false)
+    setArticleHint(null)
   }
 
   function handleCheck() {
     if (answeredIndexes.has(index) || !input.trim() || justCorrect) return
-    if (isCorrectAnswer(input, current.germanWord)) {
+    const result = checkAnswer(input, current.germanWord)
+    setArticleHint(result.correct ? null : result.articleHint)
+    if (result.correct) {
       setAnsweredIndexes((prev) => new Set(prev).add(index))
       setJustCorrect(true)
       advanceTimeoutRef.current = setTimeout(() => {
@@ -117,7 +121,9 @@ export default function DictationExercise({
       </div>
 
       <div className="mb-6 rounded-md border border-hairline bg-white p-6 text-center">
-        <AudioBar text={current.germanWord} />
+        {/* Đọc dạng nói được, không đọc nguyên germanWord: "das Bild, -er" sẽ bị đọc thành
+            "das Bild, trừ e-r" — mà đây là bài chính tả, người học gõ lại đúng cái mình nghe. */}
+        <AudioBar text={spokenForm(current.germanWord)} />
 
         <div className="mt-4">
           {current.wordType && <p className="text-xs font-medium uppercase text-muted">{current.wordType}</p>}
@@ -175,11 +181,16 @@ export default function DictationExercise({
                 <p className="mt-3 text-sm font-medium text-success">Chính xác!</p>
               ) : revealAnswer ? (
                 <p className="mt-3 text-sm font-medium text-danger">
-                  Chưa đúng — đáp án là "{current.germanWord}". Gõ lại cho đúng để qua câu mới.
+                  {articleHint
+                    ? `${articleHint}. Đáp án đầy đủ: "${current.germanWord}".`
+                    : `Chưa đúng — đáp án là "${current.germanWord}".`}{' '}
+                  Gõ lại cho đúng để qua câu mới.
                 </p>
               ) : (
                 attemptFailed && (
-                  <p className="mt-3 text-sm font-medium text-danger">Chưa đúng, thử lại nhé.</p>
+                  <p className="mt-3 text-sm font-medium text-danger">
+                    {articleHint ?? 'Chưa đúng, thử lại nhé.'}
+                  </p>
                 )
               )}
             </>

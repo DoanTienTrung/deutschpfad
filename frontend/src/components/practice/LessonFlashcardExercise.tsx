@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { submitReview } from '../../api/vocabularyApi'
 import type { VocabularyItem, ReviewQuality } from '../../api/types'
 import { buildChoices, questionDisplay, shuffle } from '../../lib/quiz'
-import { isCorrectAnswer } from '../../lib/answer'
+import { checkAnswer, spokenForm } from '../../lib/answer'
 import { speak } from '../../lib/speech'
 import Button from '../ui/Button'
 import Alert from '../ui/Alert'
@@ -44,6 +44,9 @@ export default function LessonFlashcardExercise({
   const [fillRevealed, setFillRevealed] = useState(false)
   const [fillCorrect, setFillCorrect] = useState(false)
   const [fillWrong, setFillWrong] = useState(false)
+  // Có gõ sai ít nhất một lần, hoặc bấm "Hiện đáp án" — xem ghi chú ở `objectiveOutcome`.
+  const [fillMistake, setFillMistake] = useState(false)
+  const [fillHint, setFillHint] = useState<string | null>(null)
   const [choiceSelected, setChoiceSelected] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [reviewedCount, setReviewedCount] = useState(0)
@@ -75,12 +78,30 @@ export default function LessonFlashcardExercise({
   const card = order[index]
   const revealed = mode === 'flip' ? flipped : mode === 'fill' ? fillRevealed : choiceSelected !== null
 
+  // Ở kiểu gõ và kiểu chọn, hệ thống BIẾT người học đúng hay sai — không để họ tự chấm. Trước
+  // đây cả ba kiểu đều kết thúc bằng 3 nút Quên/Nhớ/Dễ, nên gõ sai rồi bấm "Nhớ", hay bấm "Hiện
+  // đáp án" rồi bấm "Dễ" đều được, và lịch ôn SM-2 bị đẩy xa cho một từ chưa hề nhớ.
+  // Lần thử ĐẦU TIÊN quyết định: sai lần đầu thì ghi "Quên" — vẫn cho gõ lại để luyện, nhưng từ
+  // này sẽ quay lại sớm. Kiểu lật thẻ không có tín hiệu khách quan nên giữ tự chấm.
+  const objectiveOutcome: 'passed' | 'failed' | null =
+    mode === 'fill'
+      ? fillMistake
+        ? 'failed'
+        : 'passed'
+      : mode === 'choice'
+        ? choiceSelected === card.germanWord
+          ? 'passed'
+          : 'failed'
+        : null
+
   function resetCardState() {
     setFlipped(false)
     setFillInput('')
     setFillRevealed(false)
     setFillCorrect(false)
     setFillWrong(false)
+    setFillMistake(false)
+    setFillHint(null)
     setChoiceSelected(null)
   }
 
@@ -111,18 +132,24 @@ export default function LessonFlashcardExercise({
   function handleFillReveal() {
     setFillCorrect(false)
     setFillWrong(false)
+    setFillMistake(true)
+    setFillHint(null)
     setFillRevealed(true)
     setFillInput(card.germanWord)
   }
 
   function handleFillKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== 'Enter' || fillRevealed || !fillInput.trim()) return
-    if (isCorrectAnswer(fillInput, card.germanWord)) {
+    const result = checkAnswer(fillInput, card.germanWord)
+    if (result.correct) {
       setFillCorrect(true)
       setFillWrong(false)
+      setFillHint(null)
       setFillRevealed(true)
     } else {
       setFillWrong(true)
+      setFillMistake(true)
+      setFillHint(result.articleHint)
     }
   }
 
@@ -147,7 +174,7 @@ export default function LessonFlashcardExercise({
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  speak(card.germanWord)
+                  speak(spokenForm(card.germanWord))
                 }}
                 className="mt-4 text-primary hover:text-primary-deep"
                 aria-label="Phát âm"
@@ -220,13 +247,23 @@ export default function LessonFlashcardExercise({
                     </button>
                   </div>
                   {fillWrong && (
-                    <p className="mt-3 text-center text-sm font-medium text-danger">Chưa đúng, thử lại nhé.</p>
+                    <p className="mt-3 text-center text-sm font-medium text-danger">
+                      {fillHint ?? 'Chưa đúng, thử lại nhé.'}
+                    </p>
                   )}
                 </>
               )}
               {fillRevealed && (
-                <p className={`mt-3 text-center text-sm font-medium ${fillCorrect ? 'text-success' : 'text-danger'}`}>
-                  {fillCorrect ? 'Chính xác!' : `Đáp án: "${card.germanWord}"`}
+                <p
+                  className={`mt-3 text-center text-sm font-medium ${
+                    fillCorrect && !fillMistake ? 'text-success' : 'text-danger'
+                  }`}
+                >
+                  {fillCorrect
+                    ? fillMistake
+                      ? 'Đúng rồi — nhưng chưa đúng ngay lần đầu.'
+                      : 'Chính xác!'
+                    : `Đáp án: "${card.germanWord}"`}
                 </p>
               )}
             </>
@@ -260,7 +297,29 @@ export default function LessonFlashcardExercise({
         </div>
       )}
 
-      {revealed && (
+      {revealed && objectiveOutcome === 'failed' && (
+        <div className="mt-6">
+          <p className="mb-2 text-center text-xs text-muted">
+            Chưa nhớ ra ngay lần đầu — từ này sẽ quay lại sớm để ôn.
+          </p>
+          <Button variant="primary" onClick={() => handleAnswer('FORGOT')} className="w-full">
+            Tiếp tục
+          </Button>
+        </div>
+      )}
+
+      {revealed && objectiveOutcome === 'passed' && (
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <Button variant="secondary" onClick={() => handleAnswer('REMEMBERED')}>
+            Nhớ
+          </Button>
+          <Button variant="primary" onClick={() => handleAnswer('EASY')}>
+            Dễ
+          </Button>
+        </div>
+      )}
+
+      {revealed && objectiveOutcome === null && (
         <div className="mt-6 grid grid-cols-3 gap-2">
           <Button variant="secondary" onClick={() => handleAnswer('FORGOT')} className="text-danger">
             Quên

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
 import { buildChoices, shuffle } from '../../lib/quiz'
 import AudioBar from './AudioBar'
+import { spokenForm } from '../../lib/answer'
 
 export default function ListenChooseExercise({
   items,
@@ -70,7 +71,7 @@ export default function ListenChooseExercise({
       </p>
 
       <div className="mb-6 rounded-md border border-hairline bg-white p-6">
-        <AudioBar text={current.germanWord} />
+        <AudioBar text={spokenForm(current.germanWord)} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
