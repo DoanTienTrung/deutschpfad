@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
+import type { PracticeResultHandler } from '../../lib/practiceResult'
 import { questionDisplay, shuffle } from '../../lib/quiz'
 import { checkAnswer } from '../../lib/answer'
 import Field from '../ui/Field'
@@ -10,9 +11,11 @@ const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü']
 export default function TypeWordExercise({
   items,
   onComplete,
+  onResult,
 }: {
   items: VocabularyItem[]
   onComplete?: () => void
+  onResult?: PracticeResultHandler
 }) {
   const [order] = useState(() => shuffle(items))
   const [index, setIndex] = useState(0)
@@ -21,6 +24,10 @@ export default function TypeWordExercise({
   const [articleHint, setArticleHint] = useState<string | null>(null)
   const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
   const inputRef = useRef<HTMLInputElement | null>(null)
+  // Câu nào đã báo kết quả lần thử đầu. Gõ sai thì phải gõ lại cho đúng mới qua câu — lần gõ lại
+  // đó là chép đáp án vừa thấy, không còn đo việc nhớ nên không báo nữa. Dùng ref vì không
+  // ảnh hưởng tới giao diện.
+  const reportedRef = useRef<Set<number>>(new Set())
 
   const finished = order.length > 0 && answeredIndexes.size === order.length
 
@@ -45,6 +52,10 @@ export default function TypeWordExercise({
   function handleSubmit() {
     if (answeredIndexes.has(index) || !input.trim()) return
     const result = checkAnswer(input, current.germanWord)
+    if (!reportedRef.current.has(index)) {
+      reportedRef.current.add(index)
+      onResult?.(current, result.correct)
+    }
     if (result.correct) {
       setAnsweredIndexes((prev) => new Set(prev).add(index))
       if (index < order.length - 1) {

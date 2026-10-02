@@ -1,9 +1,6 @@
 package com.deutschpfad.backend.vocabulary;
 
-import com.deutschpfad.backend.auth.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -17,13 +14,6 @@ public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, 
     List<VocabularyItem> findByExampleSentenceIsNotNull();
     List<VocabularyItem> findByExampleSentenceIsNotNullAndExampleSentenceHighlightIsNull();
 
-    // Only words the user has studied before and whose SM2 schedule says are due again today —
-    // matches VocabularyReviewService.getStats()'s "dueForReview" count exactly. Never-studied
-    // words are a separate concept ("chưa học", browsed via lessons/decks), not part of this queue.
-    @Query("""
-        SELECT v FROM VocabularyItem v
-        JOIN UserVocabulary uv ON uv.vocabularyItem = v AND uv.user = :user
-        WHERE uv.nextReviewDate <= CURRENT_DATE
-        """)
-    List<VocabularyItem> findDueForReview(@Param("user") User user);
+    // Hàng đợi ôn tập đã chuyển sang UserVocabularyRepository#findDue: lịch ôn giờ gắn với TỪ
+    // (word_key), không gắn với dòng, nên truy vấn phải bắt đầu từ bảng lịch ôn.
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
+import type { PracticeResultHandler } from '../../lib/practiceResult'
 import { questionDisplay, shuffle } from '../../lib/quiz'
 import { checkAnswer, spokenForm } from '../../lib/answer'
 import AudioBar from './AudioBar'
@@ -12,9 +13,11 @@ const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü']
 export default function DictationExercise({
   items,
   onComplete,
+  onResult,
 }: {
   items: VocabularyItem[]
   onComplete?: () => void
+  onResult?: PracticeResultHandler
 }) {
   const [order] = useState(() => shuffle(items))
   const [index, setIndex] = useState(0)
@@ -26,6 +29,8 @@ export default function DictationExercise({
   const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
   const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  // Câu nào đã báo kết quả lần thử đầu — xem ghi chú cùng chỗ trong TypeWordExercise.
+  const reportedRef = useRef<Set<number>>(new Set())
 
   const finished = order.length > 0 && answeredIndexes.size === order.length
 
@@ -60,6 +65,10 @@ export default function DictationExercise({
     if (answeredIndexes.has(index) || !input.trim() || justCorrect) return
     const result = checkAnswer(input, current.germanWord)
     setArticleHint(result.correct ? null : result.articleHint)
+    if (!reportedRef.current.has(index)) {
+      reportedRef.current.add(index)
+      onResult?.(current, result.correct)
+    }
     if (result.correct) {
       setAnsweredIndexes((prev) => new Set(prev).add(index))
       setJustCorrect(true)

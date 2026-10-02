@@ -10,6 +10,7 @@ import MatchingExercise from '../components/practice/MatchingExercise'
 import ListenChooseExercise from '../components/practice/ListenChooseExercise'
 import TypeWordExercise from '../components/practice/TypeWordExercise'
 import DictationExercise from '../components/practice/DictationExercise'
+import { recordPracticeResult } from '../lib/practiceResult'
 
 const MODES: { value: PracticeMode; label: string }[] = [
   { value: 'FLASHCARD', label: 'Flashcard' },
@@ -190,19 +191,20 @@ export default function PracticePage() {
               <LessonFlashcardExercise key={`flashcard-${id}`} items={items} onComplete={handleComplete} />
             )}
             {mode === 'MULTIPLE_CHOICE' && (
-              <MultipleChoiceExercise key={`mc-${id}`} items={items} onComplete={handleComplete} />
+              <MultipleChoiceExercise key={`mc-${id}`} items={items} onComplete={handleComplete} onResult={recordPracticeResult} />
             )}
+            {/* Cố ý KHÔNG truyền onResult cho nối từ — xem ghi chú đầu MatchingExercise. */}
             {mode === 'MATCH' && (
               <MatchingExercise key={`match-${id}`} items={items} onComplete={handleComplete} />
             )}
             {mode === 'LISTEN' && (
-              <ListenChooseExercise key={`listen-${id}`} items={items} onComplete={handleComplete} />
+              <ListenChooseExercise key={`listen-${id}`} items={items} onComplete={handleComplete} onResult={recordPracticeResult} />
             )}
             {mode === 'TYPE' && (
-              <TypeWordExercise key={`type-${id}`} items={items} onComplete={handleComplete} />
+              <TypeWordExercise key={`type-${id}`} items={items} onComplete={handleComplete} onResult={recordPracticeResult} />
             )}
             {mode === 'DICTATION' && (
-              <DictationExercise key={`dictation-${id}`} items={items} onComplete={handleComplete} />
+              <DictationExercise key={`dictation-${id}`} items={items} onComplete={handleComplete} onResult={recordPracticeResult} />
             )}
           </>
         )}

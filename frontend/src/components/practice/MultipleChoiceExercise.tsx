@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
+import type { PracticeResultHandler } from '../../lib/practiceResult'
 import { buildChoices, questionDisplay, shuffle } from '../../lib/quiz'
 import QuestionSentence from './QuestionSentence'
 
 export default function MultipleChoiceExercise({
   items,
   onComplete,
+  onResult,
 }: {
   items: VocabularyItem[]
   onComplete?: () => void
+  /** Lần chọn của mỗi câu — chỉ được chọn một lần, nên đó cũng là lần thử đầu. */
+  onResult?: PracticeResultHandler
 }) {
   const [order] = useState(() => shuffle(items))
   const [index, setIndex] = useState(0)
@@ -43,6 +47,7 @@ export default function MultipleChoiceExercise({
   function handleSelect(choice: string) {
     if (selectedByIndex[index]) return
     setSelectedByIndex((prev) => ({ ...prev, [index]: choice }))
+    onResult?.(current, choice === current.germanWord)
     if (autoAdvance && index < order.length - 1) {
       setTimeout(() => setIndex((i) => Math.min(i + 1, order.length - 1)), 900)
     }

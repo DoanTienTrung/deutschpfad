@@ -21,6 +21,15 @@ function dealRounds(items: VocabularyItem[], pairsPerRound: number, roundCount: 
   return rounds
 }
 
+/**
+ * Chế độ nối từ CỐ Ý không ghi kết quả vào lịch ôn SM-2, khác với 5 chế độ còn lại. Tín hiệu của
+ * nó không đáng tin theo cả hai chiều:
+ *  - Nối SAI thì có hai từ dính vào, mà không biết người học không biết từ nào. Ghi "quên" cho cả
+ *    hai là kéo lùi lịch ôn của một từ có thể đã nhớ.
+ *  - Nối ĐÚNG không chứng minh được gì cho mấy cặp cuối mỗi vòng — còn ít ô thì ghép đúng nhờ loại
+ *    trừ, không cần biết nghĩa.
+ * Đây là trò khởi động để làm quen mặt chữ, không phải phép đo trí nhớ.
+ */
 export default function MatchingExercise({
   items,
   onComplete,

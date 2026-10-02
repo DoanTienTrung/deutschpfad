@@ -22,9 +22,17 @@ public class UserVocabulary {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    /** Dòng mà người học gặp từ này lần đầu — dùng để hiển thị thẻ ôn tập. */
     @ManyToOne
     @JoinColumn(name = "vocabulary_item_id", nullable = false)
     private VocabularyItem vocabularyItem;
+
+    /**
+     * Lịch ôn gắn với TỪ, không gắn với dòng: unique (user_id, word_key). Cùng một "die Mutter" ở
+     * cả 3 lộ trình chỉ có một lịch ôn. Xem {@link WordKey}.
+     */
+    @Column(name = "word_key", nullable = false)
+    private String wordKey;
 
     @Column(nullable = false)
     private int repetitions = 0;

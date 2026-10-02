@@ -56,6 +56,10 @@ app:
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
     refresh-expiration-days: ${JWT_REFRESH_EXPIRATION_DAYS:30}
   mail-from: ${MAIL_FROM:no-reply@deutschpfad.local}
+  vocabulary:
+    # Số thẻ tối đa trong MỘT phiên ôn tập. Trước đây trả mọi thẻ đến hạn một lượt: nghỉ một tuần
+    # quay lại là cả trăm thẻ, dễ bỏ ngang. Ôn xong một phiên thì phiên kế tiếp lấy tiếp phần còn lại.
+    review-session-size: ${VOCAB_REVIEW_SESSION_SIZE:30}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   deepgram-api-key: ${DEEPGRAM_API_KEY:}
   groq-api-key: ${GROQ_API_KEY:}

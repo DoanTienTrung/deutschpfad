@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
+import type { PracticeResultHandler } from '../../lib/practiceResult'
 import { buildChoices, shuffle } from '../../lib/quiz'
 import AudioBar from './AudioBar'
 import { spokenForm } from '../../lib/answer'
@@ -7,9 +8,11 @@ import { spokenForm } from '../../lib/answer'
 export default function ListenChooseExercise({
   items,
   onComplete,
+  onResult,
 }: {
   items: VocabularyItem[]
   onComplete?: () => void
+  onResult?: PracticeResultHandler
 }) {
   const [order, setOrder] = useState(() => shuffle(items))
   const [index, setIndex] = useState(0)
@@ -59,6 +62,9 @@ export default function ListenChooseExercise({
   function handleSelect(choice: string) {
     if (selected) return
     setSelected(choice)
+    // Chế độ này cho luyện lặp vòng sau khi hết một lượt — mỗi lần gặp lại đều gửi đi; backend
+    // tự bỏ qua lần trả lời đúng cho từ chưa đến hạn nên không đẩy lịch ra xa.
+    onResult?.(current, choice === current.germanWord)
     setTotalAnswered((n) => n + 1)
     if (choice === current.germanWord) setScore((s) => s + 1)
     setTimeout(goToNext, 900)
