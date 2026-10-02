@@ -46,5 +46,10 @@ Thumbs.db
 scripts/
 English-Deutsch (Sorted by Frequency).txt
 
+# Tài liệu có bản quyền ở thư mục gốc — bản scan Menschen A1 (Hueber), sách ngữ pháp Aber Hallo,
+# tài liệu phát tay của trung tâm — và dữ liệu trích từ chúng. Chỉ để dùng nội bộ, không commit.
+/*.pdf
+/vocab_menschen_a1.json
+
 # Internal planning docs (not shared via repo)
 docs/
