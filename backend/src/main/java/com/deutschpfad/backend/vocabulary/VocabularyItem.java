@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "vocabulary_items")
@@ -29,6 +30,13 @@ public class VocabularyItem {
     @Setter(AccessLevel.NONE)
     private String wordKey;
 
+    /**
+     * Số nhiều của danh từ, không kèm mạo từ ("Bilder"). Null = không biết hoặc không có. Không set
+     * tay — {@link NounPluralService} tính lại cho cả nhóm cùng {@link #wordKey} mỗi khi admin lưu.
+     */
+    @Column(name = "plural")
+    private String plural;
+
     @Column(name = "vietnamese_meaning", nullable = false)
     private String vietnameseMeaning;
 
@@ -42,7 +50,12 @@ public class VocabularyItem {
     private String wordType;
 
     @Column(name = "example_sentence")
+    @Setter(AccessLevel.NONE)
     private String exampleSentence;
+
+    /** Bản dịch tiếng Việt của {@link #exampleSentence}; null = chưa dịch. */
+    @Column(name = "example_sentence_vi")
+    private String exampleSentenceVi;
 
     @Column(name = "example_sentence_highlight")
     private String exampleSentenceHighlight;
@@ -68,6 +81,17 @@ public class VocabularyItem {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /**
+     * Đổi câu ví dụ thì bản dịch cũ không còn đúng → xoá, để job dịch lại. Đặt ở đây (không ở từng
+     * controller) vì có nhiều đường sửa câu: admin, và job AI kiểm duyệt viết lại câu sai.
+     */
+    public void setExampleSentence(String exampleSentence) {
+        if (!Objects.equals(this.exampleSentence, exampleSentence)) {
+            this.exampleSentenceVi = null;
+        }
+        this.exampleSentence = exampleSentence;
+    }
 
     // Mọi đường ghi qua JPA (admin thêm/sửa, AI kiểm duyệt…) đều đi qua đây, nên khoá không thể
     // lệch với germanWord. Riêng migration SQL sửa german_word thì phải tự cập nhật word_key.

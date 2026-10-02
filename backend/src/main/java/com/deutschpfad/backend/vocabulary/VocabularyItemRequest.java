@@ -10,6 +10,7 @@ public record VocabularyItemRequest(
     String phonetic,
     String wordType,
     String exampleSentence,
+    String exampleSentenceVi,
     String imageUrl,
     @NotNull VocabularyItem.Level level,
     VocabularyItem.Source source,

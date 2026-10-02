@@ -26,6 +26,8 @@ public class VocabularyItemAdminController {
     private final TopicRepository topicRepository;
     private final LessonRepository lessonRepository;
     private final GeminiAiService aiService;
+    private final NounPluralService nounPluralService;
+    private final ExampleTranslationJob exampleTranslationJob;
 
     private volatile boolean auditRunning = false;
     private final AtomicInteger auditProcessed = new AtomicInteger(0);
@@ -37,12 +39,16 @@ public class VocabularyItemAdminController {
         VocabularyItemRepository vocabularyItemRepository,
         TopicRepository topicRepository,
         LessonRepository lessonRepository,
-        GeminiAiService aiService
+        GeminiAiService aiService,
+        NounPluralService nounPluralService,
+        ExampleTranslationJob exampleTranslationJob
     ) {
         this.vocabularyItemRepository = vocabularyItemRepository;
         this.topicRepository = topicRepository;
         this.lessonRepository = lessonRepository;
         this.aiService = aiService;
+        this.nounPluralService = nounPluralService;
+        this.exampleTranslationJob = exampleTranslationJob;
     }
 
     @GetMapping
@@ -56,7 +62,9 @@ public class VocabularyItemAdminController {
     public ResponseEntity<VocabularyItemResponse> create(@Valid @RequestBody VocabularyItemRequest request) {
         VocabularyItem item = new VocabularyItem();
         applyRequest(item, request);
-        return ResponseEntity.ok(VocabularyItemResponse.from(vocabularyItemRepository.save(item)));
+        VocabularyItem saved = vocabularyItemRepository.save(item);
+        nounPluralService.refreshFamily(saved.getWordKey());
+        return ResponseEntity.ok(reload(saved.getId()));
     }
 
     @PutMapping("/{id}")
@@ -66,14 +74,26 @@ public class VocabularyItemAdminController {
     ) {
         VocabularyItem item = vocabularyItemRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy từ vựng"));
+        String oldKey = item.getWordKey();
         applyRequest(item, request);
-        return ResponseEntity.ok(VocabularyItemResponse.from(vocabularyItemRepository.save(item)));
+        VocabularyItem saved = vocabularyItemRepository.save(item);
+        // Sửa chữ của từ có thể đổi nhóm: nhóm cũ mất một dòng (có thể là dòng mang ký hiệu số
+        // nhiều), nhóm mới thêm một dòng — cả hai cần tính lại.
+        nounPluralService.refreshFamily(saved.getWordKey());
+        if (!saved.getWordKey().equals(oldKey)) nounPluralService.refreshFamily(oldKey);
+        return ResponseEntity.ok(reload(saved.getId()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
+        String wordKey = vocabularyItemRepository.findById(id).map(VocabularyItem::getWordKey).orElse(null);
         vocabularyItemRepository.deleteById(id);
+        if (wordKey != null) nounPluralService.refreshFamily(wordKey);
         return ResponseEntity.noContent().build();
+    }
+
+    private VocabularyItemResponse reload(Long id) {
+        return VocabularyItemResponse.from(vocabularyItemRepository.findById(id).orElseThrow());
     }
 
     @PostMapping("/audit")
@@ -89,6 +109,18 @@ public class VocabularyItemAdminController {
         auditFixedMeanings.set(0);
         new Thread(() -> runAudit(items), "vocab-audit").start();
         return ResponseEntity.accepted().body("Đã bắt đầu quét " + items.size() + " từ vựng");
+    }
+
+    @PostMapping("/translate-examples")
+    public ResponseEntity<String> startExampleTranslation() {
+        int count = exampleTranslationJob.start();
+        if (count < 0) return ResponseEntity.status(409).body("Đang có 1 lượt dịch chạy rồi");
+        return ResponseEntity.accepted().body("Đã bắt đầu dịch " + count + " câu ví dụ");
+    }
+
+    @GetMapping("/translate-examples/status")
+    public Map<String, Object> exampleTranslationStatus() {
+        return exampleTranslationJob.status();
     }
 
     @GetMapping("/audit-status")
@@ -157,7 +189,16 @@ public class VocabularyItemAdminController {
         item.setEnglishMeaning(request.englishMeaning());
         item.setPhonetic(request.phonetic());
         item.setWordType(request.wordType());
+        String oldSentence = item.getExampleSentence();
+        String oldTranslation = item.getExampleSentenceVi();
         item.setExampleSentence(request.exampleSentence());
+        // Bản dịch admin gõ tay thì giữ. Nhưng form sửa điền sẵn bản dịch cũ: nếu admin đổi câu mà
+        // không đụng ô dịch, ô đó vẫn là bản dịch của câu CŨ → bỏ, để job dịch lại câu mới.
+        String translation = request.exampleSentenceVi() == null || request.exampleSentenceVi().isBlank()
+            ? null : request.exampleSentenceVi().trim();
+        boolean staleCopy = !Objects.equals(oldSentence, request.exampleSentence())
+            && Objects.equals(translation, oldTranslation);
+        if (translation != null && !staleCopy) item.setExampleSentenceVi(translation);
         item.setImageUrl(request.imageUrl());
         item.setLevel(request.level());
         item.setSource(request.source() != null ? request.source() : VocabularyItem.Source.FREQUENCY);

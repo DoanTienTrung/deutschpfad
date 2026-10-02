@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { VocabularyItem } from '../../api/types'
 import { speak } from '../../lib/speech'
 import { spokenForm } from '../../lib/answer'
+import { GermanWord, PluralLine } from './GermanWord'
 
 const PAGE_SIZE = 25
 
@@ -25,13 +26,18 @@ export default function FlashcardBrowseList({
         Luyện tập flashcards
       </button>
 
-      <p className="mb-4 text-sm text-muted">List có {items.length} từ</p>
+      <p className="mb-1 text-sm text-muted">List có {items.length} từ</p>
+      <p className="mb-4 text-xs text-muted">
+        Màu mạo từ: <span className="font-medium text-der">der</span> giống đực ·{' '}
+        <span className="font-medium text-die">die</span> giống cái ·{' '}
+        <span className="font-medium text-das">das</span> giống trung
+      </p>
 
       <div className="space-y-3">
         {pageItems.map((item) => (
           <div key={item.id} className="rounded-md border border-hairline bg-white p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-display text-lg font-semibold text-ink">{item.germanWord}</span>
+              <GermanWord item={item} className="font-display text-lg font-semibold text-ink" />
               {item.wordType && <span className="text-sm text-muted">({item.wordType})</span>}
               {item.phonetic && <span className="text-sm text-muted">/{item.phonetic}/</span>}
               <button
@@ -42,6 +48,7 @@ export default function FlashcardBrowseList({
                 🔊
               </button>
             </div>
+            <PluralLine plural={item.plural} className="mt-1 block text-sm text-muted" />
 
             <div className="mt-3">
               <p className="text-xs font-medium uppercase text-muted">Định nghĩa</p>
@@ -62,6 +69,7 @@ export default function FlashcardBrowseList({
                   </button>
                   <span className="italic">{item.exampleSentence}</span>
                 </p>
+                {item.exampleSentenceVi && <p className="ml-6 text-sm text-muted">{item.exampleSentenceVi}</p>}
               </div>
             )}
           </div>

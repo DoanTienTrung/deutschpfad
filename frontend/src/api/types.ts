@@ -29,11 +29,15 @@ export type Lesson = {
 export type VocabularyItem = {
   id: number
   germanWord: string
+  /** Số nhiều không kèm mạo từ ("Bilder"); null = không biết hoặc không có. */
+  plural: string | null
   vietnameseMeaning: string
   englishMeaning: string | null
   phonetic: string | null
   wordType: string | null
   exampleSentence: string | null
+  /** Bản dịch tiếng Việt của câu ví dụ; null = chưa dịch. */
+  exampleSentenceVi: string | null
   exampleSentenceHighlight: string | null
   imageUrl: string | null
   level: string

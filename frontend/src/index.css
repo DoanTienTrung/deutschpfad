@@ -24,6 +24,13 @@
      considered hue-188 teal for the same semantic slot (correct answers, completed states). */
   --color-success: oklch(0.49 0.13 188);
   --color-success-bg: oklch(0.96 0.03 188);
+  /* Màu theo giống của danh từ — quy ước quen thuộc trong sách học tiếng Đức (der xanh dương,
+     die đỏ, das xanh lá). "die" lệch sang hồng (hue 355) để không lẫn với màu báo sai (hue 25),
+     "das" lệch sang lục (hue 145) để không lẫn với màu đúng (hue 188). Độ sáng 0,5 cho đủ tương
+     phản chữ trên nền canvas. */
+  --color-der: oklch(0.5 0.15 255);
+  --color-die: oklch(0.52 0.18 355);
+  --color-das: oklch(0.5 0.13 145);
 
   --font-display: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;

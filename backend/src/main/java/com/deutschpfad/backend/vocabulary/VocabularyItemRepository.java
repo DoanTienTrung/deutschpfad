@@ -1,6 +1,7 @@
 package com.deutschpfad.backend.vocabulary;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -11,6 +12,16 @@ public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, 
     // level không vượt quá level của chủ điểm, để bài tập chỉ dùng từ người học đã gặp.
     List<VocabularyItem> findByWordTypeIgnoreCaseAndLevelIn(String wordType, List<VocabularyItem.Level> levels);
     List<VocabularyItem> findByLessonId(Long lessonId);
+    List<VocabularyItem> findByWordKey(String wordKey);
+
+    // Hàng đợi của ExampleTranslationJob: có câu ví dụ mà chưa có bản dịch.
+    @Query("SELECT v.id FROM VocabularyItem v WHERE v.exampleSentence IS NOT NULL AND v.exampleSentence <> '' "
+        + "AND v.exampleSentenceVi IS NULL ORDER BY v.id")
+    List<Long> findIdsMissingExampleTranslation();
+
+    // Câu đã dịch, để dùng lại cho dòng khác có CÙNG câu (cùng từ ở nhiều lộ trình) thay vì gọi AI.
+    @Query("SELECT v.exampleSentence, v.exampleSentenceVi FROM VocabularyItem v WHERE v.exampleSentenceVi IS NOT NULL")
+    List<Object[]> findTranslatedExamples();
     List<VocabularyItem> findByExampleSentenceIsNotNull();
     List<VocabularyItem> findByExampleSentenceIsNotNullAndExampleSentenceHighlightIsNull();
 

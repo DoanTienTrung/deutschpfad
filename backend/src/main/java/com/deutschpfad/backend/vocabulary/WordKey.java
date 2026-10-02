@@ -95,7 +95,8 @@ public final class WordKey {
         return first;
     }
 
-    private static String expandOptional(String text) {
+    /** Mở phần tuỳ chọn: "Kilo(gramm)" → "Kilogramm", "(Regen-)Schirm" → "Regenschirm". */
+    static String expandOptional(String text) {
         Matcher m = OPTIONAL_PART.matcher(text);
         if (!m.find()) return text;
         String before = text.substring(0, m.start());

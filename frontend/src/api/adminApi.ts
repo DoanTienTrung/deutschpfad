@@ -37,6 +37,8 @@ export type VocabularyItemInput = {
   phonetic?: string
   wordType?: string
   exampleSentence?: string
+  /** Để trống = để job AI dịch. */
+  exampleSentenceVi?: string
   imageUrl?: string
   level: string
   source?: VocabularySource
@@ -51,3 +53,17 @@ export const updateVocabularyItem = (id: number, data: VocabularyItemInput) =>
   apiFetch<VocabularyItem>(`/admin/vocabulary-items/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const deleteVocabularyItem = (id: number) =>
   apiFetch<void>(`/admin/vocabulary-items/${id}`, { method: 'DELETE' })
+
+export type ExampleTranslationStatus = {
+  running: boolean
+  processed: number
+  total: number
+  translated: number
+  reused: number
+  remaining: number
+  stopReason: string | null
+}
+export const startExampleTranslation = () =>
+  apiFetch<string>('/admin/vocabulary-items/translate-examples', { method: 'POST' })
+export const getExampleTranslationStatus = () =>
+  apiFetch<ExampleTranslationStatus>('/admin/vocabulary-items/translate-examples/status')

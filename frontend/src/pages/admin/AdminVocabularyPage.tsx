@@ -6,6 +6,9 @@ import {
   deleteVocabularyItem,
   listTopics,
   listLessons,
+  startExampleTranslation,
+  getExampleTranslationStatus,
+  type ExampleTranslationStatus,
   type VocabularyItemInput,
 } from '../../api/adminApi'
 import type { VocabularyItem, Topic, Lesson, VocabularySource } from '../../api/types'
@@ -20,6 +23,7 @@ const EMPTY_FORM: VocabularyItemInput = {
   phonetic: '',
   wordType: '',
   exampleSentence: '',
+  exampleSentenceVi: '',
   imageUrl: '',
   level: 'A1',
   source: 'FREQUENCY',
@@ -34,6 +38,7 @@ export default function AdminVocabularyPage() {
   const [form, setForm] = useState<VocabularyItemInput>(EMPTY_FORM)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [translation, setTranslation] = useState<ExampleTranslationStatus | null>(null)
 
   async function load() {
     const [i, t, l] = await Promise.all([listVocabularyItems(), listTopics(), listLessons()])
@@ -45,7 +50,28 @@ export default function AdminVocabularyPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount, load() reused by handlers below
     load()
+    getExampleTranslationStatus().then(setTranslation).catch(() => {})
   }, [])
+
+  // Job dịch chạy nền vài chục phút — hỏi tiến độ mỗi 3 giây trong lúc chạy.
+  useEffect(() => {
+    if (!translation?.running) return
+    const timer = setInterval(() => {
+      getExampleTranslationStatus().then(setTranslation).catch(() => {})
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [translation?.running])
+
+  async function handleStartTranslation() {
+    setError(null)
+    try {
+      await startExampleTranslation()
+      setTranslation(await getExampleTranslationStatus())
+    } catch (err) {
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Không bắt đầu được lượt dịch')
+    }
+  }
 
   function startEdit(item: VocabularyItem) {
     setEditingId(item.id)
@@ -56,6 +82,7 @@ export default function AdminVocabularyPage() {
       phonetic: item.phonetic ?? '',
       wordType: item.wordType ?? '',
       exampleSentence: item.exampleSentence ?? '',
+      exampleSentenceVi: item.exampleSentenceVi ?? '',
       imageUrl: item.imageUrl ?? '',
       level: item.level,
       source: item.source,
@@ -101,6 +128,32 @@ export default function AdminVocabularyPage() {
       <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Từ vựng</h2>
 
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
+
+      {translation && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-hairline bg-white p-4 text-sm">
+          <div>
+            <p className="font-medium text-ink">Dịch câu ví dụ sang tiếng Việt (AI)</p>
+            {translation.running ? (
+              <p className="text-muted">
+                Đang dịch {translation.processed}/{translation.total} — dịch mới {translation.translated}, dùng
+                lại {translation.reused}
+              </p>
+            ) : (
+              <p className="text-muted">Còn {translation.remaining} câu chưa có bản dịch</p>
+            )}
+            {!translation.running && translation.stopReason && (
+              <p className="mt-1 text-danger">{translation.stopReason}</p>
+            )}
+          </div>
+          <button
+            onClick={handleStartTranslation}
+            disabled={translation.running || translation.remaining === 0}
+            className="rounded-sm bg-primary px-4 py-2 font-medium text-white disabled:opacity-40"
+          >
+            {translation.running ? 'Đang dịch…' : 'Dịch các câu còn thiếu'}
+          </button>
+        </div>
+      )}
 
       <div className="mb-6 space-y-2 rounded-sm border border-hairline bg-white p-4">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -176,6 +229,12 @@ export default function AdminVocabularyPage() {
           value={form.exampleSentence}
           onChange={(e) => setForm({ ...form, exampleSentence: e.target.value })}
           placeholder="Câu ví dụ"
+          className="w-full rounded-sm border border-hairline px-3 py-2"
+        />
+        <textarea
+          value={form.exampleSentenceVi}
+          onChange={(e) => setForm({ ...form, exampleSentenceVi: e.target.value })}
+          placeholder="Bản dịch câu ví dụ (để trống thì AI dịch khi bấm “Dịch các câu còn thiếu”)"
           className="w-full rounded-sm border border-hairline px-3 py-2"
         />
         <input

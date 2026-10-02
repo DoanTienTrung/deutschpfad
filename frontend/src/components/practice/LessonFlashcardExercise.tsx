@@ -9,6 +9,7 @@ import Alert from '../ui/Alert'
 import Field from '../ui/Field'
 import SpeakerIcon from '../ui/SpeakerIcon'
 import QuestionSentence from './QuestionSentence'
+import { GermanWord, PluralLine } from './GermanWord'
 
 const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü']
 
@@ -168,7 +169,10 @@ export default function LessonFlashcardExercise({
         >
           <div className={`flip-card-inner h-full ${flipped ? 'is-flipped' : ''}`}>
             <div className="flip-card-face flex h-full flex-col items-center justify-center rounded-lg bg-surface p-8 text-center shadow-lifted">
-              <p className="font-display text-3xl font-semibold text-ink">{card.germanWord}</p>
+              <p className="font-display text-3xl font-semibold text-ink">
+                <GermanWord item={card} />
+              </p>
+              <PluralLine plural={card.plural} className="mt-1 block text-sm text-muted" />
               {card.phonetic && <p className="mt-1 text-base text-muted">[{card.phonetic}]</p>}
               <p className="mt-2 text-sm text-muted">[{card.level}]</p>
               <button
@@ -189,6 +193,7 @@ export default function LessonFlashcardExercise({
               {card.exampleSentence && (
                 <p className="mt-4 text-sm italic text-muted">{card.exampleSentence}</p>
               )}
+              {card.exampleSentenceVi && <p className="mt-1 text-sm text-muted">{card.exampleSentenceVi}</p>}
             </div>
           </div>
         </div>
