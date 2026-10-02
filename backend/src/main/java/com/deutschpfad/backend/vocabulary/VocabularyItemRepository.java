@@ -12,6 +12,9 @@ public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, 
     // level không vượt quá level của chủ điểm, để bài tập chỉ dùng từ người học đã gặp.
     List<VocabularyItem> findByWordTypeIgnoreCaseAndLevelIn(String wordType, List<VocabularyItem.Level> levels);
     List<VocabularyItem> findByLessonId(Long lessonId);
+    // Thứ tự soạn bài: không có ORDER BY thì Postgres trả theo vị trí vật lý, đổi sau mỗi lần UPDATE
+    // (vd. tính lại số nhiều) — từ trong bài bị xáo lộn mỗi lần dữ liệu được sửa.
+    List<VocabularyItem> findByLessonIdOrderByIdAsc(Long lessonId);
     List<VocabularyItem> findByWordKey(String wordKey);
 
     // Hàng đợi của ExampleTranslationJob: có câu ví dụ mà chưa có bản dịch.

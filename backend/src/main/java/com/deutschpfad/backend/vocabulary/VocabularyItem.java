@@ -106,6 +106,8 @@ public class VocabularyItem {
     }
 
     public enum Source {
-        FREQUENCY, GOETHE, TEXTBOOK
+        FREQUENCY, GOETHE, TEXTBOOK,
+        /** Bộ từ "Sống ở Đức" theo tình huống (V72) — không theo cấp độ như các lộ trình kia. */
+        LIFE
     }
 }

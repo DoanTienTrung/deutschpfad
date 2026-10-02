@@ -9,10 +9,12 @@ export const ARTICLE_LABEL: Record<Article, string> = {
 }
 
 /**
- * Mạo từ đứng đầu, nếu có đúng MỘT mạo từ. "der/die Angestellte" (hai giống) và từ không phải danh
- * từ trả về null — không tô màu còn hơn tô sai.
+ * Mạo từ đứng đầu, nếu có đúng MỘT mạo từ. "der/die Angestellte" (hai giống), từ không phải danh
+ * từ, và danh từ chỉ có số nhiều ("die Eltern (Pl.)" — "die" ở đây là mạo từ số nhiều, không phải
+ * giống cái) trả về null — không tô màu còn hơn tô sai.
  */
 export function articleOf(germanWord: string): Article | null {
+  if (/\(Pl\.?\)/.test(germanWord)) return null
   const m = /^(der|die|das)\s/i.exec(germanWord.trim())
   return m ? (m[1].toLowerCase() as Article) : null
 }

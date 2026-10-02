@@ -88,6 +88,8 @@ export default function AdminLessonsPage() {
         >
           <option value="FREQUENCY">Nguồn: Tần suất (mặc định)</option>
           <option value="GOETHE">Nguồn: Goethe-Zertifikat</option>
+          <option value="TEXTBOOK">Nguồn: Giáo trình</option>
+          <option value="LIFE">Nguồn: Sống ở Đức</option>
         </select>
         <select
           value={topicId ?? ''}
@@ -122,6 +124,7 @@ export default function AdminLessonsPage() {
             <span>
               <strong>{lesson.level}</strong> — Bài {lesson.orderIndex}: {lesson.title}
               {lesson.source === 'GOETHE' && <span className="ml-2 text-xs text-muted">[Goethe]</span>}
+              {lesson.source === 'LIFE' && <span className="ml-2 text-xs text-muted">[Sống ở Đức]</span>}
               {lesson.topicName && <span className="ml-2 text-xs text-muted">[{lesson.topicName}]</span>}
             </span>
             <button

@@ -25,9 +25,12 @@ public class LessonController {
         @RequestParam(required = false) Long topicId,
         @RequestParam(required = false, defaultValue = "FREQUENCY") VocabularyItem.Source source
     ) {
+        // Không chọn cấp độ = lấy cả nguồn: bộ "Sống ở Đức" xếp theo tình huống, mỗi bài một cấp độ.
         List<Lesson> lessons = topicId != null
             ? lessonRepository.findByTopicIdOrderByOrderIndex(topicId)
-            : lessonRepository.findByLevelAndSourceOrderByOrderIndex(level, source);
+            : level != null
+                ? lessonRepository.findByLevelAndSourceOrderByOrderIndex(level, source)
+                : lessonRepository.findBySourceOrderByOrderIndex(source);
 
         return lessons.stream()
             .map(lesson -> LessonSummaryResponse.from(
@@ -45,7 +48,7 @@ public class LessonController {
 
     @GetMapping("/{id}/vocabulary-items")
     public List<VocabularyItemResponse> vocabularyItems(@PathVariable Long id) {
-        return vocabularyItemRepository.findByLessonId(id).stream()
+        return vocabularyItemRepository.findByLessonIdOrderByIdAsc(id).stream()
             .map(VocabularyItemResponse::from)
             .toList();
     }

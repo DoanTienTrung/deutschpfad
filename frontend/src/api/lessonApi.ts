@@ -5,6 +5,11 @@ export function listLessonsByLevel(level: string, source: VocabularySource = 'FR
   return apiFetch<LessonSummary[]>(`/lessons?level=${level}&source=${source}`)
 }
 
+/** Mọi bài của một nguồn, không lọc cấp độ — bộ "Sống ở Đức" xếp theo tình huống. */
+export function listLessonsBySource(source: VocabularySource) {
+  return apiFetch<LessonSummary[]>(`/lessons?source=${source}`)
+}
+
 export function listLessonsByTopic(topicId: number) {
   return apiFetch<LessonSummary[]>(`/lessons?topicId=${topicId}`)
 }

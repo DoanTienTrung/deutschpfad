@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { listLessonsByLevel, listLessonsByTopic } from '../api/lessonApi'
+import { listLessonsByLevel, listLessonsBySource, listLessonsByTopic } from '../api/lessonApi'
 import { listTopics } from '../api/topicApi'
 import type { LessonSummary, Topic } from '../api/types'
 import { ListCardSkeleton } from '../components/ui/Skeleton'
@@ -8,10 +8,10 @@ import { ListCardSkeleton } from '../components/ui/Skeleton'
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const GOETHE_LEVELS = ['A1', 'A2', 'B1']
 
-type Mode = 'level' | 'topic' | 'goethe' | 'textbook'
+type Mode = 'level' | 'topic' | 'goethe' | 'textbook' | 'life'
 
 function isMode(value: string | null): value is Mode {
-  return value === 'level' || value === 'topic' || value === 'goethe' || value === 'textbook'
+  return value === 'level' || value === 'topic' || value === 'goethe' || value === 'textbook' || value === 'life'
 }
 
 export default function VocabularyHubPage() {
@@ -63,6 +63,10 @@ export default function VocabularyHubPage() {
       listLessonsByLevel('A1', 'TEXTBOOK')
         .then(setLessons)
         .finally(() => setLoading(false))
+    } else if (mode === 'life') {
+      listLessonsBySource('LIFE')
+        .then(setLessons)
+        .finally(() => setLoading(false))
     } else if (topicId !== null) {
       listLessonsByTopic(topicId)
         .then(setLessons)
@@ -85,7 +89,8 @@ export default function VocabularyHubPage() {
     <div className="mx-auto max-w-5xl">
       <h2 className="font-display text-2xl font-bold text-ink">Từ vựng</h2>
       <p className="mt-1 mb-6 text-sm text-muted">
-        Học theo lộ trình cấp độ, theo chủ đề thực tế, hoặc bám sát Wortliste của kỳ thi Goethe.
+        Học theo lộ trình cấp độ, theo chủ đề, bám sát Wortliste của kỳ thi Goethe, hoặc theo tình huống
+        sống ở Đức.
       </p>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -121,7 +126,22 @@ export default function VocabularyHubPage() {
         >
           Bộ từ của Giang
         </button>
+        <button
+          onClick={() => setMode('life')}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            mode === 'life' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
+          }`}
+        >
+          Sống ở Đức
+        </button>
       </div>
+
+      {mode === 'life' && (
+        <p className="mb-6 text-sm text-muted">
+          Từ vựng cho những việc phải làm ngay khi sang Đức — đăng ký cư trú, thuê nhà, đi khám, mở tài
+          khoản, đi tàu, đổ rác, xin việc, gọi cấp cứu. Mỗi bài 25 từ, có câu ví dụ và bản dịch.
+        </p>
+      )}
 
       {mode === 'level' && (
         <div className="mb-6 flex flex-wrap gap-2">

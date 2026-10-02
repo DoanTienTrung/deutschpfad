@@ -26,8 +26,9 @@ class NounPluralServiceTest {
 
     @Test
     void tuCoHaiSoNhieu_khongDoan() {
-        VocabularyItem bank = save("die Bank");
-        assertThat(plural(bank)).as("Bänke (ghế) hay Banken (ngân hàng)?").isNull();
+        // Không dùng "die Bank": bộ "Sống ở Đức" (V72) đã có "die Bank, -en" nên cả nhóm ra "Banken".
+        VocabularyItem wort = save("das Wort");
+        assertThat(plural(wort)).as("Wörter (từ) hay Worte (lời nói)?").isNull();
     }
 
     @Test

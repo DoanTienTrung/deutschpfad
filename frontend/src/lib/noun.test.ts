@@ -12,6 +12,7 @@ describe('articleOf', () => {
     expect(articleOf('der/die Angestellte, -n')).toBeNull()
     expect(articleOf('Deutschland')).toBeNull()
     expect(articleOf('derselbe')).toBeNull()
+    expect(articleOf('die Eltern (Pl.)')).toBeNull()
   })
 })
 

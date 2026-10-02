@@ -203,6 +203,8 @@ export default function AdminVocabularyPage() {
           >
             <option value="FREQUENCY">Nguồn: Tần suất</option>
             <option value="GOETHE">Nguồn: Goethe-Zertifikat</option>
+            <option value="TEXTBOOK">Nguồn: Giáo trình</option>
+            <option value="LIFE">Nguồn: Sống ở Đức</option>
           </select>
           <select
             value={form.topicId ?? ''}
