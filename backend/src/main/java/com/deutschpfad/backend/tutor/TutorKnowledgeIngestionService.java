@@ -2,6 +2,7 @@ package com.deutschpfad.backend.tutor;
 
 import com.deutschpfad.backend.vocabulary.VocabularyItem;
 import com.deutschpfad.backend.vocabulary.VocabularyItemRepository;
+import com.deutschpfad.backend.vocabulary.VocabularyVisibility;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
@@ -36,6 +37,7 @@ public class TutorKnowledgeIngestionService {
     private final EmbeddingModel documentEmbeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final VocabularyItemRepository vocabularyItemRepository;
+    private final VocabularyVisibility vocabularyVisibility;
     private final int chunkSize;
     private final int chunkOverlap;
 
@@ -43,11 +45,13 @@ public class TutorKnowledgeIngestionService {
             @Qualifier("documentEmbeddingModel") EmbeddingModel documentEmbeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
             VocabularyItemRepository vocabularyItemRepository,
+            VocabularyVisibility vocabularyVisibility,
             @Value("${app.tutor.chunk-size}") int chunkSize,
             @Value("${app.tutor.chunk-overlap}") int chunkOverlap) {
         this.documentEmbeddingModel = documentEmbeddingModel;
         this.embeddingStore = embeddingStore;
         this.vocabularyItemRepository = vocabularyItemRepository;
+        this.vocabularyVisibility = vocabularyVisibility;
         this.chunkSize = chunkSize;
         this.chunkOverlap = chunkOverlap;
     }
@@ -99,7 +103,10 @@ public class TutorKnowledgeIngestionService {
     public int syncVocabulary() {
         embeddingStore.removeAll(metadataKey("sourceType").isEqualTo("VOCAB"));
 
-        List<VocabularyItem> items = vocabularyItemRepository.findAll();
+        // Nguồn đang ẩn với người học (VocabularyVisibility) thì gia sư cũng không được trích ra.
+        List<VocabularyItem> items = vocabularyItemRepository.findAll().stream()
+            .filter(item -> !vocabularyVisibility.isHidden(item.getSource()))
+            .toList();
         List<List<VocabularyItem>> batches = partition(items, VOCAB_EMBED_BATCH_SIZE);
         int total = 0;
         for (int i = 0; i < batches.size(); i++) {

@@ -26,6 +26,15 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    // Trả thẳng mã lỗi ở đây. Để Spring tự xử lý thì nó chuyển sang trang /error — đường đó không mở
+    // cho người dùng đã đăng nhập, nên 404 biến thành 401 và frontend tưởng hết phiên đăng nhập.
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatus(org.springframework.web.server.ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
+            "message", ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString()
+        ));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(

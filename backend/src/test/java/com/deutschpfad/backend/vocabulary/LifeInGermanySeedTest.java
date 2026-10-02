@@ -23,13 +23,13 @@ class LifeInGermanySeedTest {
 
     @Test
     void tamBai_moiBai25Tu_khongLotVaoLoTrinhCapDo() {
-        List<LessonSummaryResponse> lessons = lessonController.list(null, null, VocabularyItem.Source.LIFE);
+        List<LessonSummaryResponse> lessons = lessonController.list(null, null, VocabularyItem.Source.LIFE, null);
         assertThat(lessons).hasSize(8);
         assertThat(lessons).allSatisfy(l -> assertThat(l.wordCount()).isEqualTo(25));
         assertThat(lessons.get(0).title()).isEqualTo("Đăng ký cư trú và giấy tờ");
 
         // Danh sách "Theo cấp độ" lọc theo nguồn tần suất — không được lẫn bài "Sống ở Đức".
-        assertThat(lessonController.list(VocabularyItem.Level.A2, null, VocabularyItem.Source.FREQUENCY))
+        assertThat(lessonController.list(VocabularyItem.Level.A2, null, VocabularyItem.Source.FREQUENCY, null))
             .noneMatch(l -> l.title().equals("Thuê nhà"));
     }
 

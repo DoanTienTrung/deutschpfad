@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -19,17 +20,20 @@ public class VocabularyReviewService {
     private final VocabularyItemRepository vocabularyItemRepository;
     private final UserVocabularyRepository userVocabularyRepository;
     private final LearningStreakService learningStreakService;
+    private final VocabularyVisibility visibility;
     private final int reviewSessionSize;
 
     public VocabularyReviewService(
         VocabularyItemRepository vocabularyItemRepository,
         UserVocabularyRepository userVocabularyRepository,
         LearningStreakService learningStreakService,
+        VocabularyVisibility visibility,
         @Value("${app.vocabulary.review-session-size:30}") int reviewSessionSize
     ) {
         this.vocabularyItemRepository = vocabularyItemRepository;
         this.userVocabularyRepository = userVocabularyRepository;
         this.learningStreakService = learningStreakService;
+        this.visibility = visibility;
         this.reviewSessionSize = reviewSessionSize;
     }
 
@@ -38,8 +42,23 @@ public class VocabularyReviewService {
         return userVocabularyRepository
             .findDue(user, LocalDate.now(), PageRequest.of(0, reviewSessionSize))
             .stream()
-            .map(uv -> VocabularyItemResponse.from(uv.getVocabularyItem()))
+            .map(uv -> visibleCard(uv.getVocabularyItem()))
             .toList();
+    }
+
+    /**
+     * Thẻ ôn của một từ mà dòng gắn với lịch ôn thuộc nguồn đang ẩn (xem {@link VocabularyVisibility}):
+     * lịch ôn gắn với TỪ, nên lấy dòng cùng từ ở nguồn khác để hiện — chấm thẻ đó vẫn cộng vào đúng
+     * lịch ôn. Không có dòng nào khác thì vẫn cho ôn nhưng bỏ câu ví dụ (phần chép từ sách).
+     */
+    private VocabularyItemResponse visibleCard(VocabularyItem item) {
+        if (!visibility.isHidden(item.getSource())) return VocabularyItemResponse.from(item);
+        return vocabularyItemRepository.findByWordKey(item.getWordKey()).stream()
+            .filter(other -> !visibility.isHidden(other.getSource()))
+            .min(Comparator.comparing((VocabularyItem other) -> other.getExampleSentence() == null)
+                .thenComparing(VocabularyItem::getId))
+            .map(VocabularyItemResponse::from)
+            .orElseGet(() -> VocabularyItemResponse.from(item).withoutExample());
     }
 
     public VocabularyStatsResponse getStats(User user) {

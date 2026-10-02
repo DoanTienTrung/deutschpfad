@@ -16,11 +16,24 @@ function isMode(value: string | null): value is Mode {
 
 export default function VocabularyHubPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  // "Bộ từ của Giang" lấy từ trang Lernwortschatz của Menschen A1 (Hueber) — đang ẩn với người học
+  // (backend quyết định, xem VocabularyVisibility / app.vocabulary.hidden-sources). Chỉ hiện nút khi
+  // backend còn trả bài, nên mở lại bằng cấu hình là đủ, không phải sửa frontend.
+  const [textbookAvailable, setTextbookAvailable] = useState(false)
 
   const [mode, setMode] = useState<Mode>(() => {
     const m = searchParams.get('mode')
     return isMode(m) ? m : 'level'
   })
+
+  useEffect(() => {
+    listLessonsByLevel('A1', 'TEXTBOOK')
+      .then((l) => {
+        setTextbookAvailable(l.length > 0)
+        if (l.length === 0) setMode((current) => (current === 'textbook' ? 'level' : current))
+      })
+      .catch(() => {})
+  }, [])
   const [level, setLevel] = useState(() => searchParams.get('level') ?? 'A1')
   const [goetheLevel, setGoetheLevel] = useState(() => searchParams.get('goetheLevel') ?? 'A1')
   const [topics, setTopics] = useState<Topic[]>([])
@@ -118,14 +131,16 @@ export default function VocabularyHubPage() {
         >
           Ôn thi Goethe
         </button>
-        <button
-          onClick={() => setMode('textbook')}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-            mode === 'textbook' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-          }`}
-        >
-          Bộ từ của Giang
-        </button>
+        {textbookAvailable && (
+          <button
+            onClick={() => setMode('textbook')}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              mode === 'textbook' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
+            }`}
+          >
+            Bộ từ của Giang
+          </button>
+        )}
         <button
           onClick={() => setMode('life')}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${

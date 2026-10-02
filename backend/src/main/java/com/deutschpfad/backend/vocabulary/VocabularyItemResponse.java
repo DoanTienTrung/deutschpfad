@@ -40,4 +40,12 @@ public record VocabularyItemResponse(
             v.getLesson() != null ? v.getLesson().getTitle() : null
         );
     }
+
+    /** Bản không có câu ví dụ — cho từ thuộc nguồn đang ẩn mà không có dòng thay thế. */
+    public VocabularyItemResponse withoutExample() {
+        return new VocabularyItemResponse(
+            id, germanWord, plural, vietnameseMeaning, englishMeaning, phonetic, wordType,
+            null, null, null, imageUrl, level, source, topicId, topicName, null, null
+        );
+    }
 }
