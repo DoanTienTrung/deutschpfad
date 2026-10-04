@@ -135,7 +135,7 @@ export default function AdminVocabularyPage() {
             <p className="font-medium text-ink">Dịch câu ví dụ sang tiếng Việt (AI)</p>
             {translation.running ? (
               <p className="text-muted">
-                Đang dịch {translation.processed}/{translation.total} — dịch mới {translation.translated}, dùng
+                Đang dịch {translation.processed}/{translation.total} - dịch mới {translation.translated}, dùng
                 lại {translation.reused}
               </p>
             ) : (
@@ -269,7 +269,7 @@ export default function AdminVocabularyPage() {
             <div>
               <strong>{item.germanWord}</strong>
               {item.phonetic && <span className="text-muted"> [{item.phonetic}]</span>}
-              {' — '}{item.vietnameseMeaning}
+              {' - '}{item.vietnameseMeaning}
               {item.englishMeaning && <span className="text-muted"> ({item.englishMeaning})</span>}
               <span className="ml-2 text-xs text-muted">
                 [{item.level}{item.topicName ? ` · ${item.topicName}` : ''}{item.lessonTitle ? ` · ${item.lessonTitle}` : ''}]

@@ -227,7 +227,7 @@ export default function DeckDetailPage() {
               <span className="min-w-0">
                 <strong className="font-display">{item.germanWord}</strong>
                 {item.phonetic && <span className="ml-1 text-sm text-muted">/{item.phonetic}/</span>}
-                {' — '}
+                {' - '}
                 {item.vietnameseMeaning}
                 {item.englishMeaning && <span className="text-muted"> ({item.englishMeaning})</span>}
               </span>

@@ -130,7 +130,7 @@ export default function GrammarHubPage() {
           <div>
             <p className="font-semibold text-ink">Bảng tra cứu nhanh</p>
             <p className="mt-0.5 text-xs text-muted">
-              Chia động từ, biến cách, giới từ — mở xem giữa chừng lúc đang làm bài
+              Chia động từ, biến cách, giới từ - mở xem giữa chừng lúc đang làm bài
             </p>
           </div>
         </div>

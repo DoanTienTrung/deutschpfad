@@ -72,7 +72,7 @@ export default function TutorChatWidget() {
           <div className="flex-1 overflow-y-auto bg-surface p-3">
             {messages.length === 0 && (
               <p className="text-xs text-muted">
-                Hỏi mình về từ vựng hay ngữ pháp tiếng Đức nhé — vd. "der/die/das của Haus là gì?"
+                Hỏi mình về từ vựng hay ngữ pháp tiếng Đức nhé - vd. "der/die/das của Haus là gì?"
               </p>
             )}
             <ul className="space-y-2">

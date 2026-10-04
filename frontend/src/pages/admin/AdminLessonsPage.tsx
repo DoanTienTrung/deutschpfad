@@ -122,7 +122,7 @@ export default function AdminLessonsPage() {
             className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>
-              <strong>{lesson.level}</strong> — Bài {lesson.orderIndex}: {lesson.title}
+              <strong>{lesson.level}</strong> - Bài {lesson.orderIndex}: {lesson.title}
               {lesson.source === 'GOETHE' && <span className="ml-2 text-xs text-muted">[Goethe]</span>}
               {lesson.source === 'LIFE' && <span className="ml-2 text-xs text-muted">[Sống ở Đức]</span>}
               {lesson.topicName && <span className="ml-2 text-xs text-muted">[{lesson.topicName}]</span>}

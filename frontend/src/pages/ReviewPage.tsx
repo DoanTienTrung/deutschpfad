@@ -75,7 +75,7 @@ export default function ReviewPage() {
           {remainingAfter > 0 && !sessionDone && (
             <p className="mx-auto mb-4 max-w-xl rounded-md bg-surface px-4 py-3 text-center text-sm text-muted">
               Phiên này <strong className="text-ink">{items.length} thẻ</strong>, những thẻ quá hạn lâu nhất
-              trước. Còn <strong className="text-ink">{remainingAfter} thẻ</strong> đến hạn — ôn tiếp sau
+              trước. Còn <strong className="text-ink">{remainingAfter} thẻ</strong> đến hạn - ôn tiếp sau
               phiên này.
             </p>
           )}

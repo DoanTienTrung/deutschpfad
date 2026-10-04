@@ -98,7 +98,7 @@ describe('Gợi ý mạo từ', () => {
   it('đúng danh từ nhưng thiếu mạo từ', () => {
     expect(checkAnswer('Bild', 'das Bild, -er')).toEqual({
       correct: false,
-      articleHint: 'Thiếu mạo từ — phải là "das Bild"',
+      articleHint: 'Thiếu mạo từ - phải là "das Bild"',
     })
   })
 

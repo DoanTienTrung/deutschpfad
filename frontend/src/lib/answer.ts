@@ -185,7 +185,7 @@ export function checkAnswer(input: string, germanWord: string): AnswerCheck {
       correct: false,
       articleHint: typedArticle
         ? `Đúng từ nhưng sai mạo từ: "${typedArticle}" → "${expected}"`
-        : `Thiếu mạo từ — phải là "${expected} ${parts[2]}"`,
+        : `Thiếu mạo từ - phải là "${expected} ${parts[2]}"`,
     }
   }
   return { correct: false, articleHint: null }

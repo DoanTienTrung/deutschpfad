@@ -63,9 +63,9 @@ public class YtDlpHealthCheckService {
                 "Job kiểm tra định kỳ vừa thử lấy phụ đề tiếng Đức cho 1 video test\n"
                     + "(https://www.youtube.com/watch?v=" + TEST_VIDEO_ID + ") qua yt-dlp và không lấy được câu nào.\n\n"
                     + "Đây thường có nghĩa là cookie YouTube đang dùng (file " + cookiesFile + " trên server)\n"
-                    + "đã hết hạn — cần xuất lại cookie mới từ trình duyệt và thay vào server.\n\n"
+                    + "đã hết hạn - cần xuất lại cookie mới từ trình duyệt và thay vào server.\n\n"
                     + "Nếu đây chỉ là lỗi tạm thời (mạng, YouTube bảo trì...), có thể bỏ qua và đợi lần kiểm tra tiếp theo.\n\n"
-                    + "— DeutschPfad (tự động)"
+                    + "DeutschPfad (tự động)"
             );
         }
     }

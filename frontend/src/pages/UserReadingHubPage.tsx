@@ -91,7 +91,7 @@ export default function UserReadingHubPage() {
         <div className="mb-6 rounded-lg border border-hairline bg-card p-5">
           <p className="mb-1 font-display text-lg font-semibold text-ink">Thêm bài đọc</p>
           <p className="mb-4 text-sm text-muted">
-            Dán bài báo, trích đoạn sách bạn muốn luyện đọc — hệ thống sẽ tự soạn câu hỏi ôn tập.
+            Dán bài báo, trích đoạn sách bạn muốn luyện đọc - hệ thống sẽ tự soạn câu hỏi ôn tập.
           </p>
           <input
             value={title}

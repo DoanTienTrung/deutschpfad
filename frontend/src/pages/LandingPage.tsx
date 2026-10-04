@@ -19,7 +19,7 @@ const FEATURES = [
   {
     icon: '🎓',
     title: 'Luyện thi 4 kỹ năng',
-    description: 'Mô phỏng sát format thi Goethe/telc/TestDaF: Nghe, Đọc, Viết, Nói — có chấm điểm và nhận xét.',
+    description: 'Mô phỏng sát format thi Goethe/telc/TestDaF: Nghe, Đọc, Viết, Nói - có chấm điểm và nhận xét.',
     comingSoon: true,
   },
 ]
@@ -58,7 +58,7 @@ export default function LandingPage() {
             Sẵn sàng cho hành trình du học và làm việc tại Đức
           </h1>
           <p className="mt-6 text-lg text-muted">
-            Học từ vựng, luyện nghe nói và chuẩn bị thi chứng chỉ Goethe, telc, TestDaF — tất cả
+            Học từ vựng, luyện nghe nói và chuẩn bị thi chứng chỉ Goethe, telc, TestDaF - tất cả
             trong một nền tảng dành riêng cho người Việt.
           </p>
           <div className="mx-auto mt-8 flex max-w-xs flex-col justify-center gap-3 sm:max-w-none sm:flex-row">
@@ -108,7 +108,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-display text-2xl font-bold text-ink">Nguồn nội dung uy tín</h2>
           <p className="mt-4 text-muted">
-            Từ vựng được biên soạn dựa trên Wortliste chính thức của Goethe-Institut — bộ từ
+            Từ vựng được biên soạn dựa trên Wortliste chính thức của Goethe-Institut - bộ từ
             vựng bắt buộc cho từng kỳ thi, đảm bảo bạn học đúng những gì cần cho kỳ thi thật.
           </p>
         </div>

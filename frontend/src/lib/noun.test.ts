@@ -22,7 +22,7 @@ describe('headword', () => {
     expect(headword({ germanWord: 'die Mutter, ¨', plural: 'Mütter' })).toBe('die Mutter')
   })
 
-  it('giữ nguyên khi chưa biết số nhiều — ký hiệu là thông tin duy nhất', () => {
+  it('giữ nguyên khi chưa biết số nhiều - ký hiệu là thông tin duy nhất', () => {
     expect(headword({ germanWord: 'die Maske, -n', plural: null })).toBe('die Maske, -n')
   })
 

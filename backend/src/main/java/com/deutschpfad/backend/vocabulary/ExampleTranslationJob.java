@@ -129,7 +129,7 @@ public class ExampleTranslationJob {
                 log.info("Example translation progress: {}/{}", processed.get(), ids.size());
 
                 if (calledAi && newlyTranslated == 0) {
-                    stopReason = "Groq không dịch được câu nào trong lô vừa rồi (thường là hết quota ngày) — "
+                    stopReason = "Groq không dịch được câu nào trong lô vừa rồi (thường là hết quota ngày) - "
                         + "đã dừng. Chạy lại vào ngày mai, job chỉ lấy những câu còn thiếu.";
                     log.warn("Example translation stopped: {}", stopReason);
                     return;

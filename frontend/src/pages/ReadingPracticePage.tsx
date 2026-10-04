@@ -124,7 +124,7 @@ export default function ReadingPracticePage() {
 
           {examLocked ? (
             <p className="text-sm text-muted">
-              Bản dịch sẽ hiện sau khi bạn nộp bài — giống điều kiện thi thật, không được tra từ điển hay xem bản dịch khi đang làm bài.
+              Bản dịch sẽ hiện sau khi bạn nộp bài - giống điều kiện thi thật, không được tra từ điển hay xem bản dịch khi đang làm bài.
             </p>
           ) : !passage.contentTranslation ? (
             <p className="text-sm text-muted">Chưa có bản dịch cho bài này.</p>
@@ -243,7 +243,7 @@ export default function ReadingPracticePage() {
                   )}
                   {questionResult && question.questionType !== 'SHORT_ANSWER' && (
                     <p className={`mt-3 text-sm ${questionResult.correct ? 'text-success' : 'text-danger'}`}>
-                      {questionResult.correct ? '✓ Đúng' : `✗ Sai — đáp án đúng: ${questionResult.correctAnswer}`}
+                      {questionResult.correct ? '✓ Đúng' : `✗ Sai - đáp án đúng: ${questionResult.correctAnswer}`}
                       {questionResult.explanation && (
                         <span className="ml-1 block text-muted">{questionResult.explanation}</span>
                       )}

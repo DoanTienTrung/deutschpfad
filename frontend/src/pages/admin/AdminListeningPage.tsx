@@ -98,7 +98,7 @@ export default function AdminListeningPage() {
         : await createListeningExercise(request)
 
       if (result.sentences.length === 0) {
-        setLastResult('Đã lưu, nhưng chưa có câu nào — video không có phụ đề tự động lấy được, hãy dán transcript tay.')
+        setLastResult('Đã lưu, nhưng chưa có câu nào - video không có phụ đề tự động lấy được, hãy dán transcript tay.')
       } else if (result.autoFetched) {
         setLastResult(`Đã tự động lấy được ${result.sentences.length} câu từ phụ đề YouTube.`)
       } else {
@@ -109,7 +109,7 @@ export default function AdminListeningPage() {
       await load()
     } catch (err) {
       const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
-      setError(serverMessage || 'Có lỗi xảy ra (server phản hồi quá lâu hoặc gặp sự cố) — kiểm tra lại danh sách bên dưới, bài có thể đã được lưu.')
+      setError(serverMessage || 'Có lỗi xảy ra (server phản hồi quá lâu hoặc gặp sự cố) - kiểm tra lại danh sách bên dưới, bài có thể đã được lưu.')
     } finally {
       setSaving(false)
     }
@@ -180,7 +180,7 @@ export default function AdminListeningPage() {
           className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
         <p className="sm:col-span-2 text-xs text-muted">
-          — hoặc, cho bài nghe không phải YouTube (vd. đề thi Goethe Modellsatz) —
+          - hoặc, cho bài nghe không phải YouTube (vd. đề thi Goethe Modellsatz) -
         </p>
         <input
           value={audioUrl}
@@ -257,7 +257,7 @@ export default function AdminListeningPage() {
             className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>
-              <strong>{exercise.levelMin === exercise.levelMax ? exercise.levelMin : `${exercise.levelMin}-${exercise.levelMax}`}</strong> — Bài {exercise.orderIndex}: {exercise.title}
+              <strong>{exercise.levelMin === exercise.levelMax ? exercise.levelMin : `${exercise.levelMin}-${exercise.levelMax}`}</strong> - Bài {exercise.orderIndex}: {exercise.title}
               {exercise.topic && <span className="ml-2 text-xs text-muted">#{exercise.topic}</span>}
               <span className="ml-2 text-xs text-muted">[{exercise.sentences.length} câu]</span>
             </span>

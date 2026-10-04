@@ -294,7 +294,7 @@ export default function AdminReadingPage() {
             Kho lựa chọn (dùng chung cho câu dạng "Nối câu")
           </p>
           <p className="text-xs text-muted">
-            Vd. các quảng cáo A-J trong bài "nối tình huống với quảng cáo phù hợp" — mỗi câu hỏi dạng
+            Vd. các quảng cáo A-J trong bài "nối tình huống với quảng cáo phù hợp" - mỗi câu hỏi dạng
             Nối câu sẽ chọn 1 chữ cái từ đây, hoặc "0" nếu không có lựa chọn nào phù hợp.
           </p>
           {matchingOptions.map((opt, i) => (
@@ -470,7 +470,7 @@ export default function AdminReadingPage() {
             className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>
-              <strong>{passage.levelMin === passage.levelMax ? passage.levelMin : `${passage.levelMin}-${passage.levelMax}`}</strong> — Bài {passage.orderIndex}: {passage.title}
+              <strong>{passage.levelMin === passage.levelMax ? passage.levelMin : `${passage.levelMin}-${passage.levelMax}`}</strong> - Bài {passage.orderIndex}: {passage.title}
               <span className="ml-2 text-xs text-muted">[{passage.category === 'EXAM' ? 'Đề thi' : 'Sách, Báo'}]</span>
               {passage.topic && <span className="ml-2 text-xs text-muted">#{passage.topic}</span>}
               <span className="ml-2 text-xs text-muted">[{passage.questions.length} câu hỏi]</span>

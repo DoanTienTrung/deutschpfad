@@ -138,7 +138,7 @@ export default function GrammarTopicPage() {
         </section>
       ) : (
         <p className="mb-6 rounded-lg border border-dashed border-hairline p-5 text-sm text-muted">
-          Chủ điểm này chưa có phần lý thuyết — bạn vẫn luyện được bài tập bên dưới.
+          Chủ điểm này chưa có phần lý thuyết - bạn vẫn luyện được bài tập bên dưới.
         </p>
       )}
 
@@ -235,7 +235,7 @@ function ExerciseCard({
           <>Sắp xếp thành câu đúng: <span className="font-normal italic">{exercise.promptDe}</span></>
         ) : exercise.exerciseType === 'ERROR_CORRECTION' ? (
           <>
-            Câu sau có một lỗi — viết lại cho đúng:{' '}
+            Câu sau có một lỗi - viết lại cho đúng:{' '}
             {/* Gạch chân lượn sóng đỏ: ám hiệu "có lỗi ở đây" mà ai cũng đọc được ngay, nhưng
                 không chỉ ra lỗi nằm ở từ nào. */}
             <span className="font-normal italic underline decoration-danger decoration-wavy underline-offset-4">

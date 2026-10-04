@@ -42,12 +42,12 @@ export default function GrammarReferencePage() {
 
       <h2 className="font-display text-2xl font-bold text-ink">Bảng tra cứu nhanh</h2>
       <p className="mt-1 text-sm text-muted">
-        Mở ra xem giữa chừng lúc đang làm bài, không cần học tuần tự. Gõ thẳng từ cần tra — tìm cả
+        Mở ra xem giữa chừng lúc đang làm bài, không cần học tuần tự. Gõ thẳng từ cần tra - tìm cả
         trong nội dung bảng.
       </p>
 
       {/* Dính trên đầu khi cuộn: đây là trang để tra giữa chừng, ô tìm phải luôn trong tầm tay.
-          -mx-6/px-6 khớp đúng p-6 của <main> trong AppLayout, để dải nền phủ trọn bề ngang —
+          -mx-6/px-6 khớp đúng p-6 của <main> trong AppLayout, để dải nền phủ trọn bề ngang -
           lệch một chút là nội dung cuộn bên dưới lòi ra ở hai mép. */}
       <div className="sticky top-0 z-10 -mx-6 mt-5 bg-canvas px-6 pb-3 pt-3">
         <input

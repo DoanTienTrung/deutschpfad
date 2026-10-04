@@ -135,7 +135,7 @@ export default function AdminSpeakingPage() {
             className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>
-              <strong>{prompt.level}</strong> — Bài {prompt.orderIndex}: {prompt.promptText}
+              <strong>{prompt.level}</strong> - Bài {prompt.orderIndex}: {prompt.promptText}
             </span>
             <span className="flex shrink-0 gap-3">
               <button onClick={() => startEdit(prompt)} className="text-sm text-primary hover:underline">

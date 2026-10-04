@@ -11,7 +11,7 @@ import Alert from '../components/ui/Alert'
 const FRIENDLY_ERRORS: Record<string, string> = {
   'Token đã hết hạn': 'Link xác thực đã hết hạn (link chỉ dùng được trong 24 giờ).',
   'Token không hợp lệ':
-    'Link xác thực này không dùng được nữa — có thể bạn đã xác thực rồi, hoặc link bị đứt khi sao chép từ email.',
+    'Link xác thực này không dùng được nữa - có thể bạn đã xác thực rồi, hoặc link bị đứt khi sao chép từ email.',
 }
 
 export default function VerifyEmailPage() {
@@ -21,7 +21,7 @@ export default function VerifyEmailPage() {
     token ? 'loading' : 'error'
   )
   const [message, setMessage] = useState(
-    token ? '' : 'Link xác thực không đầy đủ — có thể bị ngắt dòng lúc sao chép từ email.'
+    token ? '' : 'Link xác thực không đầy đủ - có thể bị ngắt dòng lúc sao chép từ email.'
   )
   // Ở nhánh lỗi mới cần hỏi email: người dùng vào đây từ link trong thư nên app chưa biết họ là ai.
   const [email, setEmail] = useState('')

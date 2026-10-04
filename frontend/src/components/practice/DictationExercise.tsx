@@ -131,7 +131,7 @@ export default function DictationExercise({
 
       <div className="mb-6 rounded-md border border-hairline bg-card p-6 text-center">
         {/* Đọc dạng nói được, không đọc nguyên germanWord: "das Bild, -er" sẽ bị đọc thành
-            "das Bild, trừ e-r" — mà đây là bài chính tả, người học gõ lại đúng cái mình nghe. */}
+            "das Bild, trừ e-r" - mà đây là bài chính tả, người học gõ lại đúng cái mình nghe. */}
         <AudioBar text={spokenForm(current.germanWord)} />
 
         <div className="mt-4">
@@ -192,7 +192,7 @@ export default function DictationExercise({
                 <p className="mt-3 text-sm font-medium text-danger">
                   {articleHint
                     ? `${articleHint}. Đáp án đầy đủ: "${current.germanWord}".`
-                    : `Chưa đúng — đáp án là "${current.germanWord}".`}{' '}
+                    : `Chưa đúng - đáp án là "${current.germanWord}".`}{' '}
                   Gõ lại cho đúng để qua câu mới.
                 </p>
               ) : (

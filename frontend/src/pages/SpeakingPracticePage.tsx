@@ -159,7 +159,7 @@ export default function SpeakingPracticePage() {
     // Timed out with no new recording — most likely the call never actually connected/spoke
     // (e.g. AI connection failed), so there's nothing to show. Go back to idle with an error
     // instead of leaving the UI blank.
-    setCallError('Cuộc gọi không ghi nhận được nội dung nào — có thể AI không kết nối được. Thử gọi lại nhé.')
+    setCallError('Cuộc gọi không ghi nhận được nội dung nào - có thể AI không kết nối được. Thử gọi lại nhé.')
     setCallState('idle')
   }
 

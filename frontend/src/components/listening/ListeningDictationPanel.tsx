@@ -160,7 +160,7 @@ export default function ListeningDictationPanel({
     <div className="mt-4">
       <div className="rounded-md border border-hairline bg-card p-6">
         <div className="mb-3 flex items-center justify-between text-sm text-muted">
-          <span>⌨️ Gõ lại từng chữ nghe được — chữ đúng sẽ tự hiện ra</span>
+          <span>⌨️ Gõ lại từng chữ nghe được - chữ đúng sẽ tự hiện ra</span>
           <span className="rounded-full border border-hairline px-3 py-1 text-xs font-medium text-ink">
             {typed.length}/{letters.length} chữ
           </span>
@@ -218,7 +218,7 @@ export default function ListeningDictationPanel({
               ? `Đáp án: "${current.text}"`
               : allCorrect
                 ? 'Chính xác!'
-                : 'Còn chỗ sai (tô đỏ) — xoá và gõ lại cho đúng, hoặc bấm Câu sau để bỏ qua.'}
+                : 'Còn chỗ sai (tô đỏ) - xoá và gõ lại cho đúng, hoặc bấm Câu sau để bỏ qua.'}
           </p>
         )}
       </div>

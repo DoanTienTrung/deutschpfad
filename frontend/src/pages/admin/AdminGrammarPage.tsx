@@ -240,7 +240,7 @@ export default function AdminGrammarPage() {
       setGenerateNote(
         result.note ??
           `Đã tạo ${result.created} bài` +
-            (result.pendingReview > 0 ? ` — ${result.pendingReview} bài đang chờ bạn duyệt.` : ' (duyệt sẵn).')
+            (result.pendingReview > 0 ? ` - ${result.pendingReview} bài đang chờ bạn duyệt.` : ' (duyệt sẵn).')
       )
       await load()
     } catch (err) {
@@ -392,7 +392,7 @@ export default function AdminGrammarPage() {
               >
                 <span className="min-w-0">
                   <strong>{table.category}</strong>
-                  {table.level && <span className="text-muted"> · {table.level}</span>} — {table.titleVi}
+                  {table.level && <span className="text-muted"> · {table.level}</span>} - {table.titleVi}
                 </span>
                 <span className="flex shrink-0 gap-3">
                   <button onClick={() => startEditReference(table)} className="text-sm text-primary hover:underline">
@@ -440,7 +440,7 @@ export default function AdminGrammarPage() {
         <input
           value={form.groupLabel ?? ''}
           onChange={(e) => setForm({ ...form, groupLabel: e.target.value })}
-          placeholder="Nhóm hiển thị (vd. Lektion 1) — tuỳ chọn"
+          placeholder="Nhóm hiển thị (vd. Lektion 1) - tuỳ chọn"
           className={input}
         />
         <input
@@ -478,7 +478,7 @@ export default function AdminGrammarPage() {
           className={`sm:col-span-2 font-mono text-sm ${input}`}
         />
         <p className="sm:col-span-2 -mt-1 text-xs text-muted">
-          AI chỉ soạn nháp và đổ vào ô trên — đọc lại, sửa cho đúng rồi mới bấm lưu.
+          AI chỉ soạn nháp và đổ vào ô trên - đọc lại, sửa cho đúng rồi mới bấm lưu.
         </p>
         <div className="sm:col-span-2 flex gap-2">
           <button
@@ -502,7 +502,7 @@ export default function AdminGrammarPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="min-w-0">
                 <strong>{topic.level}</strong>
-                {topic.groupLabel && <span className="text-muted"> · {topic.groupLabel}</span>} — {topic.titleVi}{' '}
+                {topic.groupLabel && <span className="text-muted"> · {topic.groupLabel}</span>} - {topic.titleVi}{' '}
                 <span className="text-muted">({topic.titleDe})</span>
                 <span className="ml-2 text-xs text-muted">
                   {topic.exercises.filter((e) => e.reviewed).length}/{topic.exercises.length} bài tập đã duyệt

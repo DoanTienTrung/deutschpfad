@@ -82,7 +82,7 @@ public class StreakReminderService {
                         + "Vào ôn tại: " + practiceLink + "\n\n"
                         + "Bạn nhận được thư này vì đang có tài khoản DeutschPfad và hôm nay chưa"
                         + " ôn từ vựng.\n\n"
-                        + "— DeutschPfad",
+                        + "DeutschPfad",
                     EmailTemplates.actionEmail(
                         user.getFullName(),
                         message,

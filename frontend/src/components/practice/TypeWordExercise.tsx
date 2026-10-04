@@ -153,7 +153,7 @@ export default function TypeWordExercise({
         <p className="mt-3 text-sm font-medium text-danger">
           {articleHint
             ? `${articleHint}. Đáp án đầy đủ: "${current.germanWord}".`
-            : `Chưa đúng — đáp án là "${current.germanWord}".`}{' '}
+            : `Chưa đúng - đáp án là "${current.germanWord}".`}{' '}
           Gõ lại cho đúng để qua câu mới.
         </p>
       )}

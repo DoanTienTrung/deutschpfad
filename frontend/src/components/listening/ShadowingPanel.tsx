@@ -202,7 +202,7 @@ export default function ShadowingPanel({
       {selectedWord && (
         <p className="mb-3 text-sm text-primary">
           <span className="font-medium">{selectedWord}</span>
-          {wordLoading ? ' — đang tra...' : wordTranslation ? ` — ${wordTranslation}` : ' — chưa tra được nghĩa'}
+          {wordLoading ? ' - đang tra...' : wordTranslation ? ` - ${wordTranslation}` : ' - chưa tra được nghĩa'}
         </p>
       )}
 
@@ -254,7 +254,7 @@ export default function ShadowingPanel({
 
       {gradingState === 'error' && (
         <p className="mt-3 text-sm text-muted">
-          Chưa chấm được lúc này (dịch vụ AI đang bận hoặc chưa cấu hình) — bạn vẫn có thể tự nghe
+          Chưa chấm được lúc này (dịch vụ AI đang bận hoặc chưa cấu hình) - bạn vẫn có thể tự nghe
           lại và so sánh bằng tai như bình thường.
         </p>
       )}

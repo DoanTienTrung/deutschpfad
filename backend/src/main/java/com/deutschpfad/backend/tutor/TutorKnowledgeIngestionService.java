@@ -73,7 +73,7 @@ public class TutorKnowledgeIngestionService {
         try {
             parsed = new ApacheTikaDocumentParser().parse(file.getInputStream());
         } catch (IOException | RuntimeException e) {
-            throw new IllegalArgumentException("Không đọc được nội dung file — file có thể bị hỏng hoặc không đúng định dạng hỗ trợ");
+            throw new IllegalArgumentException("Không đọc được nội dung file - file có thể bị hỏng hoặc không đúng định dạng hỗ trợ");
         }
         String actualTitle = (title == null || title.isBlank()) ? file.getOriginalFilename() : title;
         Document document = Document.from(parsed.text(), buildGrammarMetadata(actualTitle, level, topic));

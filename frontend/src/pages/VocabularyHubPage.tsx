@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { listLessonsByLevel, listLessonsBySource, listLessonsByTopic } from '../api/lessonApi'
-import { listTopics } from '../api/topicApi'
-import type { LessonSummary, Topic } from '../api/types'
+import { listLessonsByLevel, listLessonsBySource } from '../api/lessonApi'
+import type { LessonSummary } from '../api/types'
+import PronunciationSection from '../components/pronunciation/PronunciationSection'
 import { ListCardSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const GOETHE_LEVELS = ['A1', 'A2', 'B1']
 
-type Mode = 'level' | 'topic' | 'goethe' | 'textbook' | 'life'
+// 'alphabet' thay cho 'topic' (học theo chủ đề — chưa từng có chủ đề nào; nội dung theo tình huống nay ở
+// 'life'). Link cũ ?mode=topic được chuyển sang 'alphabet'.
+type Mode = 'level' | 'alphabet' | 'goethe' | 'textbook' | 'life'
+
+const MODE_CARDS: { mode: Mode; icon: string; title: string; desc: string }[] = [
+  { mode: 'alphabet', icon: '🔤', title: 'Bảng chữ cái & phát âm', desc: 'Chữ cái, âm ghép, đánh vần' },
+  { mode: 'level', icon: '📈', title: 'Theo cấp độ', desc: 'Từ thông dụng A1–C1' },
+  { mode: 'goethe', icon: '🎓', title: 'Ôn thi Goethe', desc: 'Wortliste A1–B1' },
+  { mode: 'life', icon: '🏠', title: 'Sống ở Đức', desc: 'Cư trú, thuê nhà, đi khám…' },
+  { mode: 'textbook', icon: '📗', title: 'Bộ từ của Giang', desc: 'Giáo trình Menschen A1 (chỉ admin)' },
+]
 
 function isMode(value: string | null): value is Mode {
-  return value === 'level' || value === 'topic' || value === 'goethe' || value === 'textbook' || value === 'life'
+  return value === 'level' || value === 'alphabet' || value === 'goethe' || value === 'textbook' || value === 'life'
 }
 
 export default function VocabularyHubPage() {
@@ -23,43 +33,32 @@ export default function VocabularyHubPage() {
 
   const [mode, setMode] = useState<Mode>(() => {
     const m = searchParams.get('mode')
-    return isMode(m) ? m : 'level'
+    if (m === 'topic') return 'alphabet'
+    // Mở trang lần đầu: bảng chữ cái & phát âm — điểm bắt đầu tự nhiên của người mới học.
+    return isMode(m) ? m : 'alphabet'
   })
 
   useEffect(() => {
     listLessonsByLevel('A1', 'TEXTBOOK')
       .then((l) => {
         setTextbookAvailable(l.length > 0)
-        if (l.length === 0) setMode((current) => (current === 'textbook' ? 'level' : current))
+        if (l.length === 0) setMode((current) => (current === 'textbook' ? 'alphabet' : current))
       })
       .catch(() => {})
   }, [])
   const [level, setLevel] = useState(() => searchParams.get('level') ?? 'A1')
   const [goetheLevel, setGoetheLevel] = useState(() => searchParams.get('goetheLevel') ?? 'A1')
-  const [topics, setTopics] = useState<Topic[]>([])
-  const [topicId, setTopicId] = useState<number | null>(() => {
-    const t = searchParams.get('topicId')
-    return t ? Number(t) : null
-  })
   const [lessons, setLessons] = useState<LessonSummary[]>([])
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    listTopics().then((t) => {
-      setTopics(t)
-      if (t.length > 0) setTopicId((current) => current ?? t[0].id)
-    })
-  }, [])
 
   useEffect(() => {
     const next: Record<string, string> = { mode }
     if (mode === 'level') next.level = level
     if (mode === 'goethe') next.goetheLevel = goetheLevel
-    if (mode === 'topic' && topicId !== null) next.topicId = String(topicId)
     // 'textbook' has no extra selector (only one level exists so far) -- nothing to sync
     setSearchParams(next, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync URL when selection actually changes
-  }, [mode, level, goetheLevel, topicId])
+  }, [mode, level, goetheLevel])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- mode/level/topic changed, reset loading before refetch
@@ -80,15 +79,11 @@ export default function VocabularyHubPage() {
       listLessonsBySource('LIFE')
         .then(setLessons)
         .finally(() => setLoading(false))
-    } else if (topicId !== null) {
-      listLessonsByTopic(topicId)
-        .then(setLessons)
-        .finally(() => setLoading(false))
     } else {
       setLessons([])
       setLoading(false)
     }
-  }, [mode, level, goetheLevel, topicId])
+  }, [mode, level, goetheLevel])
 
   // Chips per DESIGN.md: pill-shaped, surface + hairline at rest, primary/12 fill when selected.
   const chipClass = (selected: boolean) =>
@@ -102,58 +97,46 @@ export default function VocabularyHubPage() {
     <div className="mx-auto max-w-5xl">
       <h2 className="font-display text-2xl font-bold text-ink">Từ vựng</h2>
       <p className="mt-1 mb-6 text-sm text-muted">
-        Học theo lộ trình cấp độ, theo chủ đề, bám sát Wortliste của kỳ thi Goethe, hoặc theo tình huống
-        sống ở Đức.
+        Mới bắt đầu? Làm quen bảng chữ cái và cách phát âm trước, rồi học từ theo cấp độ, theo kỳ thi Goethe
+        hoặc theo tình huống sống ở Đức.
       </p>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <button
-          onClick={() => setMode('level')}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-            mode === 'level' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-          }`}
-        >
-          Theo cấp độ
-        </button>
-        <button
-          onClick={() => setMode('topic')}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-            mode === 'topic' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-          }`}
-        >
-          Theo chủ đề
-        </button>
-        <button
-          onClick={() => setMode('goethe')}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-            mode === 'goethe' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-          }`}
-        >
-          Ôn thi Goethe
-        </button>
-        {textbookAvailable && (
-          <button
-            onClick={() => setMode('textbook')}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              mode === 'textbook' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-            }`}
-          >
-            Bộ từ của Giang
-          </button>
-        )}
-        <button
-          onClick={() => setMode('life')}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-            mode === 'life' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-          }`}
-        >
-          Sống ở Đức
-        </button>
+      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {MODE_CARDS.filter((c) => c.mode !== 'textbook' || textbookAvailable).map((c) => {
+          const active = mode === c.mode
+          return (
+            <button
+              key={c.mode}
+              onClick={() => setMode(c.mode)}
+              aria-pressed={active}
+              className={`group flex items-center justify-between gap-3 rounded-lg p-4 text-left transition-all duration-150 hover:-translate-y-0.5 ${
+                active ? 'bg-primary text-canvas shadow-lifted' : 'border border-hairline bg-card text-ink hover:shadow-lifted'
+              }`}
+            >
+              <span className="flex min-w-0 items-center gap-3">
+                <span
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${
+                    active ? 'bg-canvas/15' : 'bg-surface'
+                  }`}
+                >
+                  {c.icon}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-bold uppercase tracking-wide">{c.title}</span>
+                  <span className={`mt-0.5 block text-xs ${active ? 'text-canvas/70' : 'text-muted'}`}>{c.desc}</span>
+                </span>
+              </span>
+              <span className="shrink-0 text-lg transition-transform group-hover:translate-x-1" aria-hidden="true">
+                →
+              </span>
+            </button>
+          )
+        })}
       </div>
 
       {mode === 'life' && (
         <p className="mb-6 text-sm text-muted">
-          Từ vựng cho những việc phải làm ngay khi sang Đức — đăng ký cư trú, thuê nhà, đi khám, mở tài
+          Từ vựng cho những việc phải làm ngay khi sang Đức - đăng ký cư trú, thuê nhà, đi khám, mở tài
           khoản, đi tàu, đổ rác, xin việc, gọi cấp cứu. Mỗi bài 25 từ, có câu ví dụ và bản dịch.
         </p>
       )}
@@ -178,28 +161,19 @@ export default function VocabularyHubPage() {
         </div>
       )}
 
-      {mode === 'topic' && (
-        <div className="mb-6 flex flex-wrap gap-2">
-          {topics.length === 0 && <p className="text-sm text-muted">Chưa có chủ đề nào.</p>}
-          {topics.map((t) => (
-            <button key={t.id} onClick={() => setTopicId(t.id)} className={chipClass(topicId === t.id)}>
-              {t.name}
-            </button>
-          ))}
-        </div>
-      )}
+      {mode === 'alphabet' && <PronunciationSection />}
 
-      {loading && <ListCardSkeleton />}
+      {mode !== 'alphabet' && loading && <ListCardSkeleton />}
 
-      {!loading && lessons.length === 0 && (
+      {mode !== 'alphabet' && !loading && lessons.length === 0 && (
         <div className="rounded-md border border-dashed border-hairline p-8 text-center">
           <p className="text-3xl">📚</p>
           <p className="mt-2 font-medium text-ink">Chưa có bộ từ nào ở đây</p>
-          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ hoặc chủ đề khác ở trên nhé.</p>
+          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ khác ở trên nhé.</p>
         </div>
       )}
 
-      {!loading && lessons.length > 0 && (
+      {mode !== 'alphabet' && !loading && lessons.length > 0 && (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {lessons.map((lesson, i) => (
           <div

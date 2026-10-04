@@ -266,7 +266,7 @@ export default function LessonFlashcardExercise({
                 >
                   {fillCorrect
                     ? fillMistake
-                      ? 'Đúng rồi — nhưng chưa đúng ngay lần đầu.'
+                      ? 'Đúng rồi - nhưng chưa đúng ngay lần đầu.'
                       : 'Chính xác!'
                     : `Đáp án: "${card.germanWord}"`}
                 </p>
@@ -305,7 +305,7 @@ export default function LessonFlashcardExercise({
       {revealed && objectiveOutcome === 'failed' && (
         <div className="mt-6">
           <p className="mb-2 text-center text-xs text-muted">
-            Chưa nhớ ra ngay lần đầu — từ này sẽ quay lại sớm để ôn.
+            Chưa nhớ ra ngay lần đầu - từ này sẽ quay lại sớm để ôn.
           </p>
           <Button variant="primary" onClick={() => handleAnswer('FORGOT')} className="w-full">
             Tiếp tục

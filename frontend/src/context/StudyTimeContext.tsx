@@ -6,9 +6,9 @@ const BREAK_REMINDER_INTERVAL_SECONDS = 45 * 60
 const BREAK_REMINDER_AUTO_HIDE_MS = 12_000
 
 const BREAK_REMINDER_MESSAGES = [
-  'ơi, bạn đã học 45 phút rồi — uống nước và nghỉ mắt một chút nhé! 💧',
+  'ơi, bạn đã học 45 phút rồi - uống nước và nghỉ mắt một chút nhé! 💧',
   'ơi, học liên tục 45 phút rồi, đứng dậy vươn vai vài phút rồi học tiếp nhé! 🧘',
-  'ơi, 45 phút trôi qua rồi đó — nghỉ ngơi ngắn để não bộ "sạc pin" nhé! ⏸️',
+  'ơi, 45 phút trôi qua rồi đó - nghỉ ngơi ngắn để não bộ "sạc pin" nhé! ⏸️',
   'ơi, học 45 phút rồi, nhìn ra xa vài giây cho mắt đỡ mỏi nhé! 👀',
 ]
 

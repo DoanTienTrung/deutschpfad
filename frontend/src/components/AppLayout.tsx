@@ -197,7 +197,7 @@ function ThemeSwitcher({ collapsed }: { collapsed: boolean }) {
     return (
       <button
         onClick={() => choose(next.value)}
-        title={`Giao diện: ${THEME_OPTIONS[index].label} — bấm để đổi sang ${next.label}`}
+        title={`Giao diện: ${THEME_OPTIONS[index].label} - bấm để đổi sang ${next.label}`}
         aria-label={`Đổi giao diện sang ${next.label}`}
         className="flex w-full justify-center rounded-md py-2 text-muted hover:bg-canvas hover:text-ink"
       >

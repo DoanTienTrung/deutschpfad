@@ -100,7 +100,7 @@ public class GrammarExerciseGenerator {
             exercise.setPromptDe("___ " + bareNoun);
             exercise.setHintVi(
                 kasus.germanName + " (" + kasus.vietnameseName + "), " + articleKind.vietnameseName
-                    + " — nghĩa: " + item.getVietnameseMeaning()
+                    + " - nghĩa: " + item.getVietnameseMeaning()
             );
             exercise.setCorrectAnswer(answer);
             exercise.setExplanationVi(
@@ -141,7 +141,7 @@ public class GrammarExerciseGenerator {
             exercise.setTopic(topic);
             exercise.setExerciseType(GrammarExercise.ExerciseType.CONJUGATE);
             exercise.setPromptDe(person.label + " ___ (" + infinitive + ")");
-            exercise.setHintVi("Chia động từ ở thì hiện tại — nghĩa: " + item.getVietnameseMeaning());
+            exercise.setHintVi("Chia động từ ở thì hiện tại - nghĩa: " + item.getVietnameseMeaning());
             exercise.setCorrectAnswer(answer);
             exercise.setExplanationVi(
                 "Thân từ \"" + WeakVerbConjugator.stem(infinitive) + "-\" ghép đuôi của ngôi "
