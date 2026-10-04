@@ -30,7 +30,7 @@ class ExampleTranslationJobTest {
 
     @Test
     void dichCauConThieu_cauTrungChiGuiMotLan_cauDaDichThiDungLai() throws Exception {
-        when(aiService.translateSentencesPlain(anyList())).thenAnswer(inv -> {
+        when(aiService.translateSentencesPlainPrimaryOnly(anyList())).thenAnswer(inv -> {
             List<String> in = inv.getArgument(0);
             return in.stream().map(s -> "VI: " + s).toList();
         });
@@ -43,7 +43,7 @@ class ExampleTranslationJobTest {
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<String>> sent = ArgumentCaptor.forClass(List.class);
-        verify(aiService, atLeastOnce()).translateSentencesPlain(sent.capture());
+        verify(aiService, atLeastOnce()).translateSentencesPlainPrimaryOnly(sent.capture());
         List<String> allSent = new ArrayList<>();
         sent.getAllValues().forEach(allSent::addAll);
         assertThat(allSent).as("câu trùng chỉ gửi một lần").containsOnlyOnce("Ich habe einen Hund.");
@@ -56,7 +56,7 @@ class ExampleTranslationJobTest {
 
     @Test
     void aiKhongDichDuocGi_thiDung_khongGhiGi() throws Exception {
-        when(aiService.translateSentencesPlain(anyList())).thenAnswer(inv -> {
+        when(aiService.translateSentencesPlainPrimaryOnly(anyList())).thenAnswer(inv -> {
             List<String> in = inv.getArgument(0);
             List<String> nulls = new ArrayList<>();
             in.forEach(s -> nulls.add(null));

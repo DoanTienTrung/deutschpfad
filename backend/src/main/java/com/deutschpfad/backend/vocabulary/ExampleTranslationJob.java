@@ -3,6 +3,7 @@ package com.deutschpfad.backend.vocabulary;
 import com.deutschpfad.backend.listening.GroqAiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,8 +17,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Dịch câu ví dụ còn thiếu sang tiếng Việt, chạy nền theo lô (admin bấm chạy).
  *
- * <p>Dùng {@link GroqAiService#translateSentencesPlain} — chuỗi Groq → Gemini → OpenRouter sẵn có,
- * bản dịch thường (không kèm IPA, giữ nguyên chữ số). Hai cách tiết kiệm lượt gọi AI:
+ * <p><b>Chỉ dùng Groq</b> ({@link GroqAiService#translateSentencesPlainPrimaryOnly}), không rơi xuống
+ * Gemini/OpenRouter như các tính năng khác. Lượt chạy production đầu tiên (04/10/2026) đã cho thấy vì
+ * sao: Groq hết quota ngày giữa chừng, Gemini free chỉ 20 lượt/ngày, nên ~phần cuối được dịch bằng
+ * "openrouter/free" (model miễn phí bất kỳ) — và đốt luôn quota Groq của gia sư, phần nghe, phần đọc
+ * trong cả ngày hôm đó. Nên mỗi lượt chạy còn bị giới hạn số câu ({@code max-per-run}) để chừa quota
+ * cho các tính năng kia; dịch hết thì bấm chạy tiếp ngày hôm sau.
+ *
+ * <p>Hai cách tiết kiệm lượt gọi AI:
  * <ul>
  *   <li>Câu đã dịch ở dòng khác (cùng từ ở nhiều lộ trình thường dùng chung câu) thì chép lại.</li>
  *   <li>Trong một lô, câu trùng chỉ gửi một lần.</li>
@@ -34,6 +41,7 @@ public class ExampleTranslationJob {
 
     private final VocabularyItemRepository vocabularyItemRepository;
     private final GroqAiService aiService;
+    private final int maxPerRun;
 
     private volatile boolean running = false;
     private volatile String stopReason = null;
@@ -42,22 +50,29 @@ public class ExampleTranslationJob {
     private final AtomicInteger translated = new AtomicInteger(0);
     private final AtomicInteger reused = new AtomicInteger(0);
 
-    public ExampleTranslationJob(VocabularyItemRepository vocabularyItemRepository, GroqAiService aiService) {
+    public ExampleTranslationJob(
+        VocabularyItemRepository vocabularyItemRepository,
+        GroqAiService aiService,
+        @Value("${app.vocabulary.translation.max-per-run:2000}") int maxPerRun
+    ) {
         this.vocabularyItemRepository = vocabularyItemRepository;
         this.aiService = aiService;
+        this.maxPerRun = maxPerRun;
     }
 
     /** @return số câu sẽ dịch, hoặc -1 nếu đang có một lượt chạy */
     public synchronized int start() {
         if (running) return -1;
-        List<Long> ids = vocabularyItemRepository.findIdsMissingExampleTranslation();
+        List<Long> missing = vocabularyItemRepository.findIdsMissingExampleTranslation();
+        List<Long> ids = missing.subList(0, Math.min(maxPerRun, missing.size()));
         running = true;
         stopReason = null;
         processed.set(0);
         total.set(ids.size());
         translated.set(0);
         reused.set(0);
-        new Thread(() -> run(ids), "example-translation").start();
+        boolean capped = missing.size() > maxPerRun;
+        new Thread(() -> run(ids, capped), "example-translation").start();
         return ids.size();
     }
 
@@ -73,7 +88,7 @@ public class ExampleTranslationJob {
         return status;
     }
 
-    private void run(List<Long> ids) {
+    private void run(List<Long> ids, boolean capped) {
         try {
             Map<String, String> known = new HashMap<>();
             for (Object[] row : vocabularyItemRepository.findTranslatedExamples()) {
@@ -91,7 +106,7 @@ public class ExampleTranslationJob {
                 boolean calledAi = !toTranslate.isEmpty();
                 int newlyTranslated = 0;
                 if (calledAi) {
-                    List<String> results = aiService.translateSentencesPlain(toTranslate);
+                    List<String> results = aiService.translateSentencesPlainPrimaryOnly(toTranslate);
                     for (int i = 0; i < toTranslate.size(); i++) {
                         String vi = results.get(i);
                         if (vi != null && !vi.isBlank()) {
@@ -114,13 +129,17 @@ public class ExampleTranslationJob {
                 log.info("Example translation progress: {}/{}", processed.get(), ids.size());
 
                 if (calledAi && newlyTranslated == 0) {
-                    stopReason = "AI không dịch được câu nào trong lô vừa rồi (lỗi hoặc hết lượt miễn phí) — "
-                        + "dừng để không gọi tiếp. Chạy lại sau.";
+                    stopReason = "Groq không dịch được câu nào trong lô vừa rồi (thường là hết quota ngày) — "
+                        + "đã dừng. Chạy lại vào ngày mai, job chỉ lấy những câu còn thiếu.";
                     log.warn("Example translation stopped: {}", stopReason);
                     return;
                 }
                 boolean lastBatch = start + BATCH_SIZE >= ids.size();
                 if (calledAi && !lastBatch) Thread.sleep(BATCH_DELAY_MS);
+            }
+            if (capped) {
+                stopReason = "Đã dịch đủ " + maxPerRun + " câu của lượt này (giới hạn để chừa quota Groq cho "
+                    + "gia sư và các phần khác). Bấm chạy tiếp vào ngày mai.";
             }
         } catch (Exception e) {
             stopReason = "Lỗi: " + Objects.toString(e.getMessage(), e.getClass().getSimpleName());

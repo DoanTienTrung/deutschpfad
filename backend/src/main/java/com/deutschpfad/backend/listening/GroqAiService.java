@@ -375,6 +375,26 @@ public class GroqAiService {
         return geminiAiService.translateSentencesPlain(sentences);
     }
 
+    /**
+     * Như {@link #translateSentencesPlain} nhưng CHỈ dùng Groq, không rơi xuống Gemini/OpenRouter —
+     * cho job dịch hàng loạt câu ví dụ (ExampleTranslationJob). Lý do: Gemini free chỉ 20 lượt/ngày,
+     * và OpenRouter ("openrouter/free") tự chọn model miễn phí bất kỳ nên chất lượng không ổn định;
+     * bản dịch lưu vĩnh viễn thì thà để dịch ngày mai còn hơn lưu bản kém. Trả toàn null nếu Groq lỗi
+     * hoặc hết quota — job hiểu là phải dừng.
+     */
+    public List<String> translateSentencesPlainPrimaryOnly(List<String> sentences) {
+        List<String> blank = new ArrayList<>();
+        sentences.forEach(s -> blank.add(null));
+        if (sentences.isEmpty() || apiKey == null || apiKey.isBlank()) return blank;
+        try {
+            String content = callChat(buildPlainTranslationPrompt(sentences));
+            return content == null ? blank : parsePlainTranslations(content, sentences.size());
+        } catch (Exception e) {
+            log.warn("Groq plain sentence translation call failed (primary only)", e);
+            return blank;
+        }
+    }
+
     static String buildPlainTranslationPrompt(List<String> sentences) {
         StringBuilder sb = new StringBuilder(
             "Dịch mỗi câu tiếng Đức sau sang tiếng Việt tự nhiên, sát nghĩa. Trả lời đúng định dạng "

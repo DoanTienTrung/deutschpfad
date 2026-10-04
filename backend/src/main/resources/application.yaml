@@ -64,6 +64,11 @@ app:
     # Lernwortschatz của Menschen A1 (Hueber) — ẩn cho tới khi thay câu ví dụ bằng câu tự soạn.
     # Đặt rỗng (VOCAB_HIDDEN_SOURCES=) để mở lại.
     hidden-sources: ${VOCAB_HIDDEN_SOURCES:TEXTBOOK}
+    translation:
+      # Số câu ví dụ tối đa mỗi lượt bấm "Dịch các câu còn thiếu". Một lô 40 câu tốn ~1.000–1.900 token
+      # Groq; 2.000 câu ≈ 50 lô ≈ 50–95 nghìn token, chừa phần lớn quota ngày (200 nghìn) cho gia sư,
+      # phần nghe và phần đọc.
+      max-per-run: ${VOCAB_TRANSLATION_MAX_PER_RUN:2000}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   deepgram-api-key: ${DEEPGRAM_API_KEY:}
   groq-api-key: ${GROQ_API_KEY:}
