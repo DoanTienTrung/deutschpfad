@@ -315,7 +315,7 @@ export default function AdminGrammarPage() {
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
               tab === value
                 ? 'bg-primary/12 text-primary-deep'
-                : 'border border-hairline bg-white text-ink hover:border-primary/40'
+                : 'border border-hairline bg-card text-ink hover:border-primary/40'
             }`}
           >
             {label}
@@ -325,7 +325,7 @@ export default function AdminGrammarPage() {
 
       {tab === 'reference' && (
         <>
-          <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-white p-4 sm:grid-cols-2">
+          <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
             <input
               value={refForm.slug}
               onChange={(e) => setRefForm({ ...refForm, slug: e.target.value })}
@@ -372,7 +372,7 @@ export default function AdminGrammarPage() {
               <button
                 onClick={handleSaveReference}
                 disabled={saving}
-                className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-white disabled:opacity-50"
+                className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
               >
                 {saving ? 'Đang lưu...' : refEditingId ? 'Cập nhật bảng' : 'Thêm bảng'}
               </button>
@@ -388,7 +388,7 @@ export default function AdminGrammarPage() {
             {references.map((table) => (
               <li
                 key={table.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-hairline bg-white p-3"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-hairline bg-card p-3"
               >
                 <span className="min-w-0">
                   <strong>{table.category}</strong>
@@ -413,7 +413,7 @@ export default function AdminGrammarPage() {
 
       {tab === 'topics' && (
       <>
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-white p-4 sm:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
         <input
           value={form.slug}
           onChange={(e) => setForm({ ...form, slug: e.target.value })}
@@ -484,7 +484,7 @@ export default function AdminGrammarPage() {
           <button
             onClick={handleSaveTopic}
             disabled={saving}
-            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-white disabled:opacity-50"
+            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
           >
             {saving ? 'Đang lưu...' : editingId ? 'Cập nhật chủ điểm' : 'Thêm chủ điểm'}
           </button>
@@ -498,7 +498,7 @@ export default function AdminGrammarPage() {
 
       <ul className="space-y-2">
         {topics.map((topic) => (
-          <li key={topic.id} className="rounded-sm border border-hairline bg-white p-3">
+          <li key={topic.id} className="rounded-sm border border-hairline bg-card p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="min-w-0">
                 <strong>{topic.level}</strong>
@@ -577,7 +577,7 @@ export default function AdminGrammarPage() {
                     <button
                       onClick={() => handleGenerate('data')}
                       disabled={busy === 'data'}
-                      className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                      className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-canvas disabled:opacity-50"
                     >
                       {busy === 'data' ? 'Đang sinh...' : 'Sinh từ dữ liệu (duyệt sẵn)'}
                     </button>
@@ -699,7 +699,7 @@ export default function AdminGrammarPage() {
                   />
                   <button
                     onClick={handleAddExercise}
-                    className="sm:col-span-2 rounded-sm bg-primary px-4 py-2 font-medium text-white"
+                    className="sm:col-span-2 rounded-sm bg-primary px-4 py-2 font-medium text-canvas"
                   >
                     Thêm bài tập
                   </button>

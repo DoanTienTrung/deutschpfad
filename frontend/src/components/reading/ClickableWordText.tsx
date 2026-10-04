@@ -297,7 +297,7 @@ export default function ClickableWordText({
                   rồi quay lại đây.
                 </p>
               )}
-              {saveState === 'error' && <p className="mt-2 text-xs text-red-300">Có lỗi xảy ra, thử lại sau.</p>}
+              {saveState === 'error' && <p className="mt-2 text-xs text-red-300 dark:text-red-700">Có lỗi xảy ra, thử lại sau.</p>}
             </>
           )}
 

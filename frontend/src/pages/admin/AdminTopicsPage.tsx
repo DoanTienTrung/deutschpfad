@@ -55,7 +55,7 @@ export default function AdminTopicsPage() {
         />
         <button
           onClick={handleCreate}
-          className="rounded-sm bg-primary px-4 py-2 font-medium text-white"
+          className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas"
         >
           Thêm
         </button>
@@ -65,7 +65,7 @@ export default function AdminTopicsPage() {
         {topics.map((topic) => (
           <li
             key={topic.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-white p-3"
+            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>{topic.name}</span>
             <button

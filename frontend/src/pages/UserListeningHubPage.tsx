@@ -96,7 +96,7 @@ export default function UserListeningHubPage() {
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
       {showForm && (
-        <div className="mb-6 rounded-lg border border-hairline bg-white p-5">
+        <div className="mb-6 rounded-lg border border-hairline bg-card p-5">
           <p className="mb-1 font-display text-lg font-semibold text-ink">Thêm Video</p>
           <p className="mb-4 text-sm text-muted">Dán link YouTube để luyện nghe</p>
           <input

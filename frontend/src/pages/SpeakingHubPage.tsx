@@ -69,7 +69,7 @@ export default function SpeakingHubPage() {
           <li
             key={prompt.id}
             style={{ '--stagger-index': i % 12 } as React.CSSProperties}
-            className="stagger-in rounded-lg border border-hairline bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
+            className="stagger-in rounded-lg border border-hairline bg-card p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">

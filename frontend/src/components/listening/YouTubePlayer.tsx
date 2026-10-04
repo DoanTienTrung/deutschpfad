@@ -38,7 +38,7 @@ const YouTubePlayer = forwardRef<YouTubePlayerRef, { videoId: string; onTimeUpda
       play: () => playerRef.current?.playVideo(),
     }))
 
-    return <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-md bg-ink" />
+    return <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-md bg-black" />
   }
 )
 

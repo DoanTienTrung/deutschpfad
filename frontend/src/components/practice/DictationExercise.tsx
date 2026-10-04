@@ -129,7 +129,7 @@ export default function DictationExercise({
         </button>
       </div>
 
-      <div className="mb-6 rounded-md border border-hairline bg-white p-6 text-center">
+      <div className="mb-6 rounded-md border border-hairline bg-card p-6 text-center">
         {/* Đọc dạng nói được, không đọc nguyên germanWord: "das Bild, -er" sẽ bị đọc thành
             "das Bild, trừ e-r" — mà đây là bài chính tả, người học gõ lại đúng cái mình nghe. */}
         <AudioBar text={spokenForm(current.germanWord)} />

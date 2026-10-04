@@ -136,7 +136,7 @@ export default function UserListeningPracticePage() {
 
                 <ul
                   ref={listContainerRef}
-                  className={`mt-4 max-h-[32rem] space-y-2 overflow-y-auto rounded-md border border-hairline bg-white p-3 ${
+                  className={`mt-4 max-h-[32rem] space-y-2 overflow-y-auto rounded-md border border-hairline bg-card p-3 ${
                     mobileTab === 'transcript' ? 'block' : 'hidden'
                   } lg:block`}
                 >

@@ -205,7 +205,7 @@ export default function VocabularyHubPage() {
           <div
             key={lesson.id}
             style={{ '--stagger-index': i % 12 } as React.CSSProperties}
-            className="stagger-in flex flex-col justify-between rounded-lg border border-hairline bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
+            className="stagger-in flex flex-col justify-between rounded-lg border border-hairline bg-card p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
           >
             <div>
               <p className="font-display font-semibold text-ink">

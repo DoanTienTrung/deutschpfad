@@ -140,7 +140,7 @@ export default function AdminListeningPage() {
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
       {lastResult && <div className="mb-4 rounded-sm bg-success-bg p-3 text-sm text-success">{lastResult}</div>}
 
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-white p-4 sm:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -238,7 +238,7 @@ export default function AdminListeningPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-white disabled:opacity-50"
+            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
           >
             {saving ? 'Đang lưu...' : editingId ? 'Cập nhật bài nghe' : 'Thêm bài nghe'}
           </button>
@@ -254,7 +254,7 @@ export default function AdminListeningPage() {
         {exercises.map((exercise) => (
           <li
             key={exercise.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-white p-3"
+            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>
               <strong>{exercise.levelMin === exercise.levelMax ? exercise.levelMin : `${exercise.levelMin}-${exercise.levelMax}`}</strong> — Bài {exercise.orderIndex}: {exercise.title}

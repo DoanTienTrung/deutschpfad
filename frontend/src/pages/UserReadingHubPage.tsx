@@ -88,7 +88,7 @@ export default function UserReadingHubPage() {
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
       {showForm && (
-        <div className="mb-6 rounded-lg border border-hairline bg-white p-5">
+        <div className="mb-6 rounded-lg border border-hairline bg-card p-5">
           <p className="mb-1 font-display text-lg font-semibold text-ink">Thêm bài đọc</p>
           <p className="mb-4 text-sm text-muted">
             Dán bài báo, trích đoạn sách bạn muốn luyện đọc — hệ thống sẽ tự soạn câu hỏi ôn tập.
@@ -151,7 +151,7 @@ export default function UserReadingHubPage() {
           <li
             key={passage.id}
             style={{ '--stagger-index': i % 12 } as React.CSSProperties}
-            className="stagger-in flex items-center justify-between gap-3 rounded-lg border border-hairline bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
+            className="stagger-in flex items-center justify-between gap-3 rounded-lg border border-hairline bg-card p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
           >
             <Link to={`/app/reading/${passage.id}`} className="min-w-0 flex-1 font-medium text-ink hover:text-primary">
               {passage.title}

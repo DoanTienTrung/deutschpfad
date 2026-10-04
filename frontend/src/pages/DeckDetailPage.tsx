@@ -122,7 +122,7 @@ export default function DeckDetailPage() {
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      <div className="mb-8 space-y-3 rounded-lg border border-hairline bg-white p-5">
+      <div className="mb-8 space-y-3 rounded-lg border border-hairline bg-card p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">
           {editingItemId !== null ? 'Sửa từ' : 'Thêm từ mới'}
         </p>
@@ -222,7 +222,7 @@ export default function DeckDetailPage() {
 
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.id} className="rounded-lg border border-hairline bg-white p-4">
+          <li key={item.id} className="rounded-lg border border-hairline bg-card p-4">
             <div className="flex items-center justify-between gap-3">
               <span className="min-w-0">
                 <strong className="font-display">{item.germanWord}</strong>

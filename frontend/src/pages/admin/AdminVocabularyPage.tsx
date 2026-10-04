@@ -130,7 +130,7 @@ export default function AdminVocabularyPage() {
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
       {translation && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-hairline bg-white p-4 text-sm">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-hairline bg-card p-4 text-sm">
           <div>
             <p className="font-medium text-ink">Dịch câu ví dụ sang tiếng Việt (AI)</p>
             {translation.running ? (
@@ -148,14 +148,14 @@ export default function AdminVocabularyPage() {
           <button
             onClick={handleStartTranslation}
             disabled={translation.running || translation.remaining === 0}
-            className="rounded-sm bg-primary px-4 py-2 font-medium text-white disabled:opacity-40"
+            className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-40"
           >
             {translation.running ? 'Đang dịch…' : 'Dịch các câu còn thiếu'}
           </button>
         </div>
       )}
 
-      <div className="mb-6 space-y-2 rounded-sm border border-hairline bg-white p-4">
+      <div className="mb-6 space-y-2 rounded-sm border border-hairline bg-card p-4">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input
             value={form.germanWord}
@@ -248,7 +248,7 @@ export default function AdminVocabularyPage() {
         <div className="flex gap-2">
           <button
             onClick={handleSubmit}
-            className="rounded-sm bg-primary px-4 py-2 font-medium text-white"
+            className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas"
           >
             {editingId ? 'Cập nhật' : 'Thêm từ vựng'}
           </button>
@@ -264,7 +264,7 @@ export default function AdminVocabularyPage() {
         {items.map((item) => (
           <li
             key={item.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-white p-3"
+            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <div>
               <strong>{item.germanWord}</strong>

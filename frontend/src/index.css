@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* Chế độ tối bật bằng class "dark" trên <html> (xem public/theme-init.js, lib/theme.ts) — không
+   dựa vào media query, để người dùng chọn được Sáng/Tối/Theo hệ thống. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Neutrals share the same warm hue (70) as --color-accent below -- a grey (or near-white/
      near-black) with a hue bias toward the page's accent reads as chosen rather than an
@@ -9,6 +13,9 @@
      primary paired with amber was the original, unremarked-on combination. */
   --color-canvas: oklch(0.995 0.004 70);
   --color-surface: oklch(0.97 0.012 70);
+  /* Nền thẻ nổi trên trang (danh sách từ, thẻ bài học, form). Trước đây viết thẳng bg-white —
+     không đổi được theo chế độ tối. */
+  --color-card: oklch(1 0 0);
   --color-ink: oklch(0.22 0.018 70);
   --color-muted: oklch(0.55 0.014 70);
   --color-hairline: oklch(0.88 0.014 70);
@@ -43,6 +50,35 @@
   --shadow-floating: 0 12px 32px oklch(0.22 0.018 70 / 0.14);
 
   --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Chế độ tối — "đèn bàn học ban đêm": cùng hue ấm 70 như chế độ sáng (The Shared-Hue Neutral Rule),
+   chỉ đảo độ sáng. Graphite (primary) đảo thành ngà sáng để nút chính vẫn là thứ tương phản nhất
+   — mọi chỗ đang dùng `bg-primary text-canvas` tự đúng mà không phải sửa. Amber giữ nguyên vai trò
+   "chỉ cho thứ đã đạt được". Thẻ (card) sáng hơn nền một bậc thay cho bóng đổ — bóng gần như vô hình
+   trên nền tối (The Tonal-First Rule). Các màu chữ (danger/success/der/die/das) sáng lên để đủ tương
+   phản trên nền tối. */
+html.dark {
+  color-scheme: dark;
+  --color-canvas: oklch(0.17 0.01 70);
+  --color-surface: oklch(0.215 0.012 70);
+  --color-card: oklch(0.235 0.013 70);
+  --color-ink: oklch(0.93 0.01 70);
+  --color-muted: oklch(0.7 0.012 70);
+  --color-hairline: oklch(0.33 0.012 70);
+  --color-primary: oklch(0.9 0.014 70);
+  --color-primary-deep: oklch(0.97 0.008 70);
+  --color-accent: oklch(0.78 0.15 70);
+  --color-accent-deep: oklch(0.8 0.14 70);
+  --color-danger: oklch(0.72 0.16 25);
+  --color-danger-bg: oklch(0.28 0.06 25);
+  --color-success: oklch(0.75 0.11 188);
+  --color-success-bg: oklch(0.27 0.04 188);
+  --color-der: oklch(0.74 0.12 255);
+  --color-die: oklch(0.76 0.14 355);
+  --color-das: oklch(0.76 0.13 145);
+  --shadow-lifted: 0 2px 8px oklch(0 0 0 / 0.35);
+  --shadow-floating: 0 12px 32px oklch(0 0 0 / 0.55);
 }
 
 @layer base {

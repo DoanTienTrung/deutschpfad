@@ -191,7 +191,7 @@ export default function ProfilePage() {
               <Link
                 key={deck.id}
                 to={`/app/decks/${deck.id}`}
-                className="rounded-lg border border-hairline bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
+                className="rounded-lg border border-hairline bg-card p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
               >
                 <p className="font-display font-semibold text-ink">{deck.name}</p>
                 <p className="mt-1 text-sm text-muted">{deck.itemCount} từ</p>

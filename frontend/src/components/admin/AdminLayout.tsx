@@ -17,7 +17,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="border-b border-hairline bg-white px-6 py-4">
+      <header className="border-b border-hairline bg-card px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <h1 className="font-display text-lg font-bold text-ink">DeutschPfad Admin</h1>
           <nav className="flex items-center gap-4 text-sm">

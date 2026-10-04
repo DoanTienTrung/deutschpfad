@@ -96,17 +96,17 @@ export default function AdminTutorKnowledgePage() {
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
       {message && <div className="mb-4 rounded-sm bg-accent/10 p-3 text-sm text-ink">{message}</div>}
 
-      <div className="mb-6 space-y-3 rounded-sm border border-hairline bg-white p-4">
+      <div className="mb-6 space-y-3 rounded-sm border border-hairline bg-card p-4">
         <div className="flex gap-2">
           <button
             onClick={() => setMode('upload')}
-            className={`rounded-sm px-3 py-1.5 text-sm font-medium ${mode === 'upload' ? 'bg-primary text-white' : 'border border-hairline text-ink'}`}
+            className={`rounded-sm px-3 py-1.5 text-sm font-medium ${mode === 'upload' ? 'bg-primary text-canvas' : 'border border-hairline text-ink'}`}
           >
             Upload file
           </button>
           <button
             onClick={() => setMode('paste')}
-            className={`rounded-sm px-3 py-1.5 text-sm font-medium ${mode === 'paste' ? 'bg-primary text-white' : 'border border-hairline text-ink'}`}
+            className={`rounded-sm px-3 py-1.5 text-sm font-medium ${mode === 'paste' ? 'bg-primary text-canvas' : 'border border-hairline text-ink'}`}
           >
             Dán text
           </button>
@@ -156,7 +156,7 @@ export default function AdminTutorKnowledgePage() {
         <button
           onClick={handleSave}
           disabled={saving || !canSave}
-          className="rounded-sm bg-primary px-4 py-2 font-medium text-white disabled:opacity-50"
+          className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
         >
           {saving ? 'Đang lưu...' : 'Lưu & tạo embedding'}
         </button>
@@ -166,7 +166,7 @@ export default function AdminTutorKnowledgePage() {
         <button
           onClick={handleSyncVocabulary}
           disabled={syncing}
-          className="rounded-sm border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-accent/10 disabled:opacity-50"
+          className="rounded-sm border border-hairline bg-card px-4 py-2 text-sm font-medium text-ink hover:bg-accent/10 disabled:opacity-50"
         >
           {syncing ? 'Đang đồng bộ...' : 'Đồng bộ từ vựng'}
         </button>
@@ -176,7 +176,7 @@ export default function AdminTutorKnowledgePage() {
         {batches.map((batch) => (
           <li
             key={batch.batchId}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-white p-3"
+            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>
               <strong>{batch.title}</strong>

@@ -61,7 +61,7 @@ export default function TutorChatWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-30">
       {open ? (
-        <div className="flex h-[32rem] w-80 flex-col overflow-hidden rounded-lg border border-hairline bg-white shadow-lifted sm:w-96">
+        <div className="flex h-[32rem] w-80 flex-col overflow-hidden rounded-lg border border-hairline bg-card shadow-lifted sm:w-96">
           <div className="flex items-center justify-between bg-primary px-4 py-3 text-canvas">
             <span className="font-display text-sm font-semibold">Gia sư tiếng Đức</span>
             <button onClick={() => setOpen(false)} aria-label="Đóng chat" className="text-canvas/80 hover:text-canvas">
@@ -80,7 +80,7 @@ export default function TutorChatWidget() {
                 <li
                   key={i}
                   className={`rounded-md p-2 text-sm ${
-                    m.role === 'assistant' ? 'bg-white text-ink' : 'ml-4 bg-accent/20 text-ink'
+                    m.role === 'assistant' ? 'bg-card text-ink' : 'ml-4 bg-accent/20 text-ink'
                   }`}
                 >
                   <p className="mb-0.5 text-[10px] font-medium text-muted">
@@ -96,7 +96,7 @@ export default function TutorChatWidget() {
                 </li>
               ))}
               {loading && (
-                <li className="rounded-md bg-white p-2 text-sm text-muted">Gia sư đang trả lời...</li>
+                <li className="rounded-md bg-card p-2 text-sm text-muted">Gia sư đang trả lời...</li>
               )}
             </ul>
             <div ref={bottomRef} />

@@ -85,7 +85,7 @@ export default function AudioBar({ text }: { text: string }) {
           ⚙
         </button>
         {showSettings && (
-          <div className="absolute right-0 top-8 z-10 rounded-md border border-hairline bg-white p-2 shadow-floating">
+          <div className="absolute right-0 top-8 z-10 rounded-md border border-hairline bg-card p-2 shadow-floating">
             {RATES.map((r) => (
               <button
                 key={r}

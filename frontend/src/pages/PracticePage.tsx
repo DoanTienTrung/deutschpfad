@@ -129,7 +129,7 @@ export default function PracticePage() {
           down like the desktop sidebar does. */}
       <button
         onClick={() => setMobileMenuOpen(true)}
-        className="flex items-center justify-between rounded-md border border-hairline bg-white p-3 text-sm font-medium text-ink md:hidden"
+        className="flex items-center justify-between rounded-md border border-hairline bg-card p-3 text-sm font-medium text-ink md:hidden"
       >
         <span>{currentModeLabel}</span>
         <span className="text-muted">☰ Đổi chế độ</span>
@@ -138,7 +138,7 @@ export default function PracticePage() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
-          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-lg bg-white p-4 shadow-lifted">
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-lg bg-card p-4 shadow-lifted">
             <LessonSidebarContent
               lesson={lesson}
               completed={completed}
@@ -154,7 +154,7 @@ export default function PracticePage() {
         </div>
       )}
 
-      <aside className="hidden shrink-0 rounded-md border border-hairline bg-white p-4 md:block md:w-60">
+      <aside className="hidden shrink-0 rounded-md border border-hairline bg-card p-4 md:block md:w-60">
         <LessonSidebarContent
           lesson={lesson}
           completed={completed}

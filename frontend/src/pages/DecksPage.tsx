@@ -67,7 +67,7 @@ export default function DecksPage() {
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      <div className="mb-8 rounded-lg border border-hairline bg-white p-5">
+      <div className="mb-8 rounded-lg border border-hairline bg-card p-5">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">Tạo bộ từ mới</p>
         <div className="space-y-2">
           <input
@@ -91,7 +91,7 @@ export default function DecksPage() {
             <div
               key={deck.id}
               style={{ '--stagger-index': i % 12 } as React.CSSProperties}
-              className="stagger-in rounded-lg border border-hairline bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
+              className="stagger-in rounded-lg border border-hairline bg-card p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="flex flex-1 items-center gap-3">

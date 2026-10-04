@@ -35,7 +35,7 @@ export default function FlashcardBrowseList({
 
       <div className="space-y-3">
         {pageItems.map((item) => (
-          <div key={item.id} className="rounded-md border border-hairline bg-white p-4">
+          <div key={item.id} className="rounded-md border border-hairline bg-card p-4">
             <div className="flex flex-wrap items-center gap-2">
               <GermanWord item={item} className="font-display text-lg font-semibold text-ink" />
               {item.wordType && <span className="text-sm text-muted">({item.wordType})</span>}

@@ -109,7 +109,7 @@ export default function TypeWordExercise({
         </button>
       </div>
 
-      <div className="mb-6 rounded-md border border-hairline bg-white p-6 text-center">
+      <div className="mb-6 rounded-md border border-hairline bg-card p-6 text-center">
         {questionDisplay(current) && (
           <QuestionSentence display={questionDisplay(current)!} className="text-lg font-medium text-ink" />
         )}

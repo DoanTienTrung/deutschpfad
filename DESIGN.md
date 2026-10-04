@@ -89,6 +89,8 @@ DeutschPfad should feel like sitting at a good tutor's desk: warm lamp light, an
 
 This explicitly rejects the cold, bureaucratic test-portal look (grey forms, harsh red errors, no personality) and the opposite failure mode — Duolingo-style mascot gamification that trivializes exam-stakes prep. A near-black Graphite primary stays quiet and out of the way — it reads as calm and confident rather than competing with content; the warm amber accent, used sparingly for streaks and milestones, is the one place the system allows itself to celebrate. This pairing (a neutral, almost-monochrome primary against a single warm accent) was chosen after two rounds of trying a blue primary (a teal-leaning hue, then a Prussian-Blue-leaning hue) both read as visually loud against the amber — a near-black primary sidesteps that clash entirely by not competing with amber's warmth at all.
 
+The system does carry one mascot — **Chậm** (see "Mascot — Chậm the Sloth" under Components) — but its brief is the opposite of the Duolingo failure mode above: a sloth reframed not as "lazy" but as "unhurried and steady," a quiet visual echo of the app's own spaced-repetition philosophy (little and often beats cramming) and of "Pfad" itself — a path walked one deliberate step at a time. Chậm appears rarely and never nags; it illustrates a moment, it doesn't perform one.
+
 **Key Characteristics:**
 - Warm-tinted white product surface (all neutrals share the accent's hue at low chroma) — the brand's warmth lives in the accent color and this shared undertone, not a separate palette.
 - One confident near-black primary carrying navigation, primary actions, and links — quiet by design, not a second competing color.
@@ -115,6 +117,9 @@ A restrained palette: one primary carries identity, one accent is spent delibera
 - **Quiet Ink** (oklch(0.55 0.014 70)): secondary/muted text — timestamps, helper copy, placeholder text.
 - **Hairline** (oklch(0.88 0.014 70)): borders, dividers, input strokes.
 - **Signal Red** (oklch(0.55 0.19 25)) / **Signal Red Bg** (oklch(0.96 0.03 25)): errors only — form validation, failed submissions. Never decorative.
+
+### Dark Mode ("đèn bàn học ban đêm")
+Same warm hue 70 throughout, only lightness inverted: Paper → oklch(0.17), Whisper Surface → oklch(0.215), cards one step lighter (oklch(0.235)) instead of shadows, Ink → oklch(0.93). Graphite primary inverts to a light ivory (oklch(0.9)) so the primary action stays the highest-contrast element and every `bg-primary text-canvas` pairing stays correct with no per-component overrides. Ember Amber keeps its role unchanged. Status and gender colors are lifted in lightness for contrast. Users pick Sáng / Tối / Theo máy (default: follow the OS); `public/theme-init.js` applies the class before first paint. **Never hard-code `bg-white`/`text-white`** — use `bg-card` / `text-canvas` so both themes stay correct.
 
 ### Named Rules
 **The One Warm Color Rule.** Ember Amber appears only where the user has *earned* something (a streak, a completed review, a level milestone). If it shows up on a static piece of chrome, it's being used wrong.
@@ -178,10 +183,26 @@ Tactile and encouraging: soft corners, a gentle lift on hover, focus states that
 - **Error / Disabled:** border and helper text shift to Signal Red on a Signal Red Bg helper banner beneath the field; disabled state drops to Quiet Ink text at 60% opacity with no hover affordance.
 
 ### Navigation
-- Top nav on Paper with a Hairline bottom border; active route uses Graphite/12% fill with Graphite Deep text. Mobile collapses the side nav into a drawer opened from a hamburger button, given the primary use context is short mobile sessions.
+- **Full-height left sidebar** on Whisper Surface with a Hairline right border (no top bar on desktop): logo at the top, nav grouped under "Học" / "Cá nhân", and a footer holding the streak pill, today's study time, the account link, the Sáng/Tối/Theo máy switcher and the collapse toggle. Active route uses Graphite/12% fill with Graphite Deep text.
+- **"Ôn tập" carries the due-card count** as a Signal Red Bg pill (a dot when collapsed) — the one daily action worth surfacing in the chrome.
+- **Collapses to a 64px icon rail** (labels become tooltips), remembered per browser. Practice screens that already have their own side column (lesson practice, listening/reading players, deck practice) start collapsed so the content never gets squeezed into three columns.
+- **Mobile (< md):** a slim top bar (hamburger, logo, streak) opens the same sidebar as a drawer — the primary use context is short mobile sessions.
 
 ### Streak Indicator (signature component)
 A small pill in the dashboard header: Ember Amber fill, Ink text, flame icon, current streak count in Label type. This is the one place in the whole system where the amber accent is allowed to be the loudest thing on screen — reinforcing "The One Warm Color Rule."
+
+### Mascot — Chậm the Sloth
+**Concept:** a sloth, reframed. "Chậm" (Vietnamese: *slow*) is worn as a badge, not an apology — the mascot's entire point is that deliberate, unhurried, daily steps are how you actually reach a certification, not sprinting and burning out. It's the same argument the SRS algorithm makes with data; Chậm just makes it visible and warm.
+
+**Visual treatment:** drawn in the system's own language, not a separate cartoon universe grafted on — flat shapes with rounded-lg corners (echoing card/button geometry), Graphite linework, a single Ember Amber detail (vd. the belly patch, or a small item it's holding) as its one permitted warm accent, never full-color illustration. Calm pose by default: mid-step on a path, or resting with eyes closed — never wide-eyed, bouncing, or winking. No speech bubbles as a default state; when Chậm does speak, one short line, present tense, no exclamation-mark hype.
+
+**Where it appears (tasteful and rare — this is the constraint that keeps it from becoming the Duolingo failure mode):**
+- Empty states (vd. "Chưa có bộ từ nào" — Chậm sitting beside an empty shelf)
+- 404 / error pages
+- Big streak milestones only (7/30/100 ngày) — not every day, so it stays an event, not chrome
+- **Never**: a persistent floating helper, a click-triggered animation on every interaction, or copy that nags/hurries the user — that would undo the entire reframe.
+
+**Copy voice when Chậm speaks:** steady, first-person-plural, no urgency. "Từng bước một, không cần vội." / "Hôm nay bạn đã đi thêm một đoạn." Never "Đừng bỏ lỡ!" or countdown-timer pressure — that's a different mascot's job, not Chậm's.
 
 ## 6. Do's and Don'ts
 
@@ -190,11 +211,12 @@ A small pill in the dashboard header: Ember Amber fill, Ink text, flame icon, cu
 - **Do** reserve Ember Amber for earned moments only: streaks, completed reviews, level milestones.
 - **Do** use generous body line-height (1.6) and cap prose at ~70ch — this is a reading- and instruction-heavy app used on the go.
 - **Do** give every interactive element a soft hover lift and a visible, non-alarming focus ring.
+- **Do** keep Chậm the sloth rare and calm when used (empty states, error pages, big streak milestones) — its whole reframe ("unhurried, not lazy") only holds up if it stays an occasional illustration, not a recurring character.
 
 ### Don't:
 - **Don't** introduce a second saturated brand color (a blue primary was tried twice and rejected both times for clashing with amber) — the near-black + amber pairing is the deliberate, settled choice.
 - **Don't** use Ember Amber as decoration on static chrome (nav bars, default card borders) — if it's not marking something earned, it's misused.
-- **Don't** default to a Duolingo-style mascot/gamification tone — this product is exam-stakes serious, softened by warmth, not trivialized by playfulness.
+- **Don't** turn Chậm into a Duolingo-style omnipresent/chatty mascot (persistent floating helper, nagging streak-loss guilt copy, animated on every click) — this product is exam-stakes serious, softened by warmth, not trivialized by playfulness. One calm illustration in a handful of moments is the entire budget.
 - **Don't** use border-left/border-right color stripes as an accent on cards or list items.
 - **Don't** use gradient text or glassmorphism as decoration.
 - **Don't** let display type exceed the `clamp(1.75rem, 3vw, 2.75rem)` ceiling — there is no landing-page hero here.

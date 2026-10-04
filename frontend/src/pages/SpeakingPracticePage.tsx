@@ -21,7 +21,7 @@ function FeedbackCriteria({ feedback }: { feedback: string }) {
   return (
     <div className="space-y-2">
       {criteria.map((c, i) => (
-        <div key={i} className="rounded-md border border-hairline bg-white p-2">
+        <div key={i} className="rounded-md border border-hairline bg-card p-2">
           <div className="mb-1 flex items-center gap-2">
             <span className="text-xs font-medium text-muted">{c.title}</span>
             {c.label && (
@@ -182,7 +182,7 @@ export default function SpeakingPracticePage() {
         </button>
       </nav>
 
-      <div className="rounded-md border border-hairline bg-white p-6">
+      <div className="rounded-md border border-hairline bg-card p-6">
         <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted">[{prompt.level}]</p>
         <p className="mb-2 text-lg font-medium text-ink">{prompt.promptText}</p>
         {prompt.description && <p className="mb-4 text-sm text-muted">{prompt.description}</p>}
@@ -244,13 +244,13 @@ export default function SpeakingPracticePage() {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => setShowTranscript((v) => !v)}
-                className="rounded-sm border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface"
+                className="rounded-sm border border-hairline bg-card px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface"
               >
                 {showTranscript ? 'Ẩn hội thoại' : '💬 Xem lại hội thoại'}
               </button>
               <button
                 onClick={startCall}
-                className="rounded-sm border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface"
+                className="rounded-sm border border-hairline bg-card px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface"
               >
                 📞 Gọi lại
               </button>
@@ -262,7 +262,7 @@ export default function SpeakingPracticePage() {
                   <li
                     key={turn.id}
                     className={`rounded-md p-2 text-sm ${
-                      turn.role === 'AGENT' ? 'bg-white text-ink' : 'ml-6 bg-accent/20 text-ink'
+                      turn.role === 'AGENT' ? 'bg-card text-ink' : 'ml-6 bg-accent/20 text-ink'
                     }`}
                   >
                     <p className="mb-1 text-xs font-medium text-muted">
@@ -285,7 +285,7 @@ export default function SpeakingPracticePage() {
           <p className="mb-2 text-sm font-medium text-ink">Lịch sử các cuộc gọi ({history.length})</p>
           <ul className="space-y-2">
             {history.map((h) => (
-              <li key={h.id} className="rounded-md border border-hairline bg-white p-3 text-sm">
+              <li key={h.id} className="rounded-md border border-hairline bg-card p-3 text-sm">
                 {h.feedback && <FeedbackCriteria feedback={h.feedback} />}
                 <p className="mt-2 text-xs text-muted">{new Date(h.createdAt).toLocaleString('vi-VN')}</p>
               </li>

@@ -76,7 +76,7 @@ export default function ListenChooseExercise({
         Đã luyện {totalAnswered} từ · Đúng {score}
       </p>
 
-      <div className="mb-6 rounded-md border border-hairline bg-white p-6">
+      <div className="mb-6 rounded-md border border-hairline bg-card p-6">
         <AudioBar text={spokenForm(current.germanWord)} />
       </div>
 

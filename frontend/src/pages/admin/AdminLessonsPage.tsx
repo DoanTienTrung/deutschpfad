@@ -58,7 +58,7 @@ export default function AdminLessonsPage() {
 
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
 
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-white p-4 sm:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -109,7 +109,7 @@ export default function AdminLessonsPage() {
         />
         <button
           onClick={handleCreate}
-          className="sm:col-span-2 rounded-sm bg-primary px-4 py-2 font-medium text-white"
+          className="sm:col-span-2 rounded-sm bg-primary px-4 py-2 font-medium text-canvas"
         >
           Thêm bài học
         </button>
@@ -119,7 +119,7 @@ export default function AdminLessonsPage() {
         {lessons.map((lesson) => (
           <li
             key={lesson.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-white p-3"
+            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
           >
             <span>
               <strong>{lesson.level}</strong> — Bài {lesson.orderIndex}: {lesson.title}

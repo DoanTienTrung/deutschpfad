@@ -23,7 +23,7 @@ export function ListCardSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="rounded-md border border-hairline bg-white p-4">
+        <div key={i} className="rounded-md border border-hairline bg-card p-4">
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="mt-2 h-3 w-full" />
           <Skeleton className="mt-1 h-3 w-2/3" />
