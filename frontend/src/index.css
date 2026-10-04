@@ -38,6 +38,15 @@
   --color-der: oklch(0.5 0.15 255);
   --color-die: oklch(0.52 0.18 355);
   --color-das: oklch(0.5 0.13 145);
+  /* Biểu đồ mức thuộc từ (trang chủ): 4 bậc CÙNG MỘT hue (188, họ màu "đúng"), nhạt → đậm theo mức nhớ.
+     Đã chạy bộ kiểm palette (dataviz): đơn sắc, độ sáng tăng dần, mỗi bậc cách ≥ 0,06, bậc nhạt nhất
+     vẫn ≥ 2:1 so với nền thẻ. Chế độ tối có bộ bậc riêng (đảo chiều: nhớ lâu là sáng nhất). */
+  --color-m1: oklch(0.76 0.07 188);
+  --color-m2: oklch(0.65 0.09 188);
+  --color-m3: oklch(0.54 0.1 188);
+  --color-m4: oklch(0.42 0.095 188);
+  /* Cột biểu đồ ngày chưa đạt mục tiêu: trung tính, để cột amber (ngày đạt) là thứ nổi lên. */
+  --color-bar-muted: oklch(0.78 0.012 70);
 
   --font-display: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
@@ -77,6 +86,11 @@ html.dark {
   --color-der: oklch(0.74 0.12 255);
   --color-die: oklch(0.76 0.14 355);
   --color-das: oklch(0.76 0.13 145);
+  --color-m1: oklch(0.46 0.06 188);
+  --color-m2: oklch(0.59 0.085 188);
+  --color-m3: oklch(0.72 0.1 188);
+  --color-m4: oklch(0.85 0.1 188);
+  --color-bar-muted: oklch(0.45 0.012 70);
   --shadow-lifted: 0 2px 8px oklch(0 0 0 / 0.35);
   --shadow-floating: 0 12px 32px oklch(0 0 0 / 0.55);
 }

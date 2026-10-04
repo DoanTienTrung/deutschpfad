@@ -9,6 +9,7 @@ import {
 } from '../../lib/pronunciation'
 import { shuffle } from '../../lib/quiz'
 import { speak } from '../../lib/speech'
+import { markAlphabetVisited } from '../../lib/onboarding'
 
 type Activity = 'letters' | 'pairs' | 'spelling' | 'name'
 
@@ -451,7 +452,10 @@ export default function PronunciationPractice() {
         {ACTIVITIES.map((a) => (
           <button
             key={a.id}
-            onClick={() => setActivity(a.id)}
+            onClick={() => {
+              markAlphabetVisited()
+              setActivity(a.id)
+            }}
             className="flex items-start gap-4 rounded-lg border border-hairline bg-card p-5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
           >
             <span className="text-3xl">{a.icon}</span>

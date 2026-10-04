@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { speak } from '../../lib/speech'
 import type { Example } from '../../lib/pronunciation'
+import { markAlphabetVisited } from '../../lib/onboarding'
 
 export type DetailItem = {
   key: string
@@ -53,6 +54,8 @@ export default function DetailSheet({
   useEffect(() => {
     speak(item.speak)
   }, [item.speak])
+
+  useEffect(() => markAlphabetVisited(), [])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

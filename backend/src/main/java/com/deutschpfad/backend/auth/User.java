@@ -47,6 +47,10 @@ public class User {
     @Column(name = "current_level")
     private String currentLevel;
 
+    /** Mục tiêu học mỗi ngày (phút), hiện trên vòng tròn ở trang chủ. */
+    @Column(name = "daily_goal_minutes", nullable = false)
+    private int dailyGoalMinutes = 15;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
