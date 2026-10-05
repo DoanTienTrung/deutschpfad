@@ -54,6 +54,33 @@ public class ListeningExercise {
     @Column(name = "duration_seconds")
     private Integer durationSeconds;
 
+    @ManyToOne
+    @JoinColumn(name = "channel_id")
+    private ListeningChannel channel;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Kind kind = Kind.YOUTUBE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.READY;
+
+    @Column(name = "import_error")
+    private String importError;
+
+    @Column(name = "import_attempts", nullable = false)
+    private Integer importAttempts = 0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /** Trang hiển thị bài: video YouTube theo kênh, hay luyện đề thi. */
+    public enum Kind { YOUTUBE, EXAM }
+
+    /**
+     * Vòng đời của bài nhập hàng loạt (ListeningImportJob). Chỉ READY mới hiện cho người học; bài nhập
+     * tay trong admin tạo thẳng ở READY như trước.
+     */
+    public enum Status { PENDING, TRANSLATING, READY, FAILED, HIDDEN }
 }

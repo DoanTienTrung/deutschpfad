@@ -1,0 +1,746 @@
+{
+  "channels": [
+    {
+      "key": "dw",
+      "youtubeChannelId": "UCxUWIEL-USsiPak0Qy6_vVg",
+      "name": "DW Deutsch lernen",
+      "handle": "@dwlearngerman",
+      "orderIndex": 1
+    },
+    {
+      "key": "easygerman",
+      "youtubeChannelId": "UCbxb2fqe9oNgglAoYqsYOtQ",
+      "name": "Easy German",
+      "handle": "@EasyGerman",
+      "orderIndex": 2
+    },
+    {
+      "key": "marija",
+      "youtubeChannelId": "UCCAI6jmeW5hWz2-jaLPqLUQ",
+      "name": "Deutsch mit Marija",
+      "handle": "@DeutschmitMarija",
+      "orderIndex": 3
+    },
+    {
+      "key": "mrwissen2go",
+      "youtubeChannelId": "UCZHpIFMfoJJ_1QxNGLJTzyA",
+      "name": "MrWissen2go",
+      "handle": "@MrWissen2go",
+      "orderIndex": 4
+    }
+  ],
+  "videos": [
+    {
+      "channel": "dw",
+      "videoId": "dC6ZGLzdaTs",
+      "title": "Nicos Weg | Folge 1: Hallo!",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 97
+    },
+    {
+      "channel": "dw",
+      "videoId": "upvuC9FR-xU",
+      "title": "Nicos Weg | Folge 2: Kein Problem!",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 111
+    },
+    {
+      "channel": "dw",
+      "videoId": "idFrq0H1Af0",
+      "title": "Nicos Weg | Folge 3: Tschüss!",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 88
+    },
+    {
+      "channel": "dw",
+      "videoId": "-qAuGimugds",
+      "title": "Nicos Weg | Folge 4: Von A bis Z",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 109
+    },
+    {
+      "channel": "dw",
+      "videoId": "FoYSUfsLcjA",
+      "title": "Nicos Weg | Folge 5: Ich heiße Emma",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 84
+    },
+    {
+      "channel": "dw",
+      "videoId": "fZr-eVZ3YOs",
+      "title": "Nicos Weg | Folge 6: Das ist Nico",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 61
+    },
+    {
+      "channel": "dw",
+      "videoId": "Q7ECRAQrzFc",
+      "title": "Nicos Weg | Folge 7: Woher kommst du?",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 113
+    },
+    {
+      "channel": "dw",
+      "videoId": "T89sIATrpBc",
+      "title": "Nicos Weg | Folge 8: Nico hat ein Problem",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 103
+    },
+    {
+      "channel": "dw",
+      "videoId": "p1dci7nBJRo",
+      "title": "Nicos Weg | Folge 9: Zahlen von 1 bis 100",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 109
+    },
+    {
+      "channel": "dw",
+      "videoId": "5wyalwdmpzk",
+      "title": "Nicos Weg | Folge 10: Wichtige Nummern",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 106
+    },
+    {
+      "channel": "dw",
+      "videoId": "AI9EmNzxXGE",
+      "title": "Nicos Weg | Folge 11: Adressen",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 118
+    },
+    {
+      "channel": "dw",
+      "videoId": "IhLqeX8QjSg",
+      "title": "Nicos Weg | Folge 12: Auf dem Amt",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 135
+    },
+    {
+      "channel": "dw",
+      "videoId": "VWDtpIIAgAI",
+      "title": "Nicos Weg | Folge 13: Was machst du hier?",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 130
+    },
+    {
+      "channel": "dw",
+      "videoId": "J71RxF7qU2o",
+      "title": "Nicos Weg | Folge 14: Was trinkst du?",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 123
+    },
+    {
+      "channel": "dw",
+      "videoId": "w-Zea1mverM",
+      "title": "Nicos Weg | Folge 15: Eine Pizza, bitte!",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 130
+    },
+    {
+      "channel": "dw",
+      "videoId": "c7LTbMCKVNo",
+      "title": "Nicos Weg | Folge 16: Zahlen, bitte!",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 99
+    },
+    {
+      "channel": "dw",
+      "videoId": "IQ3cDBISOao",
+      "title": "Nicos Weg | Folge 17: Ich war schon in Berlin",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 128
+    },
+    {
+      "channel": "dw",
+      "videoId": "3K991pj4Uic",
+      "title": "Nicos Weg | Folge 18: Wo liegt das?",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 129
+    },
+    {
+      "channel": "dw",
+      "videoId": "uJ6uLjJxX-8",
+      "title": "Nicos Weg | Folge 19: In Europa",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 111
+    },
+    {
+      "channel": "dw",
+      "videoId": "lvgs_iLBdvY",
+      "title": "Nicos Weg | Folge 20: Andere Länder",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 114
+    },
+    {
+      "channel": "dw",
+      "videoId": "9obS6QT10To",
+      "title": "Nicos Weg | Folge 21: Was ist das?",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 93
+    },
+    {
+      "channel": "dw",
+      "videoId": "MNx10ASRCwM",
+      "title": "Nicos Weg | Folge 22: Wem gehört das?",
+      "levelMin": "A1",
+      "levelMax": "A1",
+      "durationSeconds": 85
+    },
+    {
+      "channel": "dw",
+      "videoId": "S_haCcudQZk",
+      "title": "Nicos Weg | Rückblick A1",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 189
+    },
+    {
+      "channel": "dw",
+      "videoId": "ZPQepR4B8eo",
+      "title": "Nicos Weg | Folge 1: Lebenslinien",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 75
+    },
+    {
+      "channel": "dw",
+      "videoId": "WB4YmgiRULw",
+      "title": "Nicos Weg | Folge 2: Angekommen",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 104
+    },
+    {
+      "channel": "dw",
+      "videoId": "J7j31w8UT2c",
+      "title": "Nicos Weg | Folge 4: Sprichst du Deutsch?",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 117
+    },
+    {
+      "channel": "dw",
+      "videoId": "dRga5jIMjBo",
+      "title": "Nicos Weg | Folge 5: Geld ist für mich …",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 103
+    },
+    {
+      "channel": "dw",
+      "videoId": "geYuMJBnDSs",
+      "title": "Nicos Weg | Folge 6: Mein Bankkonto",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 81
+    },
+    {
+      "channel": "dw",
+      "videoId": "tNY9TNnQC6E",
+      "title": "Nicos Weg | Folge 7: Rechnungen",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 84
+    },
+    {
+      "channel": "dw",
+      "videoId": "n_l-rfcG5Uo",
+      "title": "Nicos Weg | Folge 8: Am Bankautomaten",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 108
+    },
+    {
+      "channel": "dw",
+      "videoId": "uOcZq9rS13Y",
+      "title": "Nicos Weg | Folge 9: Familiengeschichten",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 93
+    },
+    {
+      "channel": "dw",
+      "videoId": "jgdPdeQZ3T8",
+      "title": "Das Deutschlandlabor | Folge 01: Schule",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 313
+    },
+    {
+      "channel": "dw",
+      "videoId": "kqKWXsEwkPI",
+      "title": "Das Deutschlandlabor | Folge 02: Mode",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 305
+    },
+    {
+      "channel": "dw",
+      "videoId": "VfDOzaihbH8",
+      "title": "Das Deutschlandlabor | Folge 03: Fußball",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 314
+    },
+    {
+      "channel": "dw",
+      "videoId": "41rhm6Agvqs",
+      "title": "Das Deutschlandlabor | Folge 04: Literatur",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 303
+    },
+    {
+      "channel": "dw",
+      "videoId": "5ejGKY5tD8I",
+      "title": "Das Deutschlandlabor | Folge 05: Wandern",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 302
+    },
+    {
+      "channel": "dw",
+      "videoId": "isZUM7BuX_8",
+      "title": "Das Deutschlandlabor | Folge 06: Wohnen",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 286
+    },
+    {
+      "channel": "dw",
+      "videoId": "0-4i96TlaJk",
+      "title": "Kurz und leicht vom 02.10.2026",
+      "levelMin": "A2",
+      "levelMax": "B1",
+      "durationSeconds": 95
+    },
+    {
+      "channel": "dw",
+      "videoId": "tLfpOVD4OjQ",
+      "title": "Kurz und leicht vom 01.10.2026",
+      "levelMin": "A2",
+      "levelMax": "B1",
+      "durationSeconds": 99
+    },
+    {
+      "channel": "dw",
+      "videoId": "u4jSpELlj5M",
+      "title": "Kurz und leicht vom 30.09.2026",
+      "levelMin": "A2",
+      "levelMax": "B1",
+      "durationSeconds": 99
+    },
+    {
+      "channel": "dw",
+      "videoId": "PLxFPEEwFfE",
+      "title": "Kurz und leicht vom 29.09.2026",
+      "levelMin": "A2",
+      "levelMax": "B1",
+      "durationSeconds": 100
+    },
+    {
+      "channel": "dw",
+      "videoId": "sfRJyuXQY6Q",
+      "title": "Kurz und leicht vom 28.09.2026",
+      "levelMin": "A2",
+      "levelMax": "B1",
+      "durationSeconds": 88
+    },
+    {
+      "channel": "dw",
+      "videoId": "7WgDlAT0gYY",
+      "title": "Kurz und leicht vom 17.09.2026",
+      "levelMin": "A2",
+      "levelMax": "B1",
+      "durationSeconds": 88
+    },
+    {
+      "channel": "dw",
+      "videoId": "iQKNHv_eB1E",
+      "title": "Nicos Weg | Rückblick A2",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 223
+    },
+    {
+      "channel": "dw",
+      "videoId": "o1zJ-BNQrU0",
+      "title": "Nicos Weg | Folge 1: Berufsberatung",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 113
+    },
+    {
+      "channel": "dw",
+      "videoId": "GwhGWqlGUUY",
+      "title": "Nicos Weg | Folge 2: Meine Muttersprache",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 105
+    },
+    {
+      "channel": "dw",
+      "videoId": "2itTid0YMtw",
+      "title": "Nicos Weg | Folge 3: Bei der Arbeit",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 128
+    },
+    {
+      "channel": "dw",
+      "videoId": "du_3kNU5Fkc",
+      "title": "Nicos Weg | Folge 4: Zukunftspläne",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 133
+    },
+    {
+      "channel": "dw",
+      "videoId": "EZo4Eja_36Y",
+      "title": "Nicos Weg | Folge 5: Zu wenig Zeit?",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 101
+    },
+    {
+      "channel": "dw",
+      "videoId": "A6KAHVpy0Us",
+      "title": "Deutsch im Job | Gastronomie: Einstieg",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 130
+    },
+    {
+      "channel": "dw",
+      "videoId": "LLWGoeZ-px4",
+      "title": "Deutsch im Job | Gastronomie: Dienstbesprechung",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 118
+    },
+    {
+      "channel": "dw",
+      "videoId": "baNVSiai05w",
+      "title": "Deutsch im Job | Gastronomie: Reservierung",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 99
+    },
+    {
+      "channel": "dw",
+      "videoId": "nOGZvu6tJFE",
+      "title": "Deutsch im Job | Gastronomie: Bestellung",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 161
+    },
+    {
+      "channel": "dw",
+      "videoId": "sYrrkFePmzs",
+      "title": "Jojo sucht das Glück - Staffel 1 Folge 2",
+      "levelMin": "B1",
+      "levelMax": "B2",
+      "durationSeconds": 157
+    },
+    {
+      "channel": "dw",
+      "videoId": "4pErLVrGFyI",
+      "title": "Jojo sucht das Glück - Staffel 1 Folge 5",
+      "levelMin": "B1",
+      "levelMax": "B2",
+      "durationSeconds": 117
+    },
+    {
+      "channel": "dw",
+      "videoId": "P61RX8I4yqI",
+      "title": "Jojo sucht das Glück - Staffel 1 Folge 6",
+      "levelMin": "B1",
+      "levelMax": "B2",
+      "durationSeconds": 129
+    },
+    {
+      "channel": "dw",
+      "videoId": "XmBX93SoYBc",
+      "title": "Dem Hass trotzen: queere Menschen in der Werbung",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 271
+    },
+    {
+      "channel": "dw",
+      "videoId": "yRCiYehPvPM",
+      "title": "Sterbebegleitung: Beistand bis zum letzten Atemzug",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 342
+    },
+    {
+      "channel": "dw",
+      "videoId": "ga3A_ro8cKw",
+      "title": "Seltene Erden: notwendig, aber nicht nachhaltig",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 261
+    },
+    {
+      "channel": "dw",
+      "videoId": "P5x8nC-Id-M",
+      "title": "Wasserstoff revolutioniert den Flugzeugantrieb",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 213
+    },
+    {
+      "channel": "dw",
+      "videoId": "21mI2nxUrHU",
+      "title": "KI erleichtert Alltag mit Sehbehinderungen",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 84
+    },
+    {
+      "channel": "dw",
+      "videoId": "BWhS65MahKw",
+      "title": "Aus dem Alltag einer Ordensschwester",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 301
+    },
+    {
+      "channel": "dw",
+      "videoId": "qD-OCKiwXjA",
+      "title": "Arbeiten im Alter? Ein Wiener Café zeigt wie",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 289
+    },
+    {
+      "channel": "dw",
+      "videoId": "JggUsZ0neZo",
+      "title": "Die Schwarzwälder Kirschtorte: Tradition und Genuss",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 318
+    },
+    {
+      "channel": "dw",
+      "videoId": "cBL_W2tzQkk",
+      "title": "Ein spielerischer Neuanfang mit Cricket",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 290
+    },
+    {
+      "channel": "dw",
+      "videoId": "rzJmbdbENYI",
+      "title": "Seegras für den Hausbau",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 216
+    },
+    {
+      "channel": "dw",
+      "videoId": "avNv9Z2hmPs",
+      "title": "Ohne Angst allein unterwegs - mit einer App",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 213
+    },
+    {
+      "channel": "dw",
+      "videoId": "I4WPmQQxI70",
+      "title": "Schokoladentester: ein ganz besonderer Beruf",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 264
+    },
+    {
+      "channel": "dw",
+      "videoId": "K-VynhU0Sn8",
+      "title": "Ein Stück Japan in Düsseldorf",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 227
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "D91icSuPYQ4",
+      "title": "Supermarket in Slow German (for Beginners)",
+      "levelMin": "A1",
+      "levelMax": "A2",
+      "durationSeconds": 937
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "CtxKpeYfKvw",
+      "title": "At the Pharmacy in Slow German",
+      "levelMin": "A1",
+      "levelMax": "A2",
+      "durationSeconds": 862
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "Ys_GtlFCq_c",
+      "title": "Learn German at the Post Office",
+      "levelMin": "A1",
+      "levelMax": "A2",
+      "durationSeconds": 737
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "as23z7F6zJ0",
+      "title": "At the Cinema in Slow German",
+      "levelMin": "A2",
+      "levelMax": "A2",
+      "durationSeconds": 605
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "EhOONXEZRTA",
+      "title": "Everyday German Conversations About Hobbies (B1 Level)",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 865
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "gw_BUDk610w",
+      "title": "Real German Conversations: Funny Stories & Everyday Humor (B1)",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 820
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "zI8IEutHHD4",
+      "title": "Germans Describe Their Best Friend (B1 Listening Comprehension)",
+      "levelMin": "B1",
+      "levelMax": "B1",
+      "durationSeconds": 855
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "loqocHC9aAU",
+      "title": "Do Germans Believe in Aliens? (B2 German Listening Comprehension)",
+      "levelMin": "B2",
+      "levelMax": "B2",
+      "durationSeconds": 819
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "o0xHyMTe9Bk",
+      "title": "Where do Berliners Go to Escape their City?",
+      "levelMin": "B2",
+      "levelMax": "B2",
+      "durationSeconds": 874
+    },
+    {
+      "channel": "easygerman",
+      "videoId": "Lfoai_nP7lc",
+      "title": "How Important Is Money to You? (German Street Interview)",
+      "levelMin": "B2",
+      "levelMax": "B2",
+      "durationSeconds": 818
+    },
+    {
+      "channel": "marija",
+      "videoId": "bGChPaHBpUM",
+      "title": "Deutsch B2 Beruf - Diskussion über die Mittagspause | Prüfungsvorbereitung",
+      "levelMin": "B2",
+      "levelMax": "B2",
+      "durationSeconds": 455
+    },
+    {
+      "channel": "marija",
+      "videoId": "yr0QR1TnGu4",
+      "title": "So sprechen die Deutschen! 38 Sätze mit WOHNEN | Passives Lernen",
+      "levelMin": "B2",
+      "levelMax": "B2",
+      "durationSeconds": 431
+    },
+    {
+      "channel": "marija",
+      "videoId": "GnZs5Iyc6W0",
+      "title": "Ich gehe (endlich wieder) an die Waldorfschule!",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 433
+    },
+    {
+      "channel": "marija",
+      "videoId": "zdcem3HmSMs",
+      "title": "Alle sprechen von (Wissens)LÜCKEN!",
+      "levelMin": "B2",
+      "levelMax": "C1",
+      "durationSeconds": 359
+    },
+    {
+      "channel": "marija",
+      "videoId": "uJFbyl-7Rlg",
+      "title": "Sprachgefühl LERNEN - geht das?? Deutsch C1 C2",
+      "levelMin": "C1",
+      "levelMax": "C1",
+      "durationSeconds": 646
+    },
+    {
+      "channel": "marija",
+      "videoId": "nJCmFPh5-6k",
+      "title": "Authentisch oder nervig? Füllwörter, Modalpartikeln und Artikulation",
+      "levelMin": "C1",
+      "levelMax": "C1",
+      "durationSeconds": 743
+    },
+    {
+      "channel": "mrwissen2go",
+      "videoId": "p8iwsg64rjs",
+      "title": "Hybrider Krieg gegen Deutschland? Russlands geheime Strategie",
+      "levelMin": "C1",
+      "levelMax": "C1",
+      "durationSeconds": 875
+    },
+    {
+      "channel": "mrwissen2go",
+      "videoId": "Lo8spcihIhk",
+      "title": "Hantavirus: Wie gefährlich ist es?",
+      "levelMin": "C1",
+      "levelMax": "C1",
+      "durationSeconds": 549
+    },
+    {
+      "channel": "mrwissen2go",
+      "videoId": "_OillFSArng",
+      "title": "Das Problem mit der Rente - einfach erklärt!",
+      "levelMin": "C1",
+      "levelMax": "C1",
+      "durationSeconds": 955
+    },
+    {
+      "channel": "mrwissen2go",
+      "videoId": "CBiiRwktNKY",
+      "title": "Hier sind 5 gute Nachrichten!",
+      "levelMin": "C1",
+      "levelMax": "C1",
+      "durationSeconds": 810
+    }
+  ]
+}

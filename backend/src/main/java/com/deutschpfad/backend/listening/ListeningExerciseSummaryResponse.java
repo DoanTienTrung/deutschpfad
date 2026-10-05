@@ -13,7 +13,10 @@ public record ListeningExerciseSummaryResponse(
     String topic,
     int orderIndex,
     int sentenceCount,
-    Integer durationSeconds
+    Integer durationSeconds,
+    ListeningExercise.Kind kind,
+    Long channelId,
+    String channelName
 ) {
     public static ListeningExerciseSummaryResponse from(ListeningExercise exercise, int sentenceCount) {
         return new ListeningExerciseSummaryResponse(
@@ -27,7 +30,10 @@ public record ListeningExerciseSummaryResponse(
             exercise.getTopic(),
             exercise.getOrderIndex(),
             sentenceCount,
-            exercise.getDurationSeconds()
+            exercise.getDurationSeconds(),
+            exercise.getKind(),
+            exercise.getChannel() != null ? exercise.getChannel().getId() : null,
+            exercise.getChannel() != null ? exercise.getChannel().getName() : null
         );
     }
 }

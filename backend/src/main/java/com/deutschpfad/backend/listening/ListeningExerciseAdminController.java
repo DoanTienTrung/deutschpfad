@@ -1,13 +1,14 @@
 package com.deutschpfad.backend.listening;
 
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/listening-exercises")
@@ -16,31 +17,32 @@ public class ListeningExerciseAdminController {
 
     private final ListeningExerciseRepository exerciseRepository;
     private final ListeningSentenceRepository sentenceRepository;
+    private final ListeningChannelRepository channelRepository;
     private final YtDlpService ytDlpService;
     private final GroqAiService translationService;
-    private final EspeakPhoneticService phoneticService;
+    private final ListeningSentenceWriter sentenceWriter;
 
     public ListeningExerciseAdminController(
         ListeningExerciseRepository exerciseRepository,
         ListeningSentenceRepository sentenceRepository,
+        ListeningChannelRepository channelRepository,
         YtDlpService ytDlpService,
         GroqAiService translationService,
-        EspeakPhoneticService phoneticService
+        ListeningSentenceWriter sentenceWriter
     ) {
         this.exerciseRepository = exerciseRepository;
         this.sentenceRepository = sentenceRepository;
+        this.channelRepository = channelRepository;
         this.ytDlpService = ytDlpService;
         this.translationService = translationService;
-        this.phoneticService = phoneticService;
+        this.sentenceWriter = sentenceWriter;
     }
 
     @GetMapping
     public List<ListeningExerciseAdminResponse> list() {
-        return exerciseRepository.findAll().stream()
-            .map(exercise -> {
-                List<ListeningSentence> sentences = sentenceRepository.findByExerciseIdOrderByOrderIndex(exercise.getId());
-                return ListeningExerciseAdminResponse.from(exercise, sentences, false);
-            })
+        Map<Long, Integer> counts = sentenceRepository.countMapByExercise();
+        return exerciseRepository.findAll(Sort.by("id")).stream()
+            .map(exercise -> ListeningExerciseAdminResponse.summary(exercise, counts.getOrDefault(exercise.getId(), 0)))
             .toList();
     }
 
@@ -109,25 +111,10 @@ public class ListeningExerciseAdminController {
             parsed = List.of();
         }
 
-        sentenceRepository.deleteByExerciseId(exercise.getId());
         List<GroqAiService.SentenceAnnotation> annotations = translationService.annotateSentences(
             parsed.stream().map(TranscriptParser.SentenceData::text).toList()
         );
-        List<ListeningSentence> saved = new ArrayList<>();
-        for (int i = 0; i < parsed.size(); i++) {
-            TranscriptParser.SentenceData data = parsed.get(i);
-            ListeningSentence sentence = new ListeningSentence();
-            sentence.setExercise(exercise);
-            sentence.setOrderIndex(i);
-            sentence.setText(data.text());
-            sentence.setStartSeconds(data.startSeconds());
-            sentence.setEndSeconds(data.endSeconds());
-            sentence.setTranslation(annotations.get(i).translation());
-            String phonetic = phoneticService.phonetic(data.text());
-            sentence.setPhonetic(phonetic != null ? phonetic : annotations.get(i).phonetic());
-            saved.add(sentenceRepository.save(sentence));
-        }
-
+        List<ListeningSentence> saved = sentenceWriter.replaceSentences(exercise, parsed, annotations);
         return ListeningExerciseAdminResponse.from(exercise, saved, autoFetched);
     }
 
@@ -144,6 +131,18 @@ public class ListeningExerciseAdminController {
         exercise.setDescription(request.description());
         exercise.setTopic(request.topic() != null && !request.topic().isBlank() ? request.topic().trim() : null);
         exercise.setOrderIndex(request.orderIndex());
+        exercise.setChannel(request.channelId() == null ? null : channelRepository.findById(request.channelId())
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy kênh")));
+        if (request.kind() != null) {
+            exercise.setKind(request.kind());
+        } else if (exercise.getAudioUrl() != null) {
+            exercise.setKind(ListeningExercise.Kind.EXAM);
+        }
+        boolean visibilityEditable = exercise.getStatus() == ListeningExercise.Status.READY
+            || exercise.getStatus() == ListeningExercise.Status.HIDDEN;
+        if (request.hidden() != null && visibilityEditable) {
+            exercise.setStatus(request.hidden() ? ListeningExercise.Status.HIDDEN : ListeningExercise.Status.READY);
+        }
         if (hasVideo && (videoChanged || exercise.getDurationSeconds() == null)) {
             exercise.setDurationSeconds(ytDlpService.fetchDurationSeconds(request.youtubeVideoId()));
         }

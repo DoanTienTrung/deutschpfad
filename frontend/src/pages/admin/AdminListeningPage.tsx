@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   listListeningAdmin,
   createListeningExercise,
@@ -6,11 +6,25 @@ import {
   deleteListeningExercise,
   extractYoutubeVideoId,
   getYoutubeVideoTitle,
+  listListeningChannels,
+  retryListeningImport,
+  type ListeningChannelAdmin,
 } from '../../api/listeningApi'
-import type { ListeningExerciseAdmin } from '../../api/types'
+import type { ListeningExerciseAdmin, ListeningKind, ListeningStatus } from '../../api/types'
 import { ApiError } from '../../api/client'
+import ListeningImportPanel from '../../components/admin/ListeningImportPanel'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
+
+const STATUS_STYLE: Record<ListeningStatus, { label: string; className: string }> = {
+  PENDING: { label: 'Chờ phụ đề', className: 'bg-surface text-muted' },
+  TRANSLATING: { label: 'Chờ dịch', className: 'bg-surface text-muted' },
+  READY: { label: 'Đã hiện', className: 'bg-success-bg text-success' },
+  FAILED: { label: 'Lỗi', className: 'bg-danger-bg text-danger' },
+  HIDDEN: { label: 'Đã ẩn', className: 'bg-surface text-muted' },
+}
+
+const STATUS_FILTERS: (ListeningStatus | '')[] = ['', 'READY', 'PENDING', 'TRANSLATING', 'FAILED', 'HIDDEN']
 
 export default function AdminListeningPage() {
   const [exercises, setExercises] = useState<ListeningExerciseAdmin[]>([])
@@ -30,17 +44,26 @@ export default function AdminListeningPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [lastResult, setLastResult] = useState<string | null>(null)
+  const [channels, setChannels] = useState<ListeningChannelAdmin[]>([])
+  const [channelId, setChannelId] = useState('')
+  const [kind, setKind] = useState<ListeningKind | ''>('')
+  const [hidden, setHidden] = useState(false)
+  const [editingStatus, setEditingStatus] = useState<ListeningStatus | null>(null)
+  const [statusFilter, setStatusFilter] = useState<ListeningStatus | ''>('')
 
   const topicSuggestions = [...new Set(exercises.map((e) => e.topic).filter((t): t is string => !!t))].sort()
+  const visibleExercises = exercises.filter((e) => !statusFilter || e.status === statusFilter)
 
-  async function load() {
-    setExercises(await listListeningAdmin())
-  }
+  const load = useCallback(async () => {
+    const [list, channelList] = await Promise.all([listListeningAdmin(), listListeningChannels()])
+    setExercises(list)
+    setChannels(channelList)
+  }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount, load() reused by handlers below
     load()
-  }, [])
+  }, [load])
 
   function resetForm() {
     setEditingId(null)
@@ -56,6 +79,10 @@ export default function AdminListeningPage() {
     setTopic('')
     setRawTranscript('')
     setAutoFetch(true)
+    setChannelId('')
+    setKind('')
+    setHidden(false)
+    setEditingStatus(null)
   }
 
   function startEdit(exercise: ListeningExerciseAdmin) {
@@ -72,6 +99,10 @@ export default function AdminListeningPage() {
     setTopic(exercise.topic ?? '')
     setRawTranscript('')
     setAutoFetch(false)
+    setChannelId(exercise.channelId != null ? String(exercise.channelId) : '')
+    setKind(exercise.kind)
+    setHidden(exercise.status === 'HIDDEN')
+    setEditingStatus(exercise.status)
   }
 
   async function handleSave() {
@@ -92,6 +123,9 @@ export default function AdminListeningPage() {
         orderIndex,
         rawTranscript: rawTranscript || null,
         autoFetch,
+        channelId: channelId ? Number(channelId) : null,
+        kind: kind || null,
+        hidden: editingStatus === 'READY' || editingStatus === 'HIDDEN' ? hidden : null,
       }
       const result = editingId
         ? await updateListeningExercise(editingId, request)
@@ -122,6 +156,17 @@ export default function AdminListeningPage() {
     if (result.title) setTitle(result.title)
   }
 
+  async function handleRetry(id: number) {
+    setError(null)
+    try {
+      await retryListeningImport(id)
+      await load()
+    } catch (err) {
+      const serverMessage = err instanceof ApiError ? (err.data as { message?: string } | null)?.message : undefined
+      setError(serverMessage || 'Có lỗi xảy ra')
+    }
+  }
+
   async function handleDelete(id: number) {
     setError(null)
     try {
@@ -139,6 +184,8 @@ export default function AdminListeningPage() {
 
       {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
       {lastResult && <div className="mb-4 rounded-sm bg-success-bg p-3 text-sm text-success">{lastResult}</div>}
+
+      <ListeningImportPanel channels={channels} onChanged={load} />
 
       <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
         <input
@@ -213,6 +260,31 @@ export default function AdminListeningPage() {
           list="topic-suggestions"
           className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
         />
+        <select
+          value={channelId}
+          onChange={(e) => setChannelId(e.target.value)}
+          className="rounded-sm border border-hairline px-3 py-2"
+        >
+          <option value="">Kênh: không có</option>
+          {channels.map((c) => (
+            <option key={c.id} value={c.id}>Kênh: {c.name}</option>
+          ))}
+        </select>
+        <select
+          value={kind}
+          onChange={(e) => setKind(e.target.value as ListeningKind | '')}
+          className="rounded-sm border border-hairline px-3 py-2"
+        >
+          <option value="">Trang: tự chọn (có audio là đề thi)</option>
+          <option value="YOUTUBE">Trang: Video YouTube</option>
+          <option value="EXAM">Trang: Luyện đề thi</option>
+        </select>
+        {(editingStatus === 'READY' || editingStatus === 'HIDDEN') && (
+          <label className="sm:col-span-2 flex items-center gap-2 text-sm text-ink">
+            <input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} />
+            Ẩn bài này với người học
+          </label>
+        )}
         <datalist id="topic-suggestions">
           {topicSuggestions.map((t) => (
             <option key={t} value={t} />
@@ -250,18 +322,42 @@ export default function AdminListeningPage() {
         </div>
       </div>
 
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-muted">Lọc:</span>
+        {STATUS_FILTERS.map((s) => (
+          <button
+            key={s || 'all'}
+            onClick={() => setStatusFilter(s)}
+            className={`rounded-full px-3 py-1 ${statusFilter === s ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink'}`}
+          >
+            {s ? STATUS_STYLE[s].label : 'Tất cả'} ({s ? exercises.filter((e) => e.status === s).length : exercises.length})
+          </button>
+        ))}
+      </div>
+
       <ul className="space-y-2">
-        {exercises.map((exercise) => (
+        {visibleExercises.map((exercise) => (
           <li
             key={exercise.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
+            className="flex items-center justify-between gap-3 rounded-sm border border-hairline bg-card p-3"
           >
-            <span>
+            <span className="min-w-0">
+              <span className={`mr-2 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[exercise.status].className}`}>
+                {STATUS_STYLE[exercise.status].label}
+              </span>
               <strong>{exercise.levelMin === exercise.levelMax ? exercise.levelMin : `${exercise.levelMin}-${exercise.levelMax}`}</strong> - Bài {exercise.orderIndex}: {exercise.title}
+              {exercise.kind === 'EXAM' && <span className="ml-2 text-xs text-muted">[đề thi]</span>}
+              {exercise.channelName && <span className="ml-2 text-xs text-muted">{exercise.channelName}</span>}
               {exercise.topic && <span className="ml-2 text-xs text-muted">#{exercise.topic}</span>}
-              <span className="ml-2 text-xs text-muted">[{exercise.sentences.length} câu]</span>
+              <span className="ml-2 text-xs text-muted">[{exercise.sentenceCount} câu]</span>
+              {exercise.importError && <span className="ml-2 text-xs text-danger">{exercise.importError}</span>}
             </span>
-            <span className="flex gap-3">
+            <span className="flex shrink-0 gap-3">
+              {exercise.status === 'FAILED' && (
+                <button onClick={() => handleRetry(exercise.id)} className="text-sm text-primary hover:underline">
+                  Thử lại
+                </button>
+              )}
               <button onClick={() => startEdit(exercise)} className="text-sm text-primary hover:underline">
                 Sửa
               </button>

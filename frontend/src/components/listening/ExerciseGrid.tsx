@@ -34,9 +34,11 @@ export default function ExerciseGrid({ exercises }: { exercises: ListeningExerci
               </span>
             )}
           </div>
-          <p className="mt-2 text-sm font-semibold text-ink group-hover:text-primary">{exercise.title}</p>
-          <p className="mt-0.5 text-xs text-muted">
-            {exercise.sentenceCount} câu{exercise.sourceLabel ? ` · ${exercise.sourceLabel}` : ''}
+          <p className="mt-2 line-clamp-2 text-sm font-semibold text-ink group-hover:text-primary" title={exercise.title}>
+            {exercise.title}
+          </p>
+          <p className="mt-0.5 truncate text-xs text-muted">
+            {[exercise.channelName ?? exercise.sourceLabel, `${exercise.sentenceCount} câu`].filter(Boolean).join(' · ')}
           </p>
         </Link>
       ))}

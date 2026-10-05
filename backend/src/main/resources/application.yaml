@@ -69,6 +69,14 @@ app:
       # Groq; 2.000 câu ≈ 50 lô ≈ 50–95 nghìn token, chừa phần lớn quota ngày (200 nghìn) cho gia sư,
       # phần nghe và phần đọc.
       max-per-run: ${VOCAB_TRANSLATION_MAX_PER_RUN:2000}
+  listening:
+    import:
+      # Job nhập video YouTube hàng loạt (ListeningImportJob), tự chạy 02:00 mỗi đêm và khi admin bấm.
+      # Mỗi lượt lấy phụ đề tối đa N video (nghỉ 10s giữa các video để YouTube không chặn bot trên EC2)
+      # và dịch tối đa M câu bằng Groq: 1.500 câu ≈ 38 lô, chừa phần lớn quota ngày cho gia sư và các phần khác.
+      max-videos-per-run: ${LISTENING_IMPORT_MAX_VIDEOS:30}
+      max-sentences-per-run: ${LISTENING_IMPORT_MAX_SENTENCES:1500}
+      nightly-enabled: ${LISTENING_IMPORT_NIGHTLY:true}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   deepgram-api-key: ${DEEPGRAM_API_KEY:}
   groq-api-key: ${GROQ_API_KEY:}

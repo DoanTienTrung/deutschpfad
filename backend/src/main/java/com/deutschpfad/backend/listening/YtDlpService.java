@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -13,7 +14,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -110,8 +115,10 @@ public class YtDlpService {
                 "--write-auto-sub", "--write-sub",
                 // Some channels tag their German track "de-DE" instead of plain "de" (yt-dlp
                 // matches language codes exactly, not by prefix) -- requesting both catches
-                // either case.
-                "--sub-lang", "de,de-DE",
+                // either case. Một số kênh (vd MrWissen2go) đặt phụ đề gõ tay dưới mã có tên riêng
+                // như "de-XwLwiJMB_Xs": mẫu thứ ba bắt các mã đó nhưng không bắt "de-orig" (bản tự động).
+                // Mẫu không được chứa dấu phẩy (vd "{6,}"): yt-dlp tách danh sách ngôn ngữ theo dấu phẩy.
+                "--sub-lang", "de,de-DE,de-[A-Za-z0-9_]{6}.*",
                 "--sub-format", "vtt",
                 "-o", outputTemplate
             ));
@@ -131,7 +138,9 @@ public class YtDlpService {
             }
 
             try (Stream<Path> files = Files.list(tempDir)) {
-                Optional<Path> vttFile = files.filter(p -> p.toString().endsWith(".vtt")).findFirst();
+                // Có thể tải về nhiều file (de, de-DE, de-<tên>): ưu tiên "de" rồi "de-DE" cho ổn định.
+                Optional<Path> vttFile = files.filter(p -> p.toString().endsWith(".vtt"))
+                    .min(Comparator.comparingInt(YtDlpService::subtitlePriority).thenComparing(Path::toString));
                 if (vttFile.isEmpty()) {
                     log.info("No captions found via yt-dlp for video {}", videoId);
                     return List.of();
@@ -148,6 +157,13 @@ public class YtDlpService {
         } finally {
             if (tempDir != null) deleteQuietly(tempDir);
         }
+    }
+
+    static int subtitlePriority(Path file) {
+        String name = file.getFileName().toString();
+        if (name.endsWith(".de.vtt")) return 0;
+        if (name.endsWith(".de-DE.vtt")) return 1;
+        return 2;
     }
 
     /** Reads only the duration metadata (seconds) via yt-dlp, never downloading the video. */
@@ -188,6 +204,104 @@ public class YtDlpService {
             return null;
         } catch (IOException e) {
             log.warn("yt-dlp unavailable or failed to fetch duration for video {}: {}", videoId, e.getMessage());
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+    }
+
+    public record PlaylistEntry(String videoId, Integer durationSeconds, String title) {}
+
+    public record VideoMeta(String channelId, String channelName, String handle, Integer durationSeconds, String title) {}
+
+    private static final Duration PLAYLIST_TIMEOUT = Duration.ofSeconds(120);
+    private static final Pattern VIDEO_ID = Pattern.compile("[A-Za-z0-9_-]{11}");
+
+    /**
+     * Liệt kê video của một playlist / kênh / video lẻ (chỉ đọc danh sách, {@code --flat-playlist}: không
+     * mở từng video, không tải gì). Trả danh sách rỗng nếu yt-dlp lỗi.
+     */
+    public List<PlaylistEntry> listPlaylist(String url, int limit) {
+        List<String> command = new ArrayList<>(List.of(
+            "yt-dlp", "--flat-playlist", "--playlist-end", String.valueOf(limit),
+            "--print", "%(id)s\t%(duration)s\t%(title)s"
+        ));
+        command.addAll(potExtractorArgs());
+        command.addAll(playerClientArgs());
+        command.addAll(authArgs());
+        command.add(url);
+        String output = runForOutput(command, PLAYLIST_TIMEOUT, "listing " + url);
+        return output == null ? List.of() : parsePlaylistLines(output);
+    }
+
+    /** Một dòng "id TAB thời lượng TAB tiêu đề" mỗi video; bỏ qua dòng cảnh báo yt-dlp in xen vào. */
+    static List<PlaylistEntry> parsePlaylistLines(String output) {
+        List<PlaylistEntry> entries = new ArrayList<>();
+        for (String line : output.lines().toList()) {
+            String[] parts = line.split("\t", 3);
+            if (parts.length < 3 || !VIDEO_ID.matcher(parts[0].trim()).matches()) continue;
+            entries.add(new PlaylistEntry(parts[0].trim(), parseSeconds(parts[1]), parts[2].strip()));
+        }
+        return entries;
+    }
+
+    /** Kênh + thời lượng + tiêu đề của một video trong một lần gọi; null nếu không đọc được. */
+    public VideoMeta fetchVideoMeta(String videoId) {
+        List<String> command = new ArrayList<>(List.of(
+            "yt-dlp", "--skip-download", "--ignore-no-formats-error",
+            "--print", "%(channel_id)s\t%(channel)s\t%(uploader_id)s\t%(duration)s\t%(title)s"
+        ));
+        command.addAll(potExtractorArgs());
+        command.addAll(playerClientArgs());
+        command.addAll(authArgs());
+        command.add("https://www.youtube.com/watch?v=" + videoId);
+        String output = runForOutput(command, TIMEOUT, "metadata of " + videoId);
+        return output == null ? null : parseVideoMeta(output);
+    }
+
+    static VideoMeta parseVideoMeta(String output) {
+        for (String line : output.lines().toList()) {
+            String[] parts = line.split("\t", 5);
+            if (parts.length < 5 || !parts[0].startsWith("UC")) continue;
+            return new VideoMeta(parts[0].trim(), blankToNull(parts[1]), blankToNull(parts[2]),
+                parseSeconds(parts[3]), blankToNull(parts[4]));
+        }
+        return null;
+    }
+
+    private static Integer parseSeconds(String value) {
+        try {
+            return (int) Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            return null; // "NA" khi YouTube không báo thời lượng (vd video đang phát trực tiếp)
+        }
+    }
+
+    private static String blankToNull(String value) {
+        String v = value == null ? "" : value.strip();
+        return v.isEmpty() || v.equals("NA") ? null : v;
+    }
+
+    private String runForOutput(List<String> command, Duration timeout, String what) {
+        try {
+            Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+            // Đọc ở luồng riêng: playlist dài in nhiều dòng, đọc sau waitFor có thể kẹt vì đầy bộ đệm.
+            CompletableFuture<String> output = CompletableFuture.supplyAsync(() -> {
+                try (var in = process.getInputStream()) {
+                    return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    return "";
+                }
+            });
+            if (!process.waitFor(timeout.toSeconds(), TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                log.warn("yt-dlp timed out {}", what);
+                return null;
+            }
+            return output.get(5, TimeUnit.SECONDS);
+        } catch (IOException | ExecutionException | TimeoutException e) {
+            log.warn("yt-dlp unavailable or failed {}: {}", what, e.getMessage());
             return null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

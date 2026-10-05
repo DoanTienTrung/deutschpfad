@@ -16,6 +16,12 @@ public record ListeningExerciseRequest(
     String topic,
     @NotNull Integer orderIndex,
     String rawTranscript,
-    boolean autoFetch
+    boolean autoFetch,
+    // null = không có kênh
+    Long channelId,
+    // null = tự suy: có audioUrl là EXAM, còn lại giữ nguyên (bài mới: YOUTUBE)
+    ListeningExercise.Kind kind,
+    // null = giữ nguyên; chỉ áp dụng khi bài đang READY hoặc HIDDEN
+    Boolean hidden
 ) {
 }

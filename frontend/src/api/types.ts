@@ -151,6 +151,23 @@ export type ListeningExerciseSummary = {
   orderIndex: number
   sentenceCount: number
   durationSeconds: number | null
+  kind: ListeningKind
+  channelId: number | null
+  channelName: string | null
+}
+
+export type ListeningKind = 'YOUTUBE' | 'EXAM'
+export type ListeningStatus = 'PENDING' | 'TRANSLATING' | 'READY' | 'FAILED' | 'HIDDEN'
+
+export type ListeningChannelCount = {
+  id: number
+  name: string
+  videoCount: number
+}
+
+export type YoutubeLibrary = {
+  channels: ListeningChannelCount[]
+  exercises: ListeningExerciseSummary[]
 }
 
 export type ListeningExerciseDetail = {
@@ -186,7 +203,15 @@ export type ListeningExerciseAdmin = {
   description: string | null
   topic: string | null
   orderIndex: number
+  durationSeconds: number | null
+  kind: ListeningKind
+  status: ListeningStatus
+  importError: string | null
+  channelId: number | null
+  channelName: string | null
+  sentenceCount: number
   autoFetched: boolean
+  /** Rỗng trong danh sách admin (chỉ có sentenceCount); đầy đủ khi tạo/sửa một bài. */
   sentences: ListeningSentence[]
 }
 

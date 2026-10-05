@@ -36,3 +36,10 @@ app:
   groq-api-key: test-dummy-key
   gemini-api-key: test-dummy-key
   openrouter-api-key: test-dummy-key
+
+  # Job nhập video nghe: test gọi trực tiếp, không chờ giữa các video/lô và không tự chạy theo lịch.
+  listening:
+    import:
+      nightly-enabled: false
+      video-delay-ms: 0
+      batch-delay-ms: 0

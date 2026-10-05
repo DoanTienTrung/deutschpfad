@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/listening")
@@ -19,6 +21,7 @@ public class ListeningController {
 
     private final ListeningExerciseRepository exerciseRepository;
     private final ListeningSentenceRepository sentenceRepository;
+    private final ListeningChannelRepository channelRepository;
     private final DeepgramTranscriptionService transcriptionService;
     private final GroqAiService translationService;
     private final UserRepository userRepository;
@@ -27,6 +30,7 @@ public class ListeningController {
     public ListeningController(
         ListeningExerciseRepository exerciseRepository,
         ListeningSentenceRepository sentenceRepository,
+        ListeningChannelRepository channelRepository,
         DeepgramTranscriptionService transcriptionService,
         GroqAiService translationService,
         UserRepository userRepository,
@@ -34,6 +38,7 @@ public class ListeningController {
     ) {
         this.exerciseRepository = exerciseRepository;
         this.sentenceRepository = sentenceRepository;
+        this.channelRepository = channelRepository;
         this.transcriptionService = transcriptionService;
         this.translationService = translationService;
         this.userRepository = userRepository;
@@ -56,21 +61,46 @@ public class ListeningController {
         @RequestParam VocabularyItem.Level level, @RequestParam(required = false) String topic
     ) {
         boolean hasTopic = topic != null && !topic.isBlank();
-        return exerciseRepository.findAllByOrderByOrderIndex().stream()
+        Map<Long, Integer> counts = sentenceRepository.countMapByExercise();
+        return exerciseRepository.findByStatusOrderByOrderIndex(ListeningExercise.Status.READY).stream()
             // A topic filter browses across all levels (topic badge on each card still shows its
             // real level) — only apply the level-range filter when no topic is selected.
             .filter(exercise -> hasTopic || (level.ordinal() >= exercise.getLevelMin().ordinal()
                 && level.ordinal() <= exercise.getLevelMax().ordinal()))
             .filter(exercise -> !hasTopic || topic.equals(exercise.getTopic()))
-            .map(exercise -> ListeningExerciseSummaryResponse.from(
-                exercise, sentenceRepository.findByExerciseIdOrderByOrderIndex(exercise.getId()).size()
-            ))
+            .map(exercise -> ListeningExerciseSummaryResponse.from(exercise, counts.getOrDefault(exercise.getId(), 0)))
             .toList();
+    }
+
+    public record ChannelCount(Long id, String name, int videoCount) {}
+
+    public record YoutubeLibraryResponse(List<ChannelCount> channels, List<ListeningExerciseSummaryResponse> exercises) {}
+
+    /**
+     * Toàn bộ video YouTube đã sẵn sàng + các kênh có video, cho trang lọc theo kênh/cấp độ. Chỉ vài trăm dòng
+     * tóm tắt nên trả một lần, trang tự lọc khi người học đổi chip (không phải gọi lại API).
+     */
+    @GetMapping("/youtube")
+    public YoutubeLibraryResponse youtubeLibrary() {
+        Map<Long, Integer> counts = sentenceRepository.countMapByExercise();
+        List<ListeningExercise> exercises = exerciseRepository.findByKindAndStatusOrderByOrderIndexAscIdAsc(
+            ListeningExercise.Kind.YOUTUBE, ListeningExercise.Status.READY);
+        Map<Long, Integer> videosPerChannel = new HashMap<>();
+        for (ListeningExercise e : exercises) {
+            if (e.getChannel() != null) videosPerChannel.merge(e.getChannel().getId(), 1, Integer::sum);
+        }
+        List<ChannelCount> channels = channelRepository.findAllByOrderByOrderIndexAscNameAsc().stream()
+            .filter(c -> videosPerChannel.containsKey(c.getId()))
+            .map(c -> new ChannelCount(c.getId(), c.getName(), videosPerChannel.get(c.getId())))
+            .toList();
+        return new YoutubeLibraryResponse(channels, exercises.stream()
+            .map(e -> ListeningExerciseSummaryResponse.from(e, counts.getOrDefault(e.getId(), 0)))
+            .toList());
     }
 
     @GetMapping("/topics")
     public List<String> topics() {
-        return exerciseRepository.findAllByOrderByOrderIndex().stream()
+        return exerciseRepository.findByStatusOrderByOrderIndex(ListeningExercise.Status.READY).stream()
             .map(ListeningExercise::getTopic)
             .filter(t -> t != null && !t.isBlank())
             .distinct()

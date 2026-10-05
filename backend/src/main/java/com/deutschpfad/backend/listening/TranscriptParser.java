@@ -31,8 +31,115 @@ public final class TranscriptParser {
     public static List<SentenceData> parse(String content) {
         if (content == null || content.isBlank()) return List.of();
         String trimmed = content.trim();
+        if (trimmed.startsWith("WEBVTT") && INLINE_TIMESTAMP.matcher(trimmed).find()) {
+            return parseAutoVtt(trimmed);
+        }
         List<RawEntry> raw = trimmed.startsWith("WEBVTT") ? parseVtt(trimmed) : parsePasted(trimmed);
         return finalize(raw);
+    }
+
+    // ------------------------------------------------------------------ phụ đề tự động của YouTube
+
+    private static final Pattern INLINE_TIMESTAMP = Pattern.compile("<\\d{2}:\\d{2}:\\d{2}\\.\\d{3}>");
+    private static final Pattern TIMED_WORD = Pattern.compile("<(\\d{2}:\\d{2}:\\d{2}\\.\\d{3})><c>(.*?)</c>");
+    private static final Pattern SENTENCE_END = Pattern.compile("[.!?…][\"'»“”)]*$");
+    private static final Pattern SOUND_ANNOTATION = Pattern.compile("\\[[^\\]]*\\]");
+    /** Câu không có dấu câu (phụ đề tự động đời cũ) thì cắt khi đủ số từ này hoặc khi người nói ngừng lâu. */
+    private static final int MAX_WORDS_PER_SENTENCE = 30;
+    private static final double PAUSE_SPLIT_SECONDS = 2.0;
+    /** Từ cuối câu kéo dài tối đa bấy nhiêu giây, để đoạn phát không dính sang khoảng lặng phía sau. */
+    private static final double LAST_WORD_MAX_SECONDS = 2.0;
+
+    private record TimedWord(String text, double start) {}
+
+    /**
+     * Phụ đề tự động của YouTube là dạng "cuộn": mỗi cue lặp lại dòng trước rồi thêm một dòng mới có mốc
+     * thời gian từng từ ({@code Hallo<00:00:01.199><c> Leute,</c>...}), xen giữa là các cue 10ms chỉ để giữ
+     * chữ trên màn hình. Đọc theo cue như phụ đề thường sẽ ra mỗi câu hai lần, dài ngắn chồng lên nhau.
+     * Ở đây chỉ lấy dòng mới của mỗi cue, tách ra từng từ kèm thời điểm, rồi ghép lại thành câu theo dấu câu.
+     */
+    private static List<SentenceData> parseAutoVtt(String content) {
+        String[] lines = content.split("\\r?\\n");
+        List<TimedWord> words = new ArrayList<>();
+        double lastCueEnd = 0;
+        int i = 0;
+        while (i < lines.length) {
+            Matcher m = VTT_TIME_LINE.matcher(lines[i]);
+            if (!m.find()) {
+                i++;
+                continue;
+            }
+            double start = toExactSeconds(m.group(1));
+            double end = toExactSeconds(m.group(2));
+            i++;
+            String newLine = null;
+            // Thân cue kết thúc ở dòng rỗng thật sự; dòng chỉ có dấu cách vẫn thuộc cue (YouTube hay để vậy).
+            while (i < lines.length && !lines[i].isEmpty() && !VTT_TIME_LINE.matcher(lines[i]).find()) {
+                if (!lines[i].isBlank()) newLine = lines[i];
+                i++;
+            }
+            if (newLine == null || end - start < 0.05) continue; // cue 10ms chỉ lặp lại chữ đã có
+            lastCueEnd = Math.max(lastCueEnd, end);
+
+            int firstTag = newLine.indexOf('<');
+            String head = SOUND_ANNOTATION.matcher(firstTag < 0 ? newLine : newLine.substring(0, firstTag)).replaceAll("").trim();
+            if (!head.isEmpty()) words.add(new TimedWord(head, start));
+            Matcher w = TIMED_WORD.matcher(newLine);
+            while (w.find()) {
+                String text = SOUND_ANNOTATION.matcher(w.group(2)).replaceAll("").trim();
+                if (!text.isEmpty()) words.add(new TimedWord(text, toExactSeconds(w.group(1))));
+            }
+        }
+
+        List<SentenceData> result = new ArrayList<>();
+        List<TimedWord> current = new ArrayList<>();
+        int wordCount = 0;
+        for (int k = 0; k < words.size(); k++) {
+            TimedWord word = words.get(k);
+            if (!current.isEmpty()) {
+                TimedWord previous = current.get(current.size() - 1);
+                if (word.start() - previous.start() >= PAUSE_SPLIT_SECONDS + LAST_WORD_MAX_SECONDS || wordCount >= MAX_WORDS_PER_SENTENCE) {
+                    addSentence(result, current, word.start());
+                    current = new ArrayList<>();
+                    wordCount = 0;
+                }
+            }
+            current.add(word);
+            wordCount += word.text().split("\\s+").length;
+            if (SENTENCE_END.matcher(word.text()).find()) {
+                addSentence(result, current, k + 1 < words.size() ? words.get(k + 1).start() : lastCueEnd);
+                current = new ArrayList<>();
+                wordCount = 0;
+            }
+        }
+        if (!current.isEmpty()) addSentence(result, current, lastCueEnd);
+        return result;
+    }
+
+    private static void addSentence(List<SentenceData> result, List<TimedWord> words, double nextStart) {
+        String text = String.join(" ", words.stream().map(TimedWord::text).toList()).replaceAll("\\s+", " ").trim();
+        if (text.isEmpty()) return;
+        double startExact = words.get(0).start();
+        double lastWord = words.get(words.size() - 1).start();
+        double endExact = Math.min(Math.max(nextStart, lastWord + 0.3), lastWord + LAST_WORD_MAX_SECONDS);
+        int start = (int) Math.round(startExact);
+        int end = Math.max(start + 1, (int) Math.round(endExact));
+        result.add(new SentenceData(text, start, end));
+    }
+
+    /**
+     * Phụ đề gần như không có dấu câu (phụ đề tự động đời cũ: chữ thường, không chấm phẩy) thì câu chỉ là
+     * các đoạn cắt theo số từ, khó dùng để luyện chép chính tả. Job nhập hàng loạt bỏ qua những video này.
+     */
+    public static boolean lacksPunctuation(List<SentenceData> sentences) {
+        if (sentences.size() < 5) return false;
+        long punctuated = sentences.stream().filter(s -> SENTENCE_END.matcher(s.text().trim()).find()).count();
+        return punctuated * 10 < sentences.size() * 3; // dưới 30% số câu kết thúc bằng dấu câu
+    }
+
+    private static double toExactSeconds(String timestamp) {
+        String[] parts = timestamp.replace(',', '.').split(":");
+        return Integer.parseInt(parts[0]) * 3600.0 + Integer.parseInt(parts[1]) * 60.0 + Double.parseDouble(parts[2]);
     }
 
     private static List<RawEntry> parseVtt(String content) {
@@ -135,6 +242,7 @@ public final class TranscriptParser {
     }
 
     private static String stripVttTags(String line) {
-        return line.replaceAll("<[^>]+>", "");
+        // Gạch đầu dòng "– " trong phụ đề gõ tay chỉ đánh dấu đổi người nói, không phải chữ được đọc.
+        return line.replaceAll("<[^>]+>", "").replaceFirst("^[–—-]\\s+", "");
     }
 }

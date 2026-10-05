@@ -16,7 +16,7 @@ export default function ListeningExamPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
-  const examOnly = exercises.filter((e) => !e.youtubeVideoId)
+  const examOnly = exercises.filter((e) => e.kind === 'EXAM')
   const topics = [...new Set(examOnly.map((e) => e.topic).filter((t): t is string => !!t))]
   const visibleExercises = examOnly
     .filter((e) => e.title.toLowerCase().includes(search.trim().toLowerCase()))
