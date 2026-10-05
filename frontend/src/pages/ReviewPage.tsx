@@ -41,8 +41,8 @@ export default function ReviewPage() {
   const remainingAfter = items ? Math.max(0, totalDue - items.length) : 0
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <nav className="mb-4 text-sm text-muted">
+    <div className="mx-auto max-w-xl">
+      <nav className="mb-6 text-sm text-muted">
         <Link to="/app" className="text-primary hover:underline">
           Trang chủ
         </Link>
@@ -51,13 +51,14 @@ export default function ReviewPage() {
       </nav>
 
       {items === null && (
-        <div className="mx-auto max-w-xl">
-          <div className="h-56 animate-pulse rounded-lg bg-surface" />
+        <div className="space-y-5">
+          <div className="h-6 animate-pulse rounded-full bg-surface" />
+          <div className="h-80 animate-pulse rounded-xl bg-surface" />
         </div>
       )}
 
       {items !== null && items.length === 0 && (
-        <div className="rounded-lg bg-surface p-10 text-center">
+        <div className="rounded-xl bg-surface p-10 text-center">
           <p className="text-4xl">🎉</p>
           <p className="mt-3 font-display text-lg font-semibold text-ink">Không có từ nào cần ôn tập lúc này!</p>
           <p className="mt-1 text-sm text-muted">Quay lại sau hoặc học thêm từ mới nhé.</p>
@@ -73,10 +74,8 @@ export default function ReviewPage() {
       {items !== null && items.length > 0 && (
         <>
           {remainingAfter > 0 && !sessionDone && (
-            <p className="mx-auto mb-4 max-w-xl rounded-md bg-surface px-4 py-3 text-center text-sm text-muted">
-              Phiên này <strong className="text-ink">{items.length} thẻ</strong>, những thẻ quá hạn lâu nhất
-              trước. Còn <strong className="text-ink">{remainingAfter} thẻ</strong> đến hạn - ôn tiếp sau
-              phiên này.
+            <p className="mb-4 text-center text-xs text-muted">
+              Phiên này {items.length} thẻ quá hạn lâu nhất. Còn {remainingAfter} thẻ đến hạn, ôn tiếp sau phiên này.
             </p>
           )}
 
@@ -86,14 +85,22 @@ export default function ReviewPage() {
             onComplete={() => setSessionDone(true)}
           />
 
-          {sessionDone && remainingAfter > 0 && (
-            <div className="mt-6 text-center">
-              <button
-                onClick={startNextSession}
-                className="rounded-md bg-primary px-6 py-3 font-medium text-canvas transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-deep hover:shadow-lifted"
+          {sessionDone && (
+            <div className={`mt-4 grid gap-2 ${remainingAfter > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <Link
+                to="/app"
+                className="rounded-md border border-hairline bg-canvas px-4 py-3 text-center font-semibold text-ink transition-colors hover:bg-surface"
               >
-                Ôn tiếp {remainingAfter} thẻ còn lại
-              </button>
+                Về trang chủ
+              </Link>
+              {remainingAfter > 0 && (
+                <button
+                  onClick={startNextSession}
+                  className="rounded-md bg-primary px-4 py-3 font-semibold text-canvas transition-[background,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-primary-deep hover:shadow-lifted"
+                >
+                  Ôn tiếp {remainingAfter} thẻ
+                </button>
+              )}
             </div>
           )}
         </>
