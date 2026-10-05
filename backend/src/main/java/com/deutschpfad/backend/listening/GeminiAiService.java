@@ -164,6 +164,18 @@ public class GeminiAiService {
         return openRouterAiService.generateReadingPassage(topic, level);
     }
 
+    /** Một lần gọi Gemini, trả văn bản thô hoặc null nếu không có key / lỗi. Dùng cho {@link GroqAiService#completeValidated}. */
+    public String completeOnce(String prompt) {
+        if (apiKey == null || apiKey.isBlank()) return null;
+        try {
+            String response = callGenerateContent(prompt);
+            return response == null || response.isBlank() ? null : response.strip();
+        } catch (Exception e) {
+            log.warn("Gemini call failed", e);
+            return null;
+        }
+    }
+
     /** Fallback path for {@link GroqAiService#generateGrammarTheory}. */
     public String generateGrammarTheory(String titleDe, String titleVi, String level) {
         if (titleDe == null || titleDe.isBlank()) return null;

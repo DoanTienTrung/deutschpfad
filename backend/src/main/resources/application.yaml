@@ -77,6 +77,10 @@ app:
       max-videos-per-run: ${LISTENING_IMPORT_MAX_VIDEOS:30}
       max-sentences-per-run: ${LISTENING_IMPORT_MAX_SENTENCES:1500}
       nightly-enabled: ${LISTENING_IMPORT_NIGHTLY:true}
+  translation:
+    # Luyện dịch: số câu mỗi người được AI chấm mỗi ngày (câu khớp đáp án hoặc đã có trong cache không tính).
+    # Hết lượt thì người học tự so với câu mẫu; giữ quota Groq cho gia sư và các phần khác.
+    ai-daily-limit: ${TRANSLATION_AI_DAILY_LIMIT:100}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   deepgram-api-key: ${DEEPGRAM_API_KEY:}
   groq-api-key: ${GROQ_API_KEY:}

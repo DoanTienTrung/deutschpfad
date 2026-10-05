@@ -31,6 +31,10 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   grammar: (
     <path d="M4 20 20 4M6.5 20H4v-2.5L17.5 4H20v2.5L6.5 20ZM9 13l2 2m2-5 2 2" />
   ),
+  // Bút: phần Viết (luyện dịch, luyện viết).
+  writing: (
+    <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Zm9.5-13.5 4 4" />
+  ),
   layers: (
     <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5m-18 4 9 5 9-5" />
   ),
@@ -252,6 +256,7 @@ function SidebarContent({
     { to: '/app/listening', label: 'Nghe', icon: 'headphones' },
     { to: '/app/speaking', label: 'Nói', icon: 'mic' },
     { to: '/app/reading', label: 'Đọc', icon: 'reading' },
+    { to: '/app/writing', label: 'Viết', icon: 'writing' },
     { to: '/app/grammar', label: 'Ngữ pháp', icon: 'grammar' },
   ]
   const personal: NavItem[] = [{ to: '/app/decks', label: 'Bộ từ của tôi', icon: 'layers' }]

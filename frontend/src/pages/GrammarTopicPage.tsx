@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { getGrammarTopic, submitGrammarAnswers } from '../api/grammarApi'
+import { getTranslationSetForGrammar } from '../api/translationApi'
 import type { GrammarSubmitResult, GrammarTopicDetail } from '../api/types'
 import { shuffleForPractice, type ShuffledExercise } from '../lib/shuffleExercises'
 import { ApiError } from '../api/client'
@@ -20,6 +21,13 @@ export default function GrammarTopicPage() {
   const [result, setResult] = useState<GrammarSubmitResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [translationSetId, setTranslationSetId] = useState<number | null>(null)
+
+  useEffect(() => {
+    getTranslationSetForGrammar(slug)
+      .then((r) => setTranslationSetId(r.id))
+      .catch(() => setTranslationSetId(null))
+  }, [slug])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- slug changed, reset before refetch
@@ -134,6 +142,14 @@ export default function GrammarTopicPage() {
             >
               📋 Mở bảng tra cứu
             </a>
+            {translationSetId && (
+              <Link
+                to={`/app/writing/translate/${translationSetId}`}
+                className="rounded-full border border-hairline bg-canvas px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:border-primary/40 hover:bg-surface"
+              >
+                🔁 Luyện dịch chủ điểm này
+              </Link>
+            )}
           </div>
         </section>
       ) : (

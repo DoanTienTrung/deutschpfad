@@ -147,6 +147,24 @@ public class GroqAiService {
         }
     }
 
+    /**
+     * Luyện dịch (chấm bài, soạn nháp câu): Groq trước; Groq lỗi hoặc trả sai định dạng ({@code valid} báo
+     * false) thì Gemini. KHÔNG rơi xuống OpenRouter: model miễn phí bất kỳ chấm sai hay soạn câu sai còn tệ
+     * hơn báo "chưa chấm được". Trả null nếu cả hai đều không dùng được.
+     */
+    public String completeValidated(String prompt, java.util.function.Predicate<String> valid) {
+        if (apiKey != null && !apiKey.isBlank()) {
+            try {
+                String content = callChat(prompt);
+                if (content != null && valid.test(content)) return content;
+            } catch (Exception e) {
+                log.warn("Groq call failed (translation)", e);
+            }
+        }
+        String fallback = geminiAiService.completeOnce(prompt);
+        return fallback != null && valid.test(fallback) ? fallback : null;
+    }
+
     public record ConversationTurnText(String role, String text) {}
 
     /**
