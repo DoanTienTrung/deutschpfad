@@ -1,0 +1,70 @@
+# Bản production chạy trên Render free (xem render.yaml và ops/render-neon-setup.md): MỘT container gồm
+# backend + bản build frontend do chính backend phục vụ (SpaWebConfig). Render free chỉ cho 1 web
+# service luôn thức trong 750 giờ/tháng, 512MB RAM, 0.1 CPU, và không có nginx đứng trước.
+#
+# backend/Dockerfile + frontend/Dockerfile vẫn dùng cho docker compose (local và máy chủ tự quản).
+
+# ---- 1. Frontend ----
+FROM node:22-alpine AS frontend
+WORKDIR /app
+# Rỗng = gọi API và /oauth2 bằng đường dẫn tương đối, cùng tên miền với giao diện.
+ENV VITE_API_ORIGIN=
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# ---- 2. Backend ----
+FROM eclipse-temurin:21-jdk AS backend
+WORKDIR /app
+COPY backend/.mvn/ .mvn
+COPY backend/mvnw backend/pom.xml ./
+RUN ./mvnw dependency:go-offline -B
+COPY backend/src ./src
+# Test đã chạy ở GitHub Actions (cần Docker cho Testcontainers, không chạy được trong docker build).
+# Giải nén jar ra thư viện rời: chạy nhanh hơn jar lồng jar, và là điều kiện để dùng CDS bên dưới.
+RUN ./mvnw clean package -DskipTests -B \
+    && cp target/*.jar app.jar \
+    && java -Djarmode=tools -jar app.jar extract --destination extracted
+
+# ---- 3. Chạy ----
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+# espeak-ng: sinh phiên âm IPA tiếng Đức. yt-dlp: chỉ lấy phụ đề có sẵn (không tải video). Máy Render là
+# IP datacenter nên YouTube thường chặn; việc nhập video chạy từ máy nhà (ops/render-neon-setup.md).
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates espeak-ng \
+    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o /usr/local/bin/yt-dlp \
+    && chmod a+rx /usr/local/bin/yt-dlp \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=backend /app/extracted/ ./
+COPY --from=frontend /app/dist ./public
+ENV FRONTEND_DIR=/app/public
+
+# 512MB RAM cho cả JVM: heap 280MB, còn lại cho metaspace, code cache, luồng. SerialGC và chỉ biên dịch
+# C1 vì máy chỉ có 0.1 CPU: GC song song hay trình biên dịch C2 chỉ giành CPU của chính ứng dụng.
+# Đo ở local với --memory=512m --cpus=0.1: khoảng 270MB RAM.
+ENV JAVA_TOOL_OPTIONS="-Xmx280m -Xss512k -XX:MaxMetaspaceSize=170m -XX:ReservedCodeCacheSize=40m -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
+
+# CDS (Class Data Sharing): chạy thử ứng dụng một lần lúc build để JVM ghi sẵn các class đã nạp vào
+# app.jsa, lần khởi động thật đọc thẳng từ đó. Đo ở 0.1 CPU: khởi động từ khoảng 300 giây còn 150 giây.
+# Lúc build không có database nên lần chạy thử dừng ở bean đầu tiên cần kết nối DB (exit khác 0 là bình
+# thường); tới lúc đó Spring, Hibernate và phần lớn thư viện đã nạp xong, đo ra lợi gần bằng chạy thử
+# với DB thật. Các biến dưới đây là giá trị giả, chỉ sống trong lệnh RUN này, không vào image.
+RUN env SPRING_PROFILES_ACTIVE=prod \
+        DB_HOST=127.0.0.1 DB_PORT=1 \
+        SPRING_FLYWAY_ENABLED=false \
+        SPRING_JPA_HIBERNATE_DDL_AUTO=none \
+        SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect \
+        SPRING_JPA_PROPERTIES_HIBERNATE_BOOT_ALLOW_JDBC_METADATA_ACCESS=false \
+        GOOGLE_CLIENT_ID=cds GOOGLE_CLIENT_SECRET=cds \
+        JWT_SECRET=cds-training-only-not-a-real-secret-0123456789abcdef \
+        GROQ_API_KEY=cds GEMINI_API_KEY=cds OPENROUTER_API_KEY=cds COHERE_API_KEY=cds \
+        LISTENING_IMPORT_NIGHTLY=false \
+    timeout 600 java -XX:ArchiveClassesAtExit=app.jsa -Dspring.context.exit=onRefresh -jar app.jar > /tmp/cds.log 2>&1 ; \
+    test -s app.jsa || { tail -n 60 /tmp/cds.log ; exit 1 ; } ; \
+    rm -f /tmp/cds.log
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-XX:SharedArchiveFile=app.jsa", "-Xlog:cds=off", "-Xlog:cds+dynamic=off", "-jar", "app.jar"]

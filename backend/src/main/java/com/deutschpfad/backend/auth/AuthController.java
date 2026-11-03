@@ -2,6 +2,7 @@ package com.deutschpfad.backend.auth;
 
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +47,10 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
             "id", user.getId(),
             "email", user.getEmail(),
-            "fullName", user.getFullName()
+            "fullName", user.getFullName(),
+            // true khi máy chủ không gửi email và đã xác thực luôn: giao diện mời đăng nhập ngay thay
+            // vì bảo người dùng mở hộp thư chờ một lá thư không bao giờ tới.
+            "emailVerified", user.isEmailVerified()
         ));
     }
 
@@ -118,6 +122,14 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        if (!authService.isMailEnabled()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                "message",
+                "Hiện hệ thống chưa gửi được email nên chưa đặt lại mật khẩu qua email được. Nếu bạn"
+                    + " dùng Gmail, hãy quay lại trang đăng nhập và bấm \"Đăng nhập bằng Google\"; nếu"
+                    + " không, vui lòng liên hệ quản trị viên."
+            ));
+        }
         authService.forgotPassword(request);
         return ResponseEntity.ok(Map.of("message", "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi"));
     }

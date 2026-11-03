@@ -23,6 +23,11 @@ spring:
           auth: ${MAIL_SMTP_AUTH:false}
           starttls:
             enable: ${MAIL_SMTP_STARTTLS:false}
+          # JavaMail mặc định chờ VÔ HẠN. Máy chủ chặn cổng SMTP (Render free chặn 25/465/587) thì
+          # request đăng ký treo mãi, còn job nhắc học treo luôn luồng lịch dùng chung của Spring.
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
   
   security:
     oauth2:
@@ -56,6 +61,12 @@ app:
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
     refresh-expiration-days: ${JWT_REFRESH_EXPIRATION_DAYS:30}
   mail-from: ${MAIL_FROM:no-reply@deutschpfad.local}
+  # false = không gửi email nào (máy chủ không gửi được thư, ví dụ Render free): tài khoản đăng ký
+  # bằng email được xác thực luôn, "Quên mật khẩu" báo đăng nhập bằng Google hoặc liên hệ admin.
+  mail-enabled: ${MAIL_ENABLED:true}
+  # Thư mục chứa bản build frontend (frontend/dist) để backend tự phục vụ luôn giao diện, khi chạy
+  # một service duy nhất (Render). Để trống khi frontend có nginx/Vite riêng (local, docker compose).
+  frontend-dir: ${FRONTEND_DIR:}
   vocabulary:
     # Số thẻ tối đa trong MỘT phiên ôn tập. Trước đây trả mọi thẻ đến hạn một lượt: nghỉ một tuần
     # quay lại là cả trăm thẻ, dễ bỏ ngang. Ôn xong một phiên thì phiên kế tiếp lấy tiếp phần còn lại.
@@ -81,7 +92,9 @@ app:
     # Luyện dịch: số câu mỗi người được AI chấm mỗi ngày (câu khớp đáp án hoặc đã có trong cache không tính).
     # Hết lượt thì người học tự so với câu mẫu; giữ quota Groq cho gia sư và các phần khác.
     ai-daily-limit: ${TRANSLATION_AI_DAILY_LIMIT:100}
-  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  # Địa chỉ giao diện, dùng trong link email và chỗ quay về sau khi đăng nhập Google. Trên Render không cần
+  # đặt: Render tự có RENDER_EXTERNAL_URL (https://<tên-service>.onrender.com).
+  frontend-url: ${FRONTEND_URL:${RENDER_EXTERNAL_URL:http://localhost:5173}}
   deepgram-api-key: ${DEEPGRAM_API_KEY:}
   groq-api-key: ${GROQ_API_KEY:}
   gemini-api-key: ${GEMINI_API_KEY:}

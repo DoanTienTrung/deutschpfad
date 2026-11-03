@@ -1,0 +1,11 @@
+# Chỉ dùng cho Dockerfile.render (build context là thư mục gốc). docker compose build bằng context
+# ./backend và ./frontend nên dùng .dockerignore riêng trong từng thư mục đó.
+# Mặc định loại hết: thư mục gốc có backup.sql, .env, cookies.txt, PDF bản quyền.
+*
+!backend/
+!frontend/
+backend/target/
+backend/models-scratch/
+frontend/node_modules/
+frontend/dist/
+**/.env

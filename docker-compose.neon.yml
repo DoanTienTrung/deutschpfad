@@ -1,0 +1,25 @@
+# Chạy backend + giao diện ở MÁY NHÀ nhưng dùng database Neon (chung dữ liệu với web trên Render), để làm
+# các việc admin mà Render free không làm được hoặc làm rất chậm:
+#   - nhập video YouTube: IP datacenter của Render bị YouTube chặn, IP nhà thì không;
+#   - tải PDF lên kiến thức gia sư: đọc PDF tốn RAM, máy Render chỉ có 512MB.
+#
+# Cần thêm 3 dòng NEON_* vào .env (xem ops/render-neon-setup.md, Bước 8), rồi:
+#   docker compose -f docker-compose.yml -f docker-compose.neon.yml up -d --build backend frontend
+# Mở http://localhost:8081/admin. Xong việc thì tắt để Neon được ngủ:
+#   docker compose -f docker-compose.yml -f docker-compose.neon.yml stop backend frontend
+#
+# Chỉ chạy khi code ở máy giống code đã deploy (đã push): backend này chạy Flyway lên chính database Neon.
+services:
+  backend:
+    environment:
+      SPRING_DATASOURCE_URL: ${NEON_JDBC_URL:?Thiếu NEON_JDBC_URL trong .env}
+      DB_USERNAME: ${NEON_USER:?Thiếu NEON_USER trong .env}
+      DB_PASSWORD: ${NEON_PASSWORD:?Thiếu NEON_PASSWORD trong .env}
+      # prod = embedding gia sư bằng Cohere, giống Render. Profile local dùng model ONNX khác hẳn: vector
+      # của hai model không so được với nhau, gia sư trên web sẽ tìm sai tài liệu.
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "0"
+      SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: "60000"
+      SPRING_JPA_SHOW_SQL: "false"
+      # Job nhập video tự chạy 02:00 nếu máy còn bật; bấm "Chạy ngay" trong admin là đủ.
+      LISTENING_IMPORT_NIGHTLY: "false"

@@ -18,6 +18,9 @@ export default function RegisterPage() {
   // màn hình phải nói rõ điều đó và hiện đúng địa chỉ vừa nhập. Trước đây đẩy thẳng sang /login
   // im lặng — gõ nhầm email thì không có cách nào biết, thư bay vào hư không.
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
+  // Máy chủ không gửi email (MAIL_ENABLED=false) thì tài khoản được xác thực luôn: mời đăng nhập ngay,
+  // đừng bảo người dùng chờ một lá thư không bao giờ tới.
+  const [verifiedAlready, setVerifiedAlready] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -28,10 +31,11 @@ export default function RegisterPage() {
     }
     setSubmitting(true)
     try {
-      await apiFetch('/auth/register', {
+      const res = await apiFetch<{ emailVerified?: boolean }>('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ email, password, fullName }),
       })
+      setVerifiedAlready(res.emailVerified === true)
       setRegisteredEmail(email)
     } catch (err) {
       if (err instanceof ApiError) {
@@ -43,6 +47,23 @@ export default function RegisterPage() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (registeredEmail && verifiedAlready) {
+    return (
+      <AuthCard title="Tạo tài khoản thành công">
+        <p className="mb-4 text-sm text-muted">Tài khoản của bạn đã sẵn sàng:</p>
+        <p className="mb-4 rounded-sm bg-canvas px-3 py-2.5 text-center font-medium break-all text-ink">
+          {registeredEmail}
+        </p>
+        <Link
+          to="/login"
+          className="block w-full rounded-md bg-primary px-6 py-3 text-center font-semibold text-canvas transition-colors hover:bg-primary-deep"
+        >
+          Đăng nhập ngay
+        </Link>
+      </AuthCard>
+    )
   }
 
   if (registeredEmail) {

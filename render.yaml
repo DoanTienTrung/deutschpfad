@@ -1,0 +1,76 @@
+# Render Blueprint: Render đọc file này khi tạo service bằng "New > Blueprint" (ops/render-neon-setup.md).
+# Các biến "sync: false" là bí mật: Render hỏi giá trị MỘT LẦN lúc tạo, không bao giờ ghi vào file này.
+# Sau khi đã tạo, sửa biến trong Dashboard > deutschpfad > Environment (sửa file này không cập nhật lại).
+services:
+  - type: web
+    name: deutschpfad
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    # Không chạm database (xem HealthController.ping), để Neon vẫn được ngủ.
+    healthCheckPath: /api/ping
+    # Chỉ deploy khi các job test trên GitHub Actions xanh (.github/workflows/deploy.yml).
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Render mặc định đưa request vào cổng 10000; backend nghe 8080.
+      - key: PORT
+        value: "8080"
+
+      # ---- Database Neon (chuỗi kết nối "direct", không phải "-pooler") ----
+      # Dạng jdbc:postgresql://ep-xxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # Không giữ kết nối rảnh: còn một kết nối mở là Neon không ngủ, tiêu hết 100 giờ compute miễn phí.
+      - key: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+        value: "0"
+      - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+        value: "5"
+      - key: SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT
+        value: "60000"
+
+      # ---- Đăng nhập ----
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+      # ---- AI ----
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: COHERE_API_KEY
+        sync: false
+      # Ảnh bìa bài đọc, và nhận dạng giọng nói ở phần nghe.
+      - key: UNSPLASH_API_KEY
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+
+      # ---- Tắt những thứ máy free không làm được ----
+      # Render free chặn cổng SMTP 25/465/587: tắt email, đăng ký bằng email được xác thực luôn.
+      # Muốn bật lại: xem mục "Email (tuỳ chọn)" trong ops/render-neon-setup.md.
+      - key: MAIL_ENABLED
+        value: "false"
+      # Nhập video YouTube chạy từ máy nhà (IP datacenter của Render bị YouTube chặn).
+      - key: LISTENING_IMPORT_NIGHTLY
+        value: "false"
+      # In mọi câu SQL ra log tốn CPU, mà máy chỉ có 0.1 CPU.
+      - key: SPRING_JPA_SHOW_SQL
+        value: "false"
+      # Mặc định Tomcat cho tới 200 luồng; với 0.1 CPU và 512MB, nhiều luồng chỉ thêm tốn RAM.
+      - key: SERVER_TOMCAT_THREADS_MAX
+        value: "20"

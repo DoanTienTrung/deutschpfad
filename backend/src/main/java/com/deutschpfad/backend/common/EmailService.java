@@ -1,6 +1,8 @@
 package com.deutschpfad.backend.common;
 
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,23 +15,41 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class EmailService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+
     // Tên hiển thị để hộp thư hiện "DeutschPfad" chứ không phải địa chỉ trần -- thư không có tên
     // người gửi vừa khó tin vừa dễ bị đánh dấu rác.
     private static final String SENDER_NAME = "DeutschPfad";
 
     private final JavaMailSender mailSender;
     private final String mailFrom;
+    private final boolean enabled;
 
     public EmailService(
         JavaMailSender mailSender,
-        @Value("${app.mail-from}") String mailFrom
+        @Value("${app.mail-from}") String mailFrom,
+        @Value("${app.mail-enabled:true}") boolean enabled
     ) {
         this.mailSender = mailSender;
         this.mailFrom = mailFrom;
+        this.enabled = enabled;
+    }
+
+    /**
+     * {@code false} khi máy chủ không gửi được thư (MAIL_ENABLED=false). Khi đó {@link #send} và
+     * {@link #sendHtml} chỉ ghi log rồi bỏ qua; nơi nào cần người dùng bấm link trong thư (xác thực,
+     * đặt lại mật khẩu) phải tự kiểm tra cờ này để đi đường khác.
+     */
+    public boolean isEnabled() {
+        return enabled;
     }
 
     /** Thư văn bản thuần — dùng cho thư cảnh báo nội bộ gửi cho admin. */
     public void send(String to, String subject, String body) {
+        if (!enabled) {
+            log.info("Email đang tắt (MAIL_ENABLED=false), bỏ qua thư \"{}\" gửi tới {}", subject, to);
+            return;
+        }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(SENDER_NAME + " <" + mailFrom + ">");
         message.setReplyTo(mailFrom);
@@ -49,6 +69,10 @@ public class EmailService {
      * chỗ để nhét cho có.
      */
     public void sendHtml(String to, String subject, String textBody, String htmlBody) {
+        if (!enabled) {
+            log.info("Email đang tắt (MAIL_ENABLED=false), bỏ qua thư \"{}\" gửi tới {}", subject, to);
+            return;
+        }
         MimeMessage message = mailSender.createMimeMessage();
         try {
             // true = multipart; phần text phải set TRƯỚC phần html, vì client hiển thị phần cuối

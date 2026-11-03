@@ -1,5 +1,10 @@
 # Dựng lại DeutschPfad trên Oracle Cloud Always Free
 
+> **Phương án dự phòng, hiện KHÔNG dùng.** Đăng ký Oracle bị từ chối (11/2026), production đang chạy
+> Render + Neon: xem `ops/render-neon-setup.md`. Giữ file này cho lúc có máy chủ riêng (Oracle, VPS...).
+> Lưu ý: workflow GitHub Actions nay chỉ chạy test; các job build image arm64 lên GHCR và deploy qua SSH mà
+> mục 0 và 9 nhắc tới phải lấy lại từ lịch sử git của `.github/workflows/deploy.yml` (commit f9ea675).
+
 Hướng dẫn từng bước sau khi tài khoản AWS bị đóng (29/10/2026). Máy mới chạy toàn bộ bằng
 `docker-compose.prod.yml`: Postgres (pgvector), backend, frontend (nginx + HTTPS), browser-session, bgutil
 và dịch vụ sao lưu database hằng ngày.

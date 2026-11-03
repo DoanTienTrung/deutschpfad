@@ -55,8 +55,16 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler())
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/health", "/api/auth/**", "/oauth2/**", "/login/**").permitAll()
-                .anyRequest().authenticated()
+                // Hai endpoint cần người dùng đã đăng nhập nằm trong /api/auth/** (mở cho mọi người): phải chặn
+                // trước, nếu không request không có cookie chạy vào controller với authentication = null và
+                // nổ 500. Trước đây vẫn ra 401 chỉ nhờ trang /error bị khoá; nay /error mở (để trả 404 thật
+                // cho đường dẫn không tồn tại, xem SpaWebConfig) nên phải khai báo rõ ở đây.
+                .requestMatchers("/api/auth/me", "/api/auth/change-password").authenticated()
+                .requestMatchers("/api/health", "/api/ping", "/api/auth/**", "/oauth2/**", "/login/**").permitAll()
+                .requestMatchers("/api/**", "/ws/**").authenticated()
+                // Còn lại là giao diện (file tĩnh + các trang của React Router) khi backend tự phục vụ
+                // frontend, xem SpaWebConfig. Trang nào cần đăng nhập thì tự gọi /api/** và nhận 401.
+                .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler))
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)

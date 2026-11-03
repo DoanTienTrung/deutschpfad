@@ -1,12 +1,13 @@
-name: Build and Deploy
+name: Test
+
+# Production chạy trên Render (render.yaml): Render tự build Dockerfile.render và deploy khi các job dưới
+# đây xanh (autoDeployTrigger: checksPass), nên workflow này chỉ còn chạy test. Không còn build image lên
+# GHCR hay SSH vào máy chủ; muốn quay lại máy chủ tự quản (docker-compose.prod.yml, ops/server-setup.md)
+# thì lấy lại các job build/deploy từ lịch sử git của file này.
 
 on:
   push:
     branches: [main]
-
-env:
-  BACKEND_IMAGE: ghcr.io/doantientrung/deutschpfad-backend
-  FRONTEND_IMAGE: ghcr.io/doantientrung/deutschpfad-frontend
 
 jobs:
   # Chạy toàn bộ test backend TRƯỚC khi build bất kỳ image nào. Trước đây pipeline không có bước
@@ -53,80 +54,3 @@ jobs:
       - name: Run frontend tests
         working-directory: frontend
         run: npm test
-
-  build-backend:
-    # Không build (và không đẩy image :latest lên GHCR) khi BẤT KỲ bộ test nào đỏ.
-    needs: [test-backend, test-frontend]
-    # Máy chủ production là ARM (Oracle Cloud Always Free, Ampere A1): build ngay trên runner ARM của
-    # GitHub (miễn phí cho repo public) để ra image arm64, không phải giả lập QEMU rất chậm.
-    runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          push: true
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:latest
-            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-
-  build-frontend:
-    # Cũng chờ test backend: nếu không, test đỏ thì backend bị chặn nhưng frontend vẫn đẩy image
-    # :latest lên GHCR — lần pull kế tiếp trên server sẽ lấy về một frontend không khớp backend.
-    # (Frontend có sẵn lớp chặn riêng: `npm run build` chạy `tsc -b` bên trong Docker build.)
-    needs: [test-backend, test-frontend]
-    runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          push: true
-          # Empty VITE_API_ORIGIN -- production frontend calls the API via relative /api paths,
-          # proxied through nginx to the backend container, not a separate origin (see nginx.conf).
-          build-args: |
-            VITE_API_ORIGIN=
-          tags: |
-            ${{ env.FRONTEND_IMAGE }}:latest
-            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-
-  deploy:
-    needs: [build-backend, build-frontend]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    steps:
-      # Tên secret giữ "EC2_*" từ thời AWS; giá trị nay là IP và khoá SSH của máy Oracle (user vẫn
-      # là ubuntu). Xem ops/server-setup.md.
-      - uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/deutschpfad
-            git pull
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose -f docker-compose.prod.yml pull
-            # --build: browser-session has no registry image (built from its Dockerfile locally,
-            # see docker-compose.prod.yml) -- without this flag, `up -d` reuses whatever image was
-            # built the first time and silently ignores later Dockerfile/package.json changes.
-            docker compose -f docker-compose.prod.yml up -d --build
-            docker image prune -f

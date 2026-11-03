@@ -8,7 +8,8 @@ import Field from '../components/ui/Field'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 
-const API_ORIGIN = import.meta.env.VITE_API_ORIGIN as string
+// Rỗng/không đặt = backend cùng tên miền với giao diện (production): link tương đối /oauth2/...
+const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN as string | undefined) ?? ''
 
 // Backend từ chối đăng nhập bằng đúng câu này khi tài khoản chưa xác thực. Nhận ra nó để hiện
 // thẳng nút gửi lại thư — thay vì bắt người dùng tự mò xem phải làm gì tiếp.

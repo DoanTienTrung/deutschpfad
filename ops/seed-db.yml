@@ -1,0 +1,9 @@
+# Database tạm, chỉ dùng trong ops/build-neon-seed.sh để dựng bản dữ liệu đầy đủ trước khi nạp lên Neon.
+# Không mở cổng ra máy: chỉ các container trong cùng mạng compose (Flyway, backend) nói chuyện với nó.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}

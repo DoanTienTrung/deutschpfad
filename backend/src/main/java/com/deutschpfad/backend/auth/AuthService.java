@@ -24,6 +24,9 @@ public class AuthService {
     private final EmailService emailService;
     private final RefreshTokenService refreshTokenService;
     private final String frontendUrl;
+    // Đọc thẳng cấu hình chứ không hỏi EmailService.isEnabled(): test thay EmailService bằng mock,
+    // mock trả false cho mọi boolean và sẽ âm thầm bật chế độ "không email" trong toàn bộ test auth.
+    private final boolean mailEnabled;
 
     public AuthService(
         UserRepository userRepository,
@@ -33,7 +36,8 @@ public class AuthService {
         JwtService jwtService,
         EmailService emailService,
         RefreshTokenService refreshTokenService,
-        @Value("${app.frontend-url}") String frontendUrl
+        @Value("${app.frontend-url}") String frontendUrl,
+        @Value("${app.mail-enabled:true}") boolean mailEnabled
     ) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
@@ -43,6 +47,12 @@ public class AuthService {
         this.emailService = emailService;
         this.refreshTokenService = refreshTokenService;
         this.frontendUrl = frontendUrl;
+        this.mailEnabled = mailEnabled;
+    }
+
+    /** false = máy chủ không gửi email (MAIL_ENABLED=false), xem app.mail-enabled. */
+    public boolean isMailEnabled() {
+        return mailEnabled;
     }
 
     public User register(RegisterRequest request) {
@@ -54,7 +64,16 @@ public class AuthService {
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setFullName(request.fullName());
+        // Không gửi được thư thì cũng không có link xác thực nào để bấm: bắt xác thực là khoá cửa vĩnh
+        // viễn. Xác thực luôn để tài khoản dùng được ngay.
+        if (!mailEnabled) {
+            user.setEmailVerified(true);
+        }
         user = userRepository.save(user);
+
+        if (!mailEnabled) {
+            return user;
+        }
 
         // Gửi mail KHÔNG được phép làm hỏng việc đăng ký: tài khoản đã lưu vào DB ở dòng trên, nếu
         // để exception bay lên thì người dùng thấy "đăng ký thất bại" nhưng email đã bị chiếm chỗ
@@ -77,6 +96,7 @@ public class AuthService {
      */
     @Transactional
     public void resendVerification(ResendVerificationRequest request) {
+        if (!mailEnabled) return;
         userRepository.findByEmail(request.email()).ifPresent(user -> {
             if (user.isEmailVerified()) return;
             tokenRepository.deleteByUser(user);
