@@ -1,10 +1,62 @@
 services:
+  # Postgres chạy chung máy (Oracle Cloud Always Free) thay cho RDS — tài khoản AWS đã đóng vì hết
+  # free credit. Image pgvector vì gia sư lưu embedding (migration V42). Không mở cổng ra ngoài:
+  # chỉ backend và db-backup gọi tới qua mạng nội bộ của compose.
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: deutschpfad-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # Sao lưu toàn bộ database mỗi 24 giờ vào ./backups (nén gzip), giữ 7 ngày gần nhất;
+  # ./backups/latest.sql.gz luôn trỏ tới bản mới nhất. Bản trên máy chỉ chống lỗi thao tác: mất
+  # máy là mất luôn, nên vẫn phải định kỳ tải về máy cá nhân (xem ops/server-setup.md).
+  db-backup:
+    image: pgvector/pgvector:pg16
+    container_name: deutschpfad-db-backup
+    restart: unless-stopped
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+    volumes:
+      - ./backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          f="/backups/deutschpfad-$$(date +%F).sql.gz"
+          # Ghi ra file trước rồi mới nén: /bin/sh không có pipefail, "pg_dump | gzip" lỗi giữa
+          # chừng vẫn tạo ra file .gz trông như bình thường và đè lên bản tốt.
+          if pg_dump --no-owner --no-privileges -f /backups/.dump.sql && gzip -c /backups/.dump.sql > "$$f.tmp"; then
+            mv "$$f.tmp" "$$f"
+            ln -sf "$$(basename "$$f")" /backups/latest.sql.gz
+          fi
+          rm -f /backups/.dump.sql "$$f.tmp"
+          find /backups -name 'deutschpfad-*.sql.gz' -mtime +7 -delete
+          sleep 86400
+        done
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   backend:
     image: ghcr.io/doantientrung/deutschpfad-backend:latest
     container_name: deutschpfad-backend
     restart: unless-stopped
     environment:
-      DB_HOST: ${DB_HOST}
+      DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
@@ -52,11 +104,15 @@ services:
       # browser-session should ever write to the profile.
       - ./browser-profile:/data/browser-profile:ro
     depends_on:
-      - bgutil-provider
-      - browser-session
+      postgres:
+        condition: service_healthy
+      bgutil-provider:
+        condition: service_started
+      browser-session:
+        condition: service_started
 
   # PO-token generator for yt-dlp — works around YouTube's "Sign in to confirm you're not a
-  # bot" block on this EC2 IP. No ports published to the host: only the backend container
+  # bot" block on this server's datacenter IP. No ports published to the host: only the backend container
   # needs to reach it, over the internal compose network at bgutil-provider:4416.
   bgutil-provider:
     image: brainicism/bgutil-ytdlp-pot-provider:latest
@@ -88,3 +144,6 @@ services:
       - ./certbot-etc:/etc/letsencrypt:ro
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

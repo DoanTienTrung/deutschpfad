@@ -19,15 +19,18 @@ WORKDIR /app
 # shown to users instead of asking an LLM to guess it (LLM-generated IPA was unreliable,
 # especially for digit-written numbers).
 # bgutil-ytdlp-pot-provider plugin: client side of the PO-token workaround for YouTube's
-# "Sign in to confirm you're not a bot" block on the EC2 IP (see docker-compose.prod.yml for
+# "Sign in to confirm you're not a bot" block on the server's datacenter IP (see docker-compose.prod.yml for
 # the companion HTTP server this plugin talks to). Dropped in as the raw .zip release (yt-dlp
 # loads plugin packages straight out of a zip, no extraction needed) into the XDG config plugin
 # directory — this container runs as root, so that's /root/.config/yt-dlp/plugins/. This is the
 # location that was actually verified working (`yt-dlp -v` showing the provider under "PO Token
 # Providers"); an earlier attempt at <yt-dlp-binary-dir>/yt-dlp-plugins/ silently did nothing —
 # do not move this without re-verifying with `yt-dlp -v ... 2>&1 | grep -i 'plugin\|pot'`.
+# yt-dlp ships a separate standalone binary per CPU architecture: production runs on an ARM
+# (aarch64) Oracle Cloud machine, while local Docker and the CI test runners are x86_64.
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates espeak-ng \
-    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o /usr/local/bin/yt-dlp \
+    && case "$(uname -m)" in aarch64|arm64) YTDLP_ASSET=yt-dlp_linux_aarch64 ;; *) YTDLP_ASSET=yt-dlp_linux ;; esac \
+    && curl -L "https://github.com/yt-dlp/yt-dlp/releases/latest/download/$YTDLP_ASSET" -o /usr/local/bin/yt-dlp \
     && chmod a+rx /usr/local/bin/yt-dlp \
     && mkdir -p /root/.config/yt-dlp/plugins \
     && curl -L https://github.com/Brainicism/bgutil-ytdlp-pot-provider/releases/latest/download/bgutil-ytdlp-pot-provider.zip -o /root/.config/yt-dlp/plugins/bgutil-ytdlp-pot-provider.zip \

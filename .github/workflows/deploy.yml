@@ -57,7 +57,9 @@ jobs:
   build-backend:
     # Không build (và không đẩy image :latest lên GHCR) khi BẤT KỲ bộ test nào đỏ.
     needs: [test-backend, test-frontend]
-    runs-on: ubuntu-latest
+    # Máy chủ production là ARM (Oracle Cloud Always Free, Ampere A1): build ngay trên runner ARM của
+    # GitHub (miễn phí cho repo public) để ra image arm64, không phải giả lập QEMU rất chậm.
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
@@ -81,7 +83,7 @@ jobs:
     # :latest lên GHCR — lần pull kế tiếp trên server sẽ lấy về một frontend không khớp backend.
     # (Frontend có sẵn lớp chặn riêng: `npm run build` chạy `tsc -b` bên trong Docker build.)
     needs: [test-backend, test-frontend]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
@@ -111,6 +113,8 @@ jobs:
       contents: read
       packages: read
     steps:
+      # Tên secret giữ "EC2_*" từ thời AWS; giá trị nay là IP và khoá SSH của máy Oracle (user vẫn
+      # là ubuntu). Xem ops/server-setup.md.
       - uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}

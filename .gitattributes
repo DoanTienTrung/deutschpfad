@@ -1,0 +1,3 @@
+# Script chạy trên máy chủ Linux phải giữ xuống dòng LF, kể cả khi commit từ Windows (core.autocrlf):
+# CRLF làm bash báo lỗi "$'\r': command not found".
+*.sh text eol=lf
