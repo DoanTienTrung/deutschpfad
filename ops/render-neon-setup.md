@@ -136,8 +136,8 @@ thật). Không dùng `/api/health` cho việc này: nó mở kết nối DB.
 | 4. Bài tập ngữ pháp | 3 chủ điểm A1 chưa có bài | Web trên Render | 15 phút |
 
 Việc 1, 2 và 4 (nếu dùng AI) cùng ăn quota Groq 200 nghìn token/ngày: hôm nào bấm dịch câu ví dụ thì
-đừng chạy nhập video cùng hôm. Thứ tự gợi ý: ngày 1-4 việc 1 (và việc 4), ngày 5 trở đi việc 2, cuối
-cùng việc 3 (bước "Đồng bộ từ vựng" cần câu ví dụ đã dịch xong).
+đừng chạy nhập video cùng hôm. Thứ tự gợi ý: ngày 1-4 việc 1 (và việc 4), ngày 5 trở đi việc 2. Việc 3
+không dùng Groq (chỉ Cohere), làm lúc nào cũng được.
 
 Mỗi việc có lệnh kiểm tra (PowerShell, thay `NEON_URL` như ở Bước 2).
 
@@ -222,13 +222,14 @@ Kiểm tra (xong khi gần như tất cả là `READY`):
 docker run --rm pgvector/pgvector:pg16 psql "NEON_URL" -c "select status, count(*) from listening_exercises where kind = 'YOUTUBE' group by status"
 ```
 
-### Việc 3. Kiến thức gia sư (máy nhà, sau khi việc 1 xong)
+### Việc 3. Kiến thức gia sư (máy nhà)
 
 1. http://localhost:8081/admin → **Kiến thức Gia sư** → chế độ tải file: chọn `C:\DeutschPfad\A1.pdf`, chọn
    trình độ **A1**, để trống tiêu đề → **Lưu & tạo embedding**. Chờ báo xong rồi làm tiếp `A2.pdf` (A2),
    `B1.pdf` (B1), `B2.pdf` (B2).
-2. Bấm **Đồng bộ từ vựng** (đưa 8.128 từ kèm câu ví dụ đã dịch vào kiến thức gia sư; chạy khá lâu vì
-   Cohere giới hạn 100 lần gọi/phút).
+2. Đợi khoảng 1 phút rồi bấm **Đồng bộ từ vựng** (đưa 8.128 từ kèm câu ví dụ tiếng Đức vào kiến thức
+   gia sư, vài phút). Key Cohere bản dùng thử chỉ cho 100 nghìn token/phút: bấm ngay sau khi tải 4 file PDF
+   thì Cohere báo 429 và đồng bộ dừng giữa chừng, bấm lại là được (job xoá phần cũ rồi làm lại từ đầu).
 3. Thử hỏi gia sư trên web Render một câu về ngữ pháp A1.
 
 Kiểm tra (phải lớn hơn 0, sau khi đồng bộ từ vựng thì lên vài nghìn):

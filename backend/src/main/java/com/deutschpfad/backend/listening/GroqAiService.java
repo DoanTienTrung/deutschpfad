@@ -35,6 +35,14 @@ public class GroqAiService {
     private static final String MODEL = "openai/gpt-oss-120b";
     private static final Pattern NUMBERED_LINE = Pattern.compile("^\\s*(\\d+)[.)]\\s*(.+?)\\s*\\|\\|\\|\\s*(.+)$");
 
+    // Groq free giới hạn cả token mỗi PHÚT (gpt-oss-120b: 8.000 TPM). Job dịch hàng loạt chạm giới hạn này
+    // sau vài lô, nhận 429 kèm "try again in 4.1s", và trước đây coi như hết quota nên dừng hẳn sau khoảng
+    // 400 câu. Chờ đúng chừng đó rồi gửi lại. Hết quota NGÀY thì Groq bảo chờ hàng phút trở lên: không chờ,
+    // trả null như cũ để nơi gọi chuyển sang AI khác hoặc dừng job.
+    private static final int MAX_RATE_LIMIT_RETRIES = 2;
+    private static final double MAX_RATE_LIMIT_WAIT_SECONDS = 15;
+    private static final Pattern RETRY_IN_SECONDS = Pattern.compile("try again in (\\d+(?:\\.\\d+)?)s");
+
     private final String apiKey;
     private final GeminiAiService geminiAiService;
     private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
@@ -659,13 +667,39 @@ public class GroqAiService {
             .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(root)))
             .build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
+        for (int attempt = 0; ; attempt++) {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return objectMapper.readTree(response.body()).at("/choices/0/message/content").asText("");
+            }
             log.warn("Groq request failed: HTTP {} - {}", response.statusCode(), response.body());
-            return null;
+            Double waitSeconds = response.statusCode() == 429
+                ? shortRateLimitWaitSeconds(response.headers().firstValue("retry-after").orElse(null), response.body())
+                : null;
+            if (waitSeconds == null || attempt >= MAX_RATE_LIMIT_RETRIES) {
+                return null;
+            }
+            Thread.sleep((long) Math.ceil(waitSeconds * 1000) + 500);
         }
+    }
 
-        return objectMapper.readTree(response.body()).at("/choices/0/message/content").asText("");
+    /** Số giây Groq bảo chờ khi chạm giới hạn theo phút; null nếu không rõ hoặc phải chờ quá lâu (hết quota ngày). */
+    static Double shortRateLimitWaitSeconds(String retryAfterHeader, String body) {
+        Double seconds = null;
+        if (retryAfterHeader != null) {
+            try {
+                seconds = Double.parseDouble(retryAfterHeader.trim());
+            } catch (NumberFormatException ignored) {
+                // Dạng ngày giờ HTTP: đọc thời gian trong nội dung lỗi bên dưới.
+            }
+        }
+        if (seconds == null && body != null) {
+            Matcher matcher = RETRY_IN_SECONDS.matcher(body);
+            if (matcher.find()) {
+                seconds = Double.parseDouble(matcher.group(1));
+            }
+        }
+        return seconds != null && seconds <= MAX_RATE_LIMIT_WAIT_SECONDS ? seconds : null;
     }
 
     static String buildSentencesPrompt(List<String> sentences) {
