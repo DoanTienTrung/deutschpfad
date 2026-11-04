@@ -1,10 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Button, Field, Input, Note, TextLink } from '@kit'
 import { apiFetch, ApiError } from '../api/client'
 import AuthCard from '../components/auth/AuthCard'
-import Field from '../components/ui/Field'
-import Button from '../components/ui/Button'
-import Alert from '../components/ui/Alert'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -38,26 +35,24 @@ export default function ForgotPasswordPage() {
     <AuthCard
       title="Quên mật khẩu"
       footer={
-        <Link to="/login" className="font-medium text-primary hover:text-primary-deep">
-          Quay lại đăng nhập
-        </Link>
+        <TextLink to="/login">Quay lại đăng nhập</TextLink>
       }
     >
-      {message && <Alert tone="success">{message}</Alert>}
-      {error && <Alert tone="danger">{error}</Alert>}
+      {message && <Note tone="ok" className="mb-4">{message}</Note>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       {!message && (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field
-            id="email"
-            label="Email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Button type="submit" loading={submitting}>
+          <Field label="Email">
+            <Input
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
+          <Button type="submit" loading={submitting} className="w-full">
             {submitting ? 'Đang gửi...' : 'Gửi yêu cầu'}
           </Button>
         </form>

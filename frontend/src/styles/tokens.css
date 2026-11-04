@@ -1,0 +1,175 @@
+/* Lớp token của design system DeutschPfad, ẩn dụ "Hộp thẻ Leitner" (Karteikasten).
+   Đây là NGUỒN DUY NHẤT cho màu, bóng, bo góc, nền, chiều rộng trang. Code app không viết màu thẳng.
+
+   Cảnh sáng: hộp thẻ trên bàn ban ngày. Mặt bàn là bìa cạc-tông của hộp, thẻ là Karteikarte ngà có
+   dòng kẻ xanh và dòng đỏ đầu thẻ, chữ là bút chì than, tab chia ngăn màu hổ phách.
+   Cảnh tối: chiếc hộp thẻ sơn mài đen bóng dưới đèn bàn ban đêm. Mặt bàn và thẻ là lớp sơn đen bóng,
+   ánh đèn in thành vệt phản chiếu mềm ở phía trên; thẻ bắt sáng ở mép trên thay cho viền cứng. Tối là
+   một cảnh khác, không phải sáng bị đảo màu.
+
+   Quy ước:
+   - Tên theo ẩn dụ (tiếng Đức, giống mẫu đã duyệt), không theo màu. Tên tiếng Đức còn tránh trùng
+     các nhóm biến của Tailwind (--color-*, --shadow-*, --radius-*...), vì GĐ 2 sẽ trỏ các tên đó về đây.
+   - Giữ các luật đã chốt trong DESIGN.md: trung tính dùng chung hue ấm 70 (ngoại lệ duy nhất: mặt bàn
+     cảnh tối là đen bóng trung tính); hổ phách (--reiter) chỉ dành cho thứ người học đã đạt được; nút chính là chì
+     than, không phải màu thương hiệu thứ hai.
+   - Màu đúng/sai/giống danh từ/mức nhớ ở cảnh sáng giữ đúng giá trị đang chạy trong app. Cảnh tối
+     nâng sáng các màu này một chút cho hợp mặt bàn và thẻ sáng hơn của cảnh đèn bàn.
+   - Mỗi màu trạng thái có bản đặc và bản nền nhạt (-soft). Chữ màu đặc đặt trên -soft của chính nó
+     hoặc trên thẻ đều đạt tối thiểu 4,5:1. */
+
+:root {
+  color-scheme: light;
+
+  /* --- Mặt bàn và thẻ (3 bậc bề mặt) --- */
+  --pappe: oklch(0.83 0.04 72);                /* mặt bàn: bìa cạc-tông, đậm hơn thẻ để thẻ nổi lên */
+  --pappe-dunkel: oklch(0.66 0.045 68);        /* bìa bị khuất: bóng lệch của nút, đáy ngăn hộp */
+  --karteikarte: oklch(0.99 0.006 85);         /* thẻ */
+  --karteikarte-innen: oklch(0.965 0.01 80);   /* thẻ lồng trong thẻ, vùng lõm */
+  --lampenlicht: none;                         /* ánh đèn phủ lên thẻ: ban ngày không có */
+
+  /* --- Chữ (3 bậc + chữ trên nền nghịch) --- */
+  --bleistift: oklch(0.22 0.018 70);           /* chữ chính: bút chì than */
+  --radiert: oklch(0.43 0.014 70);             /* chữ phụ: vết chì đã tẩy */
+  --hauch: oklch(0.53 0.014 70);               /* chữ mờ: nét chì rất nhẹ (gợi ý, thời gian, placeholder) */
+  --bleistift-invers: var(--karteikarte);      /* chữ trên nền chì than (nút chính) */
+  --bleistift-tief: oklch(0.15 0.014 70);      /* chì than khi nhấn/rê chuột (nút chính) */
+
+  /* --- Đường kẻ (2 bậc) + dòng đầu thẻ --- */
+  --linie: oklch(0.88 0.028 245);              /* kẻ nhạt: dòng kẻ xanh trên thẻ, đường chia */
+  --kante: oklch(0.6 0.03 70);                 /* kẻ đậm: viền ô nhập và nút phụ (đạt 3:1 trên thẻ) */
+  --kartenrand: var(--kante);                  /* mép thẻ: ban ngày rõ như mép giấy, ban đêm chìm vào bóng */
+  --kopfzeile: oklch(0.7 0.11 25);             /* dòng đỏ đầu thẻ: chỉ trang trí, nhạt hơn màu báo sai */
+
+  /* --- Trạng thái --- */
+  --reiter: oklch(0.75 0.15 70);               /* nhấn mạnh: tab chia ngăn hổ phách, CHỈ cho thứ đã đạt */
+  --reiter-soft: oklch(0.95 0.05 82);
+  --reiter-tief: oklch(0.62 0.16 68);          /* tab bị nhấn (hover/active) */
+  --reiter-beschriftung: var(--bleistift);     /* chữ viết trên tab hổ phách: luôn tối, ở cả hai cảnh */
+  --aufstieg: oklch(0.49 0.13 188);            /* đúng: thẻ lên ngăn */
+  --aufstieg-soft: oklch(0.96 0.03 188);
+  --rotstift: oklch(0.55 0.19 25);             /* sai: bút chì đỏ của thầy, thẻ về ngăn 1 */
+  --rotstift-soft: oklch(0.96 0.03 25);
+  --tinte: oklch(0.47 0.11 275);               /* thông tin: mực xanh ghi chú (lệch tím để khác màu der) */
+  --tinte-soft: oklch(0.955 0.025 275);
+  --fokus: var(--bleistift);                   /* vòng focus: chì than, giống DESIGN.md */
+
+  /* --- Giống danh từ: ba màu tab, như học sinh Đức tô thẻ từ --- */
+  --reiter-der: oklch(0.5 0.15 255);
+  --reiter-der-soft: oklch(0.955 0.025 255);
+  --reiter-die: oklch(0.52 0.18 355);
+  --reiter-die-soft: oklch(0.96 0.025 355);
+  --reiter-das: oklch(0.5 0.13 145);
+  --reiter-das-soft: oklch(0.955 0.03 145);
+
+  /* --- Ngăn hộp: 4 mức nhớ thật của app (Chưa nhớ → Nhớ lâu), cùng hue với màu đúng, nhạt → đậm --- */
+  --fach-1: oklch(0.76 0.07 188);
+  --fach-2: oklch(0.65 0.09 188);
+  --fach-3: oklch(0.54 0.1 188);
+  --fach-4: oklch(0.42 0.095 188);
+
+  /* --- Bóng (3 vai) --- */
+  --schatten-lift: 3px 3px 0 -1px var(--karteikarte), 3px 3px 0 0 var(--kartenrand),
+    0 10px 18px -14px oklch(0.3 0.04 60 / 0.45);   /* nhấc nhẹ: thẻ nằm trên một thẻ khác */
+  --schatten-pop: 0 0 0 1px var(--kartenrand), 0 22px 44px -18px oklch(0.25 0.04 60 / 0.55); /* lớp nổi: hộp thoại, menu */
+  --schatten-offset: 3px 3px 0 var(--pappe-dunkel); /* bóng lệch cứng cho nút */
+
+  /* --- Bo góc (3 bậc) --- */
+  --ecke-karte: 3px;                           /* thẻ, ô nhập, nút: góc giấy */
+  --ecke-reiter: 8px;                          /* tab chia ngăn (bo hai góc trên), chip */
+  --ecke-rund: 9999px;                         /* chấm, ảnh đại diện */
+
+  /* --- Lớp phủ dưới hộp thoại: đủ tối để nội dung phía sau lùi hẳn --- */
+  --schleier: oklch(0.22 0.03 60 / 0.55);
+
+  /* --- Nhãn đè lên ảnh/video (thời lượng, nguồn): ảnh không đổi theo cảnh nên nhãn cũng không --- */
+  --foto-etikett: oklch(0.12 0 0 / 0.7);
+  --foto-etikett-schrift: oklch(0.98 0 0);
+
+  /* --- Texture nền --- */
+  --textur-pappe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' stroke='%23866b44' stroke-opacity='0.22' stroke-width='1'%3E%3Cpath d='M12 18l9 2M40 70l7-3M90 30l10 1M130 90l-8 4M20 120l9-2M70 140l8 3M110 60l6 5M150 140l-9-1M60 100l5-6M100 120l-7-4M30 50l-5 6M140 20l-6 5'/%3E%3C/svg%3E");
+  --textur-pappe-groesse: 160px 160px;
+  /* Dòng kẻ trên thẻ: 1 đường mỗi 2rem, tự đổi màu theo --linie ở cả hai cảnh. */
+  --textur-linien: linear-gradient(transparent calc(100% - 1px), var(--linie) calc(100% - 1px));
+  --textur-linien-groesse: 100% 2rem;
+
+  /* --- Chiều rộng cột nội dung --- */
+  --seitenbreite: 64rem;                       /* trang tổng (hub, danh sách) */
+  --seitenbreite-lesen: 48rem;                 /* trang đọc và làm bài */
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Đen bóng: mặt bàn gần như đen, thẻ là lớp sơn đen sáng hơn một bậc. Gần như không màu (chỉ ánh lạnh
+     rất nhẹ của sơn mài) để chữ ngà và hổ phách là phần ấm duy nhất. */
+  --pappe: oklch(0.13 0.005 260);
+  --pappe-dunkel: oklch(0.085 0.004 260);
+  --karteikarte: oklch(0.215 0.006 260);
+  --karteikarte-innen: oklch(0.255 0.006 260);
+  /* Vệt phản chiếu của đèn trên mặt sơn bóng: sáng ở đầu thẻ, tắt dần trước giữa thẻ. */
+  --lampenlicht: linear-gradient(180deg, oklch(1 0 0 / 0.075) 0%, oklch(1 0 0 / 0.03) 30%, oklch(1 0 0 / 0.01) 50%, transparent 62%);
+
+  --bleistift: oklch(0.95 0.006 85);
+  --radiert: oklch(0.8 0.008 80);
+  --hauch: oklch(0.69 0.008 75);
+  --bleistift-invers: oklch(0.16 0.005 260);   /* nút chính là phím ngà bóng, chữ trên nó là đen */
+  --bleistift-tief: oklch(0.99 0.004 85);
+
+  --linie: oklch(0.31 0.008 255);
+  --kante: oklch(0.53 0.008 260);
+  --kartenrand: oklch(0.29 0.006 260);
+  --kopfzeile: oklch(0.52 0.09 25);
+
+  /* Hổ phách giữ độ rực: trên nền đen nó là điểm sáng ấm duy nhất, đúng vai "thứ đã đạt được". */
+  --reiter: oklch(0.8 0.15 74);
+  --reiter-soft: oklch(0.3 0.06 74);
+  --reiter-tief: oklch(0.86 0.12 78);
+  --reiter-beschriftung: oklch(0.18 0.02 60);
+  --aufstieg: oklch(0.78 0.1 188);
+  --aufstieg-soft: oklch(0.27 0.04 188);
+  --rotstift: oklch(0.75 0.14 25);
+  --rotstift-soft: oklch(0.27 0.055 25);
+  --tinte: oklch(0.79 0.08 275);
+  --tinte-soft: oklch(0.27 0.045 275);
+
+  --reiter-der: oklch(0.77 0.1 255);
+  --reiter-der-soft: oklch(0.27 0.04 255);
+  --reiter-die: oklch(0.77 0.12 355);
+  --reiter-die-soft: oklch(0.27 0.05 355);
+  --reiter-das: oklch(0.78 0.11 145);
+  --reiter-das-soft: oklch(0.27 0.04 145);
+
+  /* Tối thì mức nhớ đảo chiều: nhớ lâu là sáng nhất (giống biểu đồ hiện tại). */
+  --fach-1: oklch(0.45 0.05 188);
+  --fach-2: oklch(0.58 0.07 188);
+  --fach-3: oklch(0.7 0.08 188);
+  --fach-4: oklch(0.82 0.085 188);
+
+  /* Mặt sơn bóng: mép trên bắt sáng, mép dưới sẫm lại, bóng đổ sâu và mềm. Không có mép thẻ xếp chồng. */
+  --schatten-lift: inset 0 1px 0 oklch(1 0 0 / 0.1), inset 0 -1px 0 oklch(0 0 0 / 0.35),
+    0 1px 2px oklch(0 0 0 / 0.6), 0 16px 32px -14px oklch(0 0 0 / 0.85);
+  --schatten-pop: inset 0 1px 0 oklch(1 0 0 / 0.12), 0 0 0 1px var(--kartenrand),
+    0 30px 60px -18px oklch(0 0 0 / 0.9);
+  --schatten-offset: 3px 3px 0 var(--pappe-dunkel);
+
+  --schleier: oklch(0.04 0.003 260 / 0.75);
+
+  /* Ba lớp: hạt rất mịn (chống vệt khi chuyển màu), vệt phản chiếu của đèn trên mặt bàn bóng, và một
+     lớp sáng mờ dần ở đầu trang. Kích thước cố định để trang dài không kéo giãn vệt sáng. */
+  --textur-pappe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 64rem 22rem at 50% -4rem,
+      oklch(0.92 0.02 80 / 0.11), oklch(0.92 0.02 80 / 0.05) 40%, oklch(0.92 0.02 80 / 0.015) 65%, transparent 80%),
+    linear-gradient(180deg, oklch(1 0 0 / 0.03), transparent 40rem);
+  --textur-pappe-groesse: 180px 180px, auto, auto;
+}
+
+/* Tương phản cao (công tắc trong trang Hồ sơ): chữ phụ, chữ mờ và mọi đường kẻ đậm bằng chữ chính.
+   Áp cho cả hai cảnh vì chỉ trỏ lại về token của cảnh đang dùng. */
+:root[data-contrast="high"] {
+  --radiert: var(--bleistift);
+  --hauch: var(--bleistift);
+  --linie: var(--bleistift);
+  --kante: var(--bleistift);
+  --kartenrand: var(--bleistift);
+}

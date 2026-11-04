@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { AnswerFeedback, Button, Card, Field, Input, QuestionNav } from '@kit'
 import type { VocabularyItem } from '../../api/types'
 import type { PracticeResultHandler } from '../../lib/practiceResult'
 import { questionDisplay, shuffle } from '../../lib/quiz'
 import { checkAnswer, spokenForm } from '../../lib/answer'
 import AudioBar from './AudioBar'
-import Field from '../ui/Field'
 import QuestionSentence from './QuestionSentence'
 
 const ADVANCE_DELAY_MS = 700
@@ -46,7 +47,7 @@ export default function DictationExercise({
   }, [])
 
   if (items.length === 0) {
-    return <p className="text-muted">Bài học này chưa có từ vựng.</p>
+    return <p className="text-radiert">Bài học này chưa có từ vựng.</p>
   }
 
   const current = order[index]
@@ -90,7 +91,7 @@ export default function DictationExercise({
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') handleCheck()
   }
 
@@ -109,127 +110,79 @@ export default function DictationExercise({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <button
-          onClick={() => goTo(Math.max(0, index - 1))}
-          disabled={index === 0}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          ← Câu trước
-        </button>
-        <p className="text-sm text-muted">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <Button variant="secondary" size="sm" icon={<ArrowLeft className="size-4" aria-hidden="true" />}
+          onClick={() => goTo(Math.max(0, index - 1))} disabled={index === 0}>
+          Câu trước
+        </Button>
+        <p className="text-sm text-radiert">
           Đã hoàn thành {answeredIndexes.size}/{order.length}
         </p>
-        <button
-          onClick={() => goTo(Math.min(order.length - 1, index + 1))}
-          disabled={index === order.length - 1}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          Câu sau →
-        </button>
+        <Button variant="secondary" size="sm" onClick={() => goTo(Math.min(order.length - 1, index + 1))}
+          disabled={index === order.length - 1}>
+          Câu sau
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Button>
       </div>
 
-      <div className="mb-6 rounded-md border border-hairline bg-card p-6 text-center">
+      <Card className="mb-6 p-6 text-center">
         {/* Đọc dạng nói được, không đọc nguyên germanWord: "das Bild, -er" sẽ bị đọc thành
             "das Bild, trừ e-r" - mà đây là bài chính tả, người học gõ lại đúng cái mình nghe. */}
         <AudioBar text={spokenForm(current.germanWord)} />
 
         <div className="mt-4">
-          {current.wordType && <p className="text-xs font-medium uppercase text-muted">{current.wordType}</p>}
-          <p className="mt-1 text-xl font-bold text-ink">{current.vietnameseMeaning}</p>
-          {current.englishMeaning && <p className="mt-1 italic text-muted">= {current.englishMeaning}</p>}
-          {current.phonetic && <p className="mt-1 italic text-primary">/{current.phonetic}/</p>}
+          {current.wordType && <p className="text-xs font-medium uppercase text-radiert">{current.wordType}</p>}
+          <p className="mt-1 text-xl font-bold text-bleistift">{current.vietnameseMeaning}</p>
+          {current.englishMeaning && <p className="mt-1 italic text-radiert">= {current.englishMeaning}</p>}
+          {current.phonetic && <p className="mt-1 italic text-bleistift">/{current.phonetic}/</p>}
           {questionDisplay(current) && (
-            <QuestionSentence display={questionDisplay(current)!} className="mt-3 text-base text-ink" />
+            <QuestionSentence display={questionDisplay(current)!} className="mt-3 text-base text-bleistift" />
           )}
         </div>
 
-        <div className="mt-4 border-t border-hairline pt-4">
+        <div className="mt-4 border-t border-linie pt-4">
           {!answeredIndexes.has(index) || justCorrect ? (
             <>
-              <Field
-                ref={inputRef}
-                id="dictation-answer"
-                label="Nghe và gõ lại từ tiếng Đức"
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value)
-                  setAttemptFailed(false)
-                }}
-                onKeyDown={handleKeyDown}
-                autoComplete="off"
-                autoFocus
-                readOnly={justCorrect}
-                status={justCorrect ? 'success' : attemptFailed ? 'error' : 'default'}
-              />
+              <Field label="Nghe và gõ lại từ tiếng Đức" className="text-left">
+                <Input ref={inputRef} value={input} onChange={(e) => { setInput(e.target.value); setAttemptFailed(false) }}
+                  onKeyDown={handleKeyDown} autoComplete="off" autoFocus readOnly={justCorrect}
+                  invalid={attemptFailed} className={justCorrect ? 'border-aufstieg' : undefined} />
+              </Field>
               {!justCorrect && (
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  <span className="mr-1 text-xs text-muted">Không gõ được dấu?</span>
+                  <span className="mr-1 text-xs text-radiert">Không gõ được dấu?</span>
                   {UMLAUT_KEYS.map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => insertChar(key)}
-                      className="rounded-sm border border-hairline px-2.5 py-1 text-sm font-medium text-ink hover:bg-surface"
-                    >
+                    <Button key={key} variant="secondary" size="sm" onClick={() => insertChar(key)} aria-label={`Thêm chữ ${key}`}>
                       {key}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
               <div className="mt-4 flex justify-center">
-                <button
-                  onClick={handleCheck}
-                  disabled={justCorrect}
-                  className="rounded-full border border-primary px-6 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-40"
-                >
-                  ✓ Check kết quả
-                </button>
+                <Button variant="secondary" onClick={handleCheck} disabled={justCorrect} icon={<Check className="size-4" aria-hidden="true" />}>
+                  Kiểm tra
+                </Button>
               </div>
               {justCorrect ? (
-                <p className="mt-3 text-sm font-medium text-success">Chính xác!</p>
+                <AnswerFeedback correct className="mt-3 text-left" />
               ) : revealAnswer ? (
-                <p className="mt-3 text-sm font-medium text-danger">
-                  {articleHint
-                    ? `${articleHint}. Đáp án đầy đủ: "${current.germanWord}".`
-                    : `Chưa đúng - đáp án là "${current.germanWord}".`}{' '}
-                  Gõ lại cho đúng để qua câu mới.
-                </p>
+                <AnswerFeedback correct={false} className="mt-3 text-left" title="Chưa đúng. Gõ lại cho đúng để qua câu mới.">
+                  {articleHint ? `${articleHint}. Đáp án đầy đủ: "${current.germanWord}".` : `Đáp án là "${current.germanWord}".`}
+                </AnswerFeedback>
               ) : (
                 attemptFailed && (
-                  <p className="mt-3 text-sm font-medium text-danger">
-                    {articleHint ?? 'Chưa đúng, thử lại nhé.'}
-                  </p>
+                  <AnswerFeedback correct={false} className="mt-3 text-left" title={articleHint ?? 'Chưa đúng, thử lại nhé.'} />
                 )
               )}
             </>
           ) : (
-            <p className="text-sm font-medium text-success">Đã hoàn thành: "{current.germanWord}"</p>
+            <AnswerFeedback correct className="text-left" title={`Đã hoàn thành: "${current.germanWord}"`} />
           )}
         </div>
-      </div>
+      </Card>
 
-      <p className="mb-2 font-medium text-ink">Danh sách bài tập:</p>
-      <div className="flex flex-wrap gap-2">
-        {order.map((_, i) => {
-          const isCurrent = i === index
-          const isDone = answeredIndexes.has(i)
-          const stateClass = isCurrent
-            ? 'bg-primary text-canvas'
-            : isDone
-              ? 'border border-success bg-success-bg text-success'
-              : 'border border-hairline text-ink hover:bg-surface'
-          return (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              className={`h-9 w-9 rounded-sm text-sm font-medium ${stateClass}`}
-            >
-              {i + 1}
-            </button>
-          )
-        })}
-      </div>
+      <p className="mb-2 font-medium text-bleistift">Danh sách bài tập:</p>
+      <QuestionNav current={index} onSelect={goTo} marks={order.map((_, i) => (answeredIndexes.has(i) ? 'correct' : 'open'))} />
     </div>
   )
 }

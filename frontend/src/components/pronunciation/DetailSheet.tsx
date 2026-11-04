@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode, type TouchEvent } from 'react'
+import { ArrowLeft, ArrowRight, Snail, Volume2 } from 'lucide-react'
+import { BottomSheet, Button, IconButton } from '@kit'
 import { speak } from '../../lib/speech'
 import type { Example } from '../../lib/pronunciation'
 import { markAlphabetVisited } from '../../lib/onboarding'
@@ -17,16 +19,11 @@ export type DetailItem = {
   examples: Example[]
 }
 
-function SpeakButton({ text, rate = 1, label, children }: { text: string; rate?: number; label: string; children: React.ReactNode }) {
+function SpeakButton({ text, rate = 1, icon, children }: { text: string; rate?: number; icon: ReactNode; children: ReactNode }) {
   return (
-    <button
-      onClick={() => speak(text, { rate })}
-      aria-label={label}
-      title={label}
-      className="flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-hairline bg-card px-3 text-ink transition-colors hover:bg-surface"
-    >
+    <Button variant="secondary" size="sm" icon={icon} onClick={() => speak(text, { rate })}>
       {children}
-    </button>
+    </Button>
   )
 }
 
@@ -58,16 +55,16 @@ export default function DetailSheet({
   useEffect(() => markAlphabetVisited(), [])
 
   useEffect(() => {
+    // Esc do hộp thoại tự xử lý (đóng); ở đây chỉ còn mũi tên để chuyển chữ.
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowLeft' && hasPrev) onIndexChange(index - 1)
       if (e.key === 'ArrowRight' && hasNext) onIndexChange(index + 1)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [index, hasPrev, hasNext, onIndexChange, onClose])
+  }, [index, hasPrev, hasNext, onIndexChange])
 
-  function onTouchEnd(e: React.TouchEvent) {
+  function onTouchEnd(e: TouchEvent) {
     if (touchX.current === null) return
     const dx = e.changedTouches[0].clientX - touchX.current
     touchX.current = null
@@ -75,65 +72,38 @@ export default function DetailSheet({
     if (dx < -50 && hasNext) onIndexChange(index + 1)
   }
 
-  const navButton =
-    'flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-lg text-ink transition-colors hover:bg-surface disabled:opacity-30 disabled:hover:bg-transparent'
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={item.title}>
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div
-        className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-lg bg-card p-6 shadow-floating sm:max-w-lg sm:rounded-lg"
-        onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
-        onTouchEnd={onTouchEnd}
-      >
-        <div className="flex items-center justify-between">
-          <p className="text-sm tabular-nums text-muted">
-            {index + 1}/{items.length}
-          </p>
-          <button onClick={onClose} aria-label="Đóng" className="rounded-sm p-1.5 text-muted hover:text-ink">
-            ✕
-          </button>
-        </div>
-
-        <div className="mt-2 text-center">
-          <p className="font-display text-6xl font-bold text-ink">{item.title}</p>
-          {item.subtitle && <p className="mt-2 text-base text-muted">{item.subtitle}</p>}
-          <p className="mt-1 font-mono text-sm text-muted">/{item.ipa}/</p>
+    <BottomSheet open onClose={onClose} title={<span className="text-sm font-normal tabular-nums text-radiert">{index + 1}/{items.length}</span>}>
+      <div onTouchStart={(e) => (touchX.current = e.touches[0].clientX)} onTouchEnd={onTouchEnd}>
+        <div className="text-center">
+          <p className="font-display text-5xl font-bold text-bleistift">{item.title}</p>
+          {item.subtitle && <p className="mt-2 text-base text-radiert">{item.subtitle}</p>}
+          <p className="mt-1 font-mono text-sm text-radiert">/{item.ipa}/</p>
           <div className="mt-4 flex justify-center gap-2">
-            <SpeakButton text={item.speak} label="Nghe">
-              🔊 <span className="text-sm font-medium">Nghe</span>
-            </SpeakButton>
-            <SpeakButton text={item.speak} rate={0.6} label="Nghe chậm">
-              🐢 <span className="text-sm font-medium">Chậm</span>
-            </SpeakButton>
+            <SpeakButton text={item.speak} icon={<Volume2 className="size-4" aria-hidden="true" />}>Nghe</SpeakButton>
+            <SpeakButton text={item.speak} rate={0.6} icon={<Snail className="size-4" aria-hidden="true" />}>Chậm</SpeakButton>
           </div>
         </div>
 
         <div className="mt-6 space-y-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Cách đọc</p>
-            <p className="mt-1 text-ink">{item.sound}</p>
+            <p className="text-xs font-medium tracking-wide text-radiert uppercase">Cách đọc</p>
+            <p className="mt-1 text-base text-bleistift">{item.sound}</p>
           </div>
           {item.tip && (
-            <div className="rounded-md bg-surface px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">Dễ nhầm</p>
-              <p className="mt-1 text-sm text-ink">{item.tip}</p>
+            <div className="rounded-karte border border-linie bg-karteikarte-innen px-4 py-3">
+              <p className="text-xs font-medium tracking-wide text-radiert uppercase">Dễ nhầm</p>
+              <p className="mt-1 text-bleistift">{item.tip}</p>
             </div>
           )}
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Ví dụ</p>
-            <ul className="mt-2 space-y-2">
+            <p className="text-xs font-medium tracking-wide text-radiert uppercase">Ví dụ</p>
+            <ul className="mt-1 space-y-1">
               {item.examples.map((ex) => (
-                <li key={ex.word} className="flex items-center gap-3">
-                  <button
-                    onClick={() => speak(ex.word)}
-                    aria-label={`Nghe ${ex.word}`}
-                    className="shrink-0 rounded-full p-1.5 text-primary hover:bg-surface"
-                  >
-                    🔊
-                  </button>
-                  <span className="font-display text-lg font-semibold text-ink">{ex.word}</span>
-                  <span className="text-sm text-muted">- {ex.meaning}</span>
+                <li key={ex.word} className="flex items-center gap-2">
+                  <IconButton label={`Nghe ${ex.word}`} icon={<Volume2 className="size-4" aria-hidden="true" />} onClick={() => speak(ex.word)} />
+                  <span className="font-display text-lg font-semibold text-bleistift">{ex.word}</span>
+                  <span className="text-radiert">- {ex.meaning}</span>
                 </li>
               ))}
             </ul>
@@ -141,16 +111,14 @@ export default function DetailSheet({
         </div>
 
         <div className="mt-6 flex items-center justify-between">
-          <button onClick={() => onIndexChange(index - 1)} disabled={!hasPrev} aria-label="Chữ trước" className={navButton}>
-            ←
-          </button>
-          <p className="hidden text-xs text-muted sm:block">Dùng phím ← → để chuyển</p>
-          <p className="text-xs text-muted sm:hidden">Vuốt ngang để chuyển</p>
-          <button onClick={() => onIndexChange(index + 1)} disabled={!hasNext} aria-label="Chữ sau" className={navButton}>
-            →
-          </button>
+          <IconButton variant="secondary" label="Chữ trước" icon={<ArrowLeft className="size-4" aria-hidden="true" />}
+            onClick={() => onIndexChange(index - 1)} disabled={!hasPrev} />
+          <p className="hidden text-xs text-radiert sm:block">Dùng phím mũi tên trái/phải để chuyển</p>
+          <p className="text-xs text-radiert sm:hidden">Vuốt ngang để chuyển</p>
+          <IconButton variant="secondary" label="Chữ sau" icon={<ArrowRight className="size-4" aria-hidden="true" />}
+            onClick={() => onIndexChange(index + 1)} disabled={!hasNext} />
         </div>
       </div>
-    </div>
+    </BottomSheet>
   )
 }

@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { ArrowRight, Clapperboard, MonitorPlay } from 'lucide-react'
+import { Breadcrumb, Button, ButtonLink, CardGridSkeleton, Chip as KitChip, EmptyState, Note, SearchInput } from '@kit'
 import { getYoutubeLibrary } from '../api/listeningApi'
 import type { ListeningExerciseSummary, YoutubeLibrary } from '../api/types'
 import ExerciseGrid from '../components/listening/ExerciseGrid'
-import ListeningBreadcrumb from '../components/listening/ListeningBreadcrumb'
-import { CardGridSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const LEVEL_ORDER: Record<string, number> = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 }
@@ -73,34 +73,25 @@ export default function ListeningYoutubePage() {
   const totalChannels = library?.channels.length ?? 0
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-seite">
       {/* Stacks on phones: the breadcrumb needs the full 390px row to fit on one line; keeping
           the link beside it squeezed the breadcrumb into an awkward mid-item wrap. */}
       <div className="mb-2 flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-        <ListeningBreadcrumb
-          items={[{ label: '🎧 Nghe', to: '/app/listening' }, { label: '📺 Luyện qua Video YouTube' }]}
-        />
-        <Link
-          to="/app/listening/mine"
-          className="self-start shrink-0 rounded-full border border-hairline bg-surface px-3 py-1 text-sm font-semibold text-primary transition-colors hover:border-primary/40"
-        >
-          🎬 Video của tôi
-        </Link>
+        <Breadcrumb items={[{ label: 'Nghe', to: '/app/listening' }, { label: 'Luyện qua video YouTube' }]} />
+        <ButtonLink to="/app/listening/mine" variant="secondary" size="sm" className="shrink-0 self-start"
+          icon={<Clapperboard className="size-4" aria-hidden="true" />}>
+          Video của tôi
+        </ButtonLink>
       </div>
       {library && exercises.length > 0 && (
-        <p className="mb-4 text-sm text-muted">
+        <p className="mb-4 text-sm text-radiert">
           {exercises.length} video từ {totalChannels} kênh học tiếng Đức. Chọn kênh bạn thích hoặc chọn theo cấp độ.
         </p>
       )}
 
-      <input
-        type="search"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm theo tên video..."
-        aria-label="Tìm video theo tên"
-        className="mb-4 w-full rounded-sm border border-hairline bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-      />
+      <div className="mb-4">
+        <SearchInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo tên video..." aria-label="Tìm video theo tên" />
+      </div>
 
       {library && channels.length > 0 && (
         <ChipRow label="Kênh">
@@ -133,14 +124,10 @@ export default function ListeningYoutubePage() {
 
       <div className="mt-6">
         {!library && !error && <CardGridSkeleton />}
-        {error && <p className="text-danger">Không tải được danh sách video. Thử tải lại trang.</p>}
+        {error && <Note tone="bad">Không tải được danh sách video. Thử tải lại trang.</Note>}
 
         {library && exercises.length === 0 && (
-          <div className="rounded-md border border-dashed border-hairline p-8 text-center">
-            <p className="text-3xl">📺</p>
-            <p className="mt-2 font-medium text-ink">Chưa có video nào</p>
-            <p className="mt-1 text-sm text-muted">Bạn có thể tự thêm video ở "Video của tôi".</p>
-          </div>
+          <EmptyState icon={<MonitorPlay />} title="Chưa có video nào" description='Bạn có thể tự thêm video ở "Video của tôi".' />
         )}
 
         {library && exercises.length > 0 && overview && (
@@ -151,16 +138,14 @@ export default function ListeningYoutubePage() {
               return (
                 <section key={c.key} aria-labelledby={`channel-${c.key}`}>
                   <div className="mb-3 flex items-baseline justify-between gap-3">
-                    <h2 id={`channel-${c.key}`} className="font-display text-lg font-bold text-ink">
-                      {c.name} <span className="text-sm font-normal text-muted">· {videos.length} video</span>
+                    <h2 id={`channel-${c.key}`} className="font-display text-lg font-bold text-bleistift">
+                      {c.name} <span className="text-sm font-normal text-radiert">· {videos.length} video</span>
                     </h2>
                     {videos.length > PREVIEW_PER_CHANNEL && (
-                      <button
-                        onClick={() => update({ channel: c.key })}
-                        className="shrink-0 text-sm font-semibold text-primary hover:underline"
-                      >
-                        Xem tất cả →
-                      </button>
+                      <Button variant="ghost" size="sm" onClick={() => update({ channel: c.key })} className="shrink-0">
+                        Xem tất cả
+                        <ArrowRight className="size-4" aria-hidden="true" />
+                      </Button>
                     )}
                   </div>
                   <ExerciseGrid exercises={videos.slice(0, PREVIEW_PER_CHANNEL)} />
@@ -173,13 +158,13 @@ export default function ListeningYoutubePage() {
         {library && exercises.length > 0 && !overview && (
           <>
             {filtered.length === 0 ? (
-              <p className="text-muted">
+              <p className="text-radiert">
                 {query ? 'Không tìm thấy video nào khớp với tên bạn tìm.' : 'Kênh này chưa có video ở cấp độ đã chọn.'}{' '}
                 Thử bỏ bớt bộ lọc.
               </p>
             ) : (
               <>
-                <p className="mb-3 text-sm text-muted">{filtered.length} video</p>
+                <p className="mb-3 text-sm text-radiert">{filtered.length} video</p>
                 <ExerciseGrid exercises={filtered} />
               </>
             )}
@@ -191,10 +176,10 @@ export default function ListeningYoutubePage() {
 }
 
 /** Một hàng chip có nhãn. Trên điện thoại cuộn ngang trong hàng (trang không bị cuộn ngang), từ sm trở lên xuống dòng. */
-function ChipRow({ label, children }: { label: string; children: React.ReactNode }) {
+function ChipRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="mb-3 flex items-start gap-3">
-      <span className="w-14 shrink-0 pt-1.5 text-xs font-semibold uppercase tracking-wide text-muted">{label}</span>
+      <span className="w-14 shrink-0 pt-1.5 text-xs font-semibold uppercase tracking-wide text-radiert">{label}</span>
       <div role="group" aria-label={label} className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1 [scrollbar-width:thin] sm:flex-wrap sm:overflow-visible">
         {children}
       </div>
@@ -205,18 +190,9 @@ function ChipRow({ label, children }: { label: string; children: React.ReactNode
 function Chip({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count?: number }) {
   const empty = count === 0 && !active
   return (
-    <button
-      onClick={onClick}
-      aria-pressed={active}
-      disabled={empty}
-      className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-        active
-          ? 'bg-primary/12 text-primary-deep'
-          : 'border border-hairline bg-surface text-ink hover:border-primary/40 hover:text-primary disabled:cursor-default disabled:opacity-45 disabled:hover:border-hairline disabled:hover:text-ink'
-      }`}
-    >
+    <KitChip selected={active} onClick={onClick} disabled={empty} className="shrink-0 whitespace-nowrap">
       {label}
-      {count != null && <span className={`ml-1.5 text-xs ${active ? 'text-primary-deep/80' : 'text-muted'}`}>{count}</span>}
-    </button>
+      {count != null && <span className={active ? 'text-xs text-bleistift-invers/80' : 'text-xs text-radiert'}>{count}</span>}
+    </KitChip>
   )
 }

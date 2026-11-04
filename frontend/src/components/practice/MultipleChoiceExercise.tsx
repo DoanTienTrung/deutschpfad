@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { AnswerOption, Button, Card, Checkbox, QuestionNav, type AnswerState } from '@kit'
 import type { VocabularyItem } from '../../api/types'
 import type { PracticeResultHandler } from '../../lib/practiceResult'
 import { buildChoices, questionDisplay, shuffle } from '../../lib/quiz'
@@ -38,7 +40,7 @@ export default function MultipleChoiceExercise({
   }, [index])
 
   if (items.length < 4) {
-    return <p className="text-muted">Cần ít nhất 4 từ trong bài học để luyện dạng này.</p>
+    return <p className="text-radiert">Cần ít nhất 4 từ trong bài học để luyện dạng này.</p>
   }
 
   const current = order[index]
@@ -55,98 +57,52 @@ export default function MultipleChoiceExercise({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <button
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index === 0}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          ← Câu trước
-        </button>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <Button variant="secondary" size="sm" icon={<ArrowLeft className="size-4" aria-hidden="true" />}
+          onClick={() => setIndex((i) => Math.max(0, i - 1))} disabled={index === 0}>
+          Câu trước
+        </Button>
 
-        <label className="flex items-center gap-2 text-sm text-ink">
-          <input
-            type="checkbox"
-            checked={autoAdvance}
-            onChange={(e) => setAutoAdvance(e.target.checked)}
-            className="h-4 w-4 accent-primary"
-          />
-          Tự động chuyển câu
-        </label>
+        <Checkbox label="Tự động chuyển câu" checked={autoAdvance} onChange={(e) => setAutoAdvance(e.target.checked)} />
 
-        <button
-          onClick={() => setIndex((i) => Math.min(order.length - 1, i + 1))}
-          disabled={index === order.length - 1}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          Câu sau →
-        </button>
+        <Button variant="secondary" size="sm" onClick={() => setIndex((i) => Math.min(order.length - 1, i + 1))}
+          disabled={index === order.length - 1}>
+          Câu sau
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Button>
       </div>
 
       {finished && (
-        <p className="mb-4 text-center font-display text-lg font-semibold text-ink">
+        <p className="mb-4 text-center font-display text-lg font-semibold text-bleistift">
           Hoàn thành! Đúng {score}/{order.length} câu.
         </p>
       )}
 
-      <div className="mb-6 rounded-md border border-hairline bg-card p-6 text-center">
+      <Card className="mb-6 p-6 text-center">
         {questionDisplay(current) && (
-          <QuestionSentence display={questionDisplay(current)!} className="text-lg font-medium text-ink" />
+          <QuestionSentence display={questionDisplay(current)!} className="text-lg font-medium text-bleistift" />
         )}
-        <p className="mt-4 text-sm text-muted">
+        <p className="mt-4 text-sm text-radiert">
           Hint: {current.englishMeaning ? `${current.englishMeaning} ` : ''}
           {current.englishMeaning ? `(${current.vietnameseMeaning})` : current.vietnameseMeaning}
         </p>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {choices.map((choice) => {
           const isCorrect = choice === current.germanWord
-          const showResult = selected !== null
-          const stateClass = !showResult
-            ? 'border-hairline hover:bg-surface'
-            : isCorrect
-              ? 'border-success bg-success-bg text-success'
-              : choice === selected
-                ? 'border-danger bg-danger-bg text-danger'
-                : 'border-hairline opacity-50'
-          const feedbackClass = showResult && choice === selected ? (isCorrect ? 'answer-pop' : 'answer-shake') : ''
+          const state: AnswerState = selected === null ? 'idle' : isCorrect ? 'correct' : choice === selected ? 'wrong' : 'dim'
           return (
-            <button
-              key={choice}
-              onClick={() => handleSelect(choice)}
-              disabled={selected !== null}
-              className={`rounded-sm border px-4 py-3 text-center font-medium ${stateClass} ${feedbackClass}`}
-            >
+            <AnswerOption key={choice} state={state} onClick={() => handleSelect(choice)} disabled={selected !== null}>
               {choice}
-            </button>
+            </AnswerOption>
           )
         })}
       </div>
 
-      <p className="mb-2 mt-6 font-medium text-ink">Danh sách bài tập:</p>
-      <div className="flex flex-wrap gap-2">
-        {order.map((_, i) => {
-          const answer = selectedByIndex[i]
-          const isCurrent = i === index
-          const stateClass = isCurrent
-            ? 'bg-primary text-canvas'
-            : answer === undefined
-              ? 'border border-hairline text-ink hover:bg-surface'
-              : answer === order[i].germanWord
-                ? 'border border-success bg-success-bg text-success'
-                : 'border border-danger bg-danger-bg text-danger'
-          return (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`h-9 w-9 rounded-sm text-sm font-medium ${stateClass}`}
-            >
-              {i + 1}
-            </button>
-          )
-        })}
-      </div>
+      <p className="mt-6 mb-2 font-medium text-bleistift">Danh sách bài tập:</p>
+      <QuestionNav current={index} onSelect={setIndex}
+        marks={order.map((item, i) => selectedByIndex[i] === undefined ? 'open' : selectedByIndex[i] === item.germanWord ? 'correct' : 'wrong')} />
     </div>
   )
 }

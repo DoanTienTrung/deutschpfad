@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Check, Volume2 } from 'lucide-react'
+import { Button, Chip, RowButton, cn } from '@kit'
 import { getMyListeningItem, getMyShadowingFeedback, getMyWordTranslation } from '../api/userListeningApi'
 import { recordListeningProgress } from '../api/listeningApi'
 import type { UserListeningItemDetail } from '../api/types'
@@ -43,6 +45,7 @@ export default function UserListeningPracticePage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- đổi bài thì hiện trạng thái đang tải trước khi gọi lại
     setLoading(true)
     getMyListeningItem(id)
       .then(setItem)
@@ -52,6 +55,7 @@ export default function UserListeningPracticePage() {
   // Switching sentence/mode changes the meaning of "completed" (recorded vs typed correctly),
   // so start each mode's progress fresh instead of carrying over stale checkmarks.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- đổi bài thì quay về câu đầu
     setPracticeIndex(0)
     setCompletedIndexes(new Set())
   }, [mode])
@@ -84,25 +88,21 @@ export default function UserListeningPracticePage() {
   }
 
   const blurTranscript = mode === 'dictation' || mode === 'cloze'
-  const mobileTabClass = (active: boolean) =>
-    `rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-      active ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-    }`
 
   return (
     <div className="mx-auto max-w-[1800px]">
-      <nav className="mb-4 text-sm text-muted">
-        <button onClick={() => navigate('/app/listening/mine')} className="text-primary hover:underline">
+      <nav className="mb-4 text-sm text-radiert">
+        <Button variant="ghost" onClick={() => navigate('/app/listening/mine')}>
           Video của tôi
-        </button>
+        </Button>
         {' / '}
         {item?.title ?? '...'}
       </nav>
 
       {loading && (
         <div className="space-y-4">
-          <div className="aspect-video animate-pulse rounded-lg bg-surface" />
-          <div className="h-24 animate-pulse rounded-lg bg-surface" />
+          <div className="aspect-video animate-pulse rounded-karte bg-karteikarte-innen" />
+          <div className="h-24 animate-pulse rounded-karte bg-karteikarte-innen" />
         </div>
       )}
 
@@ -112,7 +112,7 @@ export default function UserListeningPracticePage() {
             <YouTubePlayer ref={playerRef} videoId={item.youtubeVideoId} onTimeUpdate={setCurrentTime} />
 
             {item.sentences.length === 0 ? (
-              <p className="mt-4 text-sm text-muted">Video này chưa có phụ đề.</p>
+              <p className="mt-4 text-sm text-radiert">Video này chưa có phụ đề.</p>
             ) : (
               <>
                 {/* Unified 4-tab strip -- mobile only. Desktop keeps showing the transcript and
@@ -120,23 +120,15 @@ export default function UserListeningPracticePage() {
                     tab bar (and the single-panel-at-a-time behavior it drives) is redundant
                     there and hidden. */}
                 <div className="mt-4 flex flex-nowrap gap-2 overflow-x-auto lg:hidden">
-                  <button onClick={() => selectMobileTab('transcript')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'transcript')}`}>
-                    Phụ đề
-                  </button>
-                  <button onClick={() => selectMobileTab('shadowing')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'shadowing')}`}>
-                    Shadowing
-                  </button>
-                  <button onClick={() => selectMobileTab('dictation')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'dictation')}`}>
-                    Chép chính tả
-                  </button>
-                  <button onClick={() => selectMobileTab('cloze')} className={`shrink-0 whitespace-nowrap ${mobileTabClass(mobileTab === 'cloze')}`}>
-                    Điền từ
-                  </button>
+                  <Chip selected={mobileTab === 'transcript'} onClick={() => selectMobileTab('transcript')} className="shrink-0 whitespace-nowrap">Phụ đề</Chip>
+                  <Chip selected={mobileTab === 'shadowing'} onClick={() => selectMobileTab('shadowing')} className="shrink-0 whitespace-nowrap">Shadowing</Chip>
+                  <Chip selected={mobileTab === 'dictation'} onClick={() => selectMobileTab('dictation')} className="shrink-0 whitespace-nowrap">Chép chính tả</Chip>
+                  <Chip selected={mobileTab === 'cloze'} onClick={() => selectMobileTab('cloze')} className="shrink-0 whitespace-nowrap">Điền từ</Chip>
                 </div>
 
                 <ul
                   ref={listContainerRef}
-                  className={`mt-4 max-h-[32rem] space-y-2 overflow-y-auto rounded-md border border-hairline bg-card p-3 ${
+                  className={`mt-4 max-h-[32rem] space-y-2 overflow-y-auto rounded-karte border border-kartenrand bg-karteikarte p-3 ${
                     mobileTab === 'transcript' ? 'block' : 'hidden'
                   } lg:block`}
                 >
@@ -152,57 +144,24 @@ export default function UserListeningPracticePage() {
                         sentenceRefs.current[sentence.id] = el
                       }}
                     >
-                      <button
-                        onClick={() => handleSentenceClick(i, sentence.startSeconds)}
-                        className={`flex w-full items-start gap-3 rounded-md px-3 py-2 text-left transition-colors ${
-                          isActive
-                            ? 'border-2 border-primary bg-primary/5 shadow-sm'
-                            : 'border border-transparent hover:bg-surface'
-                        }`}
-                      >
-                        <span
-                          className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
-                            isActive ? 'border-primary bg-primary text-canvas' : 'border-hairline text-muted'
-                          }`}
-                        >
-                          {i + 1}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          {isActive && (
-                            <span className="mb-1 inline-block rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-canvas">
-                              Đang học
-                            </span>
-                          )}
-                          <p
-                            className={`text-sm ${isActive ? 'font-medium text-ink' : 'text-ink'} ${
-                              isBlurred ? 'select-none blur-[4px]' : ''
-                            }`}
-                          >
-                            {sentence.text}
-                          </p>
-                          {sentence.translation && (
-                            <p
-                              className={`mt-0.5 text-xs text-muted ${isBlurred ? 'select-none blur-[4px]' : ''}`}
-                            >
-                              {sentence.translation}
-                            </p>
-                          )}
-                        </div>
-                        {isCompleted && !isActive && <span className="mt-0.5 shrink-0 text-success">✓</span>}
-                        {isActive && (
-                          <span
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              playerRef.current?.seekTo(sentence.startSeconds)
-                              playerRef.current?.play()
-                            }}
-                            className="mt-0.5 shrink-0 cursor-pointer text-muted hover:text-primary"
-                            title="Nghe lại câu này"
-                          >
-                            🔊
-                          </span>
+                      <RowButton onClick={() => handleSentenceClick(i, sentence.startSeconds)} selected={isActive}
+                        className={cn('min-h-0 items-start py-2', isActive && 'border border-bleistift')}
+                        icon={<span className="text-xs font-semibold tabular-nums">{i + 1}</span>}
+                        title={(
+                          <>
+                            {isActive && <span className="mb-1 block text-xs font-bold tracking-wide text-radiert uppercase">Đang học</span>}
+                            <span className={cn('block text-sm font-normal', isActive && 'font-medium', isBlurred && 'blur-sm select-none')}>{sentence.text}</span>
+                          </>
                         )}
-                      </button>
+                        description={sentence.translation
+                          ? <span className={cn('text-xs', isBlurred && 'blur-sm select-none')}>{sentence.translation}</span>
+                          : undefined}
+                        trailing={isActive ? (
+                          <span role="presentation" title="Nghe lại câu này" className="text-radiert hover:text-bleistift"
+                            onClick={(e) => { e.stopPropagation(); playerRef.current?.seekTo(sentence.startSeconds); playerRef.current?.play() }}>
+                            <Volume2 className="size-4" aria-hidden="true" />
+                          </span>
+                        ) : isCompleted ? <Check className="size-4 text-aufstieg" aria-label="Đã luyện" /> : <span />} />
                     </li>
                   )
                 })}
@@ -215,30 +174,9 @@ export default function UserListeningPracticePage() {
             <div className={`min-w-0 lg:w-3/5 ${mobileTab === 'transcript' ? 'hidden' : 'block'} lg:block`}>
               {/* Desktop-only -- mobile switches mode via the unified tab strip above instead. */}
               <div className="hidden flex-wrap gap-2 lg:flex">
-                <button
-                  onClick={() => setMode('shadowing')}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                    mode === 'shadowing' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-                  }`}
-                >
-                  Shadowing
-                </button>
-                <button
-                  onClick={() => setMode('dictation')}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                    mode === 'dictation' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-                  }`}
-                >
-                  Chép chính tả
-                </button>
-                <button
-                  onClick={() => setMode('cloze')}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                    mode === 'cloze' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-                  }`}
-                >
-                  Điền từ
-                </button>
+                <Chip selected={mode === 'shadowing'} onClick={() => setMode('shadowing')}>Shadowing</Chip>
+                <Chip selected={mode === 'dictation'} onClick={() => setMode('dictation')}>Chép chính tả</Chip>
+                <Chip selected={mode === 'cloze'} onClick={() => setMode('cloze')}>Điền từ</Chip>
               </div>
 
               {mode === 'shadowing' && (

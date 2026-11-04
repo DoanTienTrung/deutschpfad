@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Note, PageHeader, Skeleton } from '@kit'
 import { listDeckItems } from '../api/deckApi'
 import type { DeckItem } from '../api/types'
 import DeckFlashcardExercise from '../components/practice/DeckFlashcardExercise'
@@ -18,13 +19,11 @@ export default function DeckPracticePage() {
   }, [id])
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <Link to="/app/decks" className="mb-4 inline-block text-sm text-primary hover:underline">
-        ← Quay lại danh sách bộ từ
-      </Link>
+    <div className="mx-auto max-w-lesen">
+      <PageHeader title="Luyện bộ từ" back={{ to: '/app/decks', label: 'Danh sách bộ từ' }} />
 
-      {error && <p className="text-danger">{error}</p>}
-      {!error && items === null && <div className="mx-auto max-w-xl"><div className="h-64 animate-pulse rounded-lg bg-surface" /></div>}
+      {error && <Note tone="bad">{error}</Note>}
+      {!error && items === null && <Skeleton className="mx-auto h-64 max-w-xl" />}
       {items !== null && <DeckFlashcardExercise key={`deck-practice-${id}`} items={items} />}
     </div>
   )

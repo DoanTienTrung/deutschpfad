@@ -1,17 +1,35 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Avatar, Button, Card, Field, Input, NativeSelect, Note, PageHeader, SettingRow, Switch } from '@kit'
+import { getDisplayPref, setDisplayPref, type DisplayPref } from '../lib/displayPrefs'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch, ApiError } from '../api/client'
-import Button from '../components/ui/Button'
-import Field from '../components/ui/Field'
-import Alert from '../components/ui/Alert'
 
 const GOAL_OPTIONS = ['Du học', 'Làm việc', 'Khác']
 const CERTIFICATE_OPTIONS = ['Goethe-Zertifikat', 'telc', 'TestDaF']
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
-const selectClass =
-  'w-full rounded-sm border border-hairline bg-canvas px-3.5 py-2.5 text-ink transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/20'
+
+function DisplaySettings() {
+  const [prefs, setPrefs] = useState(() => ({
+    reduceMotion: getDisplayPref('reduceMotion'),
+    highContrast: getDisplayPref('highContrast'),
+  }))
+  function toggle(pref: DisplayPref, on: boolean) {
+    setDisplayPref(pref, on)
+    setPrefs((p) => ({ ...p, [pref]: on }))
+  }
+  return (
+    <Card title="Hiển thị" className="mt-6">
+      <SettingRow label="Giảm chuyển động" description="Tắt hiệu ứng lật thẻ, trượt và nảy.">
+        <Switch label={<span className="sr-only">Giảm chuyển động</span>} checked={prefs.reduceMotion} onChange={(on) => toggle('reduceMotion', on)} />
+      </SettingRow>
+      <SettingRow label="Tương phản cao" description="Chữ phụ và đường kẻ đậm như chữ chính." className="border-t border-linie">
+        <Switch label={<span className="sr-only">Tương phản cao</span>} checked={prefs.highContrast} onChange={(on) => toggle('highContrast', on)} />
+      </SettingRow>
+    </Card>
+  )
+}
 
 export default function AccountPage() {
   const { user, logout, refetchUser } = useAuth()
@@ -112,87 +130,63 @@ export default function AccountPage() {
 
   if (!user) return null
 
-  const initial = user.fullName?.trim()?.[0]?.toUpperCase() ?? '?'
-
   return (
     <div className="mx-auto max-w-md">
       <div className="mb-6 flex items-center gap-4">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary font-display text-xl font-semibold text-canvas">
-          {initial}
-        </div>
-        <div>
-          <p className="font-display text-2xl font-semibold text-ink text-balance">
-            {user.fullName}
-          </p>
-          <p className="text-sm text-muted">Hồ sơ cá nhân</p>
-        </div>
+        <Avatar name={user.fullName ?? '?'} className="size-14 text-xl" />
+        <PageHeader title={user.fullName} description="Hồ sơ cá nhân" className="mb-0" />
       </div>
 
-      <div className="rounded-lg bg-surface p-8">
+      <Card className="p-8">
         <dl className="space-y-4">
-          <div className="flex items-center justify-between border-b border-hairline pb-4">
-            <dt className="text-sm text-muted">Họ tên</dt>
-            <dd className="font-medium text-ink">{user.fullName}</dd>
+          <div className="flex items-center justify-between border-b border-linie pb-4">
+            <dt className="text-sm text-radiert">Họ tên</dt>
+            <dd className="font-medium text-bleistift">{user.fullName}</dd>
           </div>
-          <div className="flex items-center justify-between border-b border-hairline pb-4">
-            <dt className="text-sm text-muted">Email</dt>
-            <dd className="font-medium text-ink">{user.email}</dd>
+          <div className="flex items-center justify-between border-b border-linie pb-4">
+            <dt className="text-sm text-radiert">Email</dt>
+            <dd className="font-medium text-bleistift">{user.email}</dd>
           </div>
-          <div className="flex items-center justify-between border-b border-hairline pb-4">
-            <dt className="text-sm text-muted">Mục tiêu</dt>
-            <dd className="font-medium text-ink">{user.goal || <span className="text-muted">Chưa đặt</span>}</dd>
+          <div className="flex items-center justify-between border-b border-linie pb-4">
+            <dt className="text-sm text-radiert">Mục tiêu</dt>
+            <dd className="font-medium text-bleistift">{user.goal || <span className="text-radiert">Chưa đặt</span>}</dd>
           </div>
-          <div className="flex items-center justify-between border-b border-hairline pb-4">
-            <dt className="text-sm text-muted">Chứng chỉ mục tiêu</dt>
-            <dd className="font-medium text-ink">
-              {user.targetCertificate || <span className="text-muted">Chưa đặt</span>}
+          <div className="flex items-center justify-between border-b border-linie pb-4">
+            <dt className="text-sm text-radiert">Chứng chỉ mục tiêu</dt>
+            <dd className="font-medium text-bleistift">
+              {user.targetCertificate || <span className="text-radiert">Chưa đặt</span>}
             </dd>
           </div>
           <div className="flex items-center justify-between">
-            <dt className="text-sm text-muted">Trình độ hiện tại</dt>
-            <dd className="font-medium text-ink">
-              {user.currentLevel || <span className="text-muted">Chưa đặt</span>}
+            <dt className="text-sm text-radiert">Trình độ hiện tại</dt>
+            <dd className="font-medium text-bleistift">
+              {user.currentLevel || <span className="text-radiert">Chưa đặt</span>}
             </dd>
           </div>
         </dl>
 
-        <div className="mt-8 border-t border-hairline pt-6">
-          <button
-            onClick={toggleProfileForm}
-            className="text-sm font-medium text-primary hover:text-primary-deep"
-          >
+        <div className="mt-8 border-t border-linie pt-6">
+          <Button variant="secondary" size="sm" onClick={toggleProfileForm}>
             {showProfileForm ? 'Đóng' : 'Sửa hồ sơ'}
-          </button>
+          </Button>
 
           {showProfileForm && (
             <form onSubmit={handleSaveProfile} className="mt-4 space-y-4">
-              {profileError && <Alert tone="danger">{profileError}</Alert>}
-              {profileSuccess && <Alert tone="success">Cập nhật hồ sơ thành công</Alert>}
-              <Field
-                id="fullName"
-                label="Họ tên"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-              <div>
-                <label htmlFor="goal" className="mb-1 block text-sm font-medium text-ink">
-                  Mục tiêu
-                </label>
-                <select id="goal" className={selectClass} value={goal} onChange={(e) => setGoal(e.target.value)}>
+              {profileError && <Note tone="bad" className="mb-4">{profileError}</Note>}
+              {profileSuccess && <Note tone="ok" className="mb-4">Cập nhật hồ sơ thành công</Note>}
+              <Field label="Họ tên">
+                <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </Field>
+              <Field label="Mục tiêu">
+                <NativeSelect value={goal} onChange={(e) => setGoal(e.target.value)}>
                   <option value="">Chưa đặt</option>
                   {GOAL_OPTIONS.map((g) => (
                     <option key={g} value={g}>{g}</option>
                   ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="targetCertificate" className="mb-1 block text-sm font-medium text-ink">
-                  Chứng chỉ mục tiêu
-                </label>
-                <select
-                  id="targetCertificate"
-                  className={selectClass}
+                </NativeSelect>
+              </Field>
+              <Field label="Chứng chỉ mục tiêu">
+                <NativeSelect
                   value={targetCertificate}
                   onChange={(e) => setTargetCertificate(e.target.value)}
                 >
@@ -200,15 +194,10 @@ export default function AccountPage() {
                   {CERTIFICATE_OPTIONS.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="currentLevel" className="mb-1 block text-sm font-medium text-ink">
-                  Trình độ hiện tại
-                </label>
-                <select
-                  id="currentLevel"
-                  className={selectClass}
+                </NativeSelect>
+              </Field>
+              <Field label="Trình độ hiện tại">
+                <NativeSelect
                   value={currentLevel}
                   onChange={(e) => setCurrentLevel(e.target.value)}
                 >
@@ -216,8 +205,8 @@ export default function AccountPage() {
                   {LEVEL_OPTIONS.map((l) => (
                     <option key={l} value={l}>{l}</option>
                   ))}
-                </select>
-              </div>
+                </NativeSelect>
+              </Field>
               <Button type="submit" loading={savingProfile}>
                 {savingProfile ? 'Đang lưu...' : 'Lưu hồ sơ'}
               </Button>
@@ -225,41 +214,21 @@ export default function AccountPage() {
           )}
         </div>
 
-        <div className="mt-6 border-t border-hairline pt-6">
-          <button
-            onClick={() => {
-              setShowPasswordForm((v) => !v)
-              setPasswordError(null)
-              setPasswordSuccess(false)
-            }}
-            className="text-sm font-medium text-primary hover:text-primary-deep"
-          >
+        <div className="mt-6 border-t border-linie pt-6">
+          <Button variant="secondary" size="sm" onClick={() => { setShowPasswordForm((v) => !v); setPasswordError(null); setPasswordSuccess(false) }}>
             {showPasswordForm ? 'Đóng' : 'Đổi mật khẩu'}
-          </button>
+          </Button>
 
           {showPasswordForm && (
             <form onSubmit={handleChangePassword} className="mt-4 space-y-4">
-              {passwordError && <Alert tone="danger">{passwordError}</Alert>}
-              {passwordSuccess && <Alert tone="success">Đổi mật khẩu thành công</Alert>}
-              <Field
-                id="currentPassword"
-                label="Mật khẩu hiện tại"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-              <Field
-                id="newPassword"
-                label="Mật khẩu mới"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              {passwordError && <Note tone="bad" className="mb-4">{passwordError}</Note>}
+              {passwordSuccess && <Note tone="ok" className="mb-4">Đổi mật khẩu thành công</Note>}
+              <Field label="Mật khẩu hiện tại">
+                <Input type="password" autoComplete="current-password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              </Field>
+              <Field label="Mật khẩu mới">
+                <Input type="password" autoComplete="new-password" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              </Field>
               <Button type="submit" loading={changingPassword}>
                 {changingPassword ? 'Đang đổi...' : 'Đổi mật khẩu'}
               </Button>
@@ -271,11 +240,13 @@ export default function AccountPage() {
           variant="secondary"
           onClick={handleLogout}
           loading={loggingOut}
-          className="mt-8 text-danger hover:bg-danger-bg"
+          className="mt-8 text-rotstift hover:bg-rotstift-soft"
         >
           {loggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
         </Button>
-      </div>
+      </Card>
+
+      <DisplaySettings />
     </div>
   )
 }

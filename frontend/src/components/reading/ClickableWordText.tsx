@@ -1,10 +1,12 @@
 import { useRef, useState, type MouseEvent, type MutableRefObject } from 'react'
 import { Link } from 'react-router-dom'
+import { Check, Plus, X } from 'lucide-react'
+import { Button, IconButton, NativeSelect } from '@kit'
 import { getReadingWordTranslation } from '../../api/readingApi'
 import { listDecks, addDeckItem, lookupVocabWord } from '../../api/deckApi'
 import type { Deck, VocabLookupResult } from '../../api/types'
 import { speak } from '../../lib/speech'
-import SpeakerIcon from '../ui/SpeakerIcon'
+import { Volume2 as SpeakerIcon } from 'lucide-react'
 
 const LAST_DECK_KEY = 'deutschpfad.lastDeckId'
 
@@ -68,12 +70,12 @@ function HoverWord({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={(e) => onOpen(e, word)}
-        className="cursor-pointer rounded-sm px-0.5 hover:bg-accent/30"
+        className="cursor-pointer rounded-karte px-0.5 hover:bg-tinte-soft"
       >
         {word}
       </span>
       {(hoverLoading || hoverTranslation) && (
-        <span className="pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-canvas shadow-lifted group-hover:block">
+        <span className="pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-rund bg-bleistift px-2.5 py-1 text-xs font-medium text-bleistift-invers shadow-lift group-hover:block">
           {hoverLoading ? '···' : hoverTranslation}
         </span>
       )}
@@ -191,7 +193,7 @@ export default function ClickableWordText({
   }
 
   return (
-    <div ref={wrapperRef} className="relative text-base leading-relaxed text-ink">
+    <div ref={wrapperRef} className="relative text-base leading-relaxed text-bleistift">
       {paragraphs.map((paragraph, pIndex) => (
         <p key={pIndex} className="mb-4">
           {tokenize(paragraph).map((token, i) =>
@@ -207,89 +209,81 @@ export default function ClickableWordText({
       {openWord && popupPos && (
         <div
           style={{ left: popupPos.x, top: popupPos.y, width: popupPos.width }}
-          className="absolute z-20 rounded-2xl bg-primary p-4 text-canvas shadow-lifted"
+          className="absolute z-popover rounded-karte bg-karteikarte p-4 text-bleistift shadow-pop"
         >
-          <button onClick={closePopup} className="absolute right-3 top-3 text-canvas/60 hover:text-canvas">
-            ✕
-          </button>
+          <IconButton label="Đóng" icon={<X className="size-4" aria-hidden="true" />} className="absolute top-1 right-1" onClick={closePopup} />
 
-          <div className="mb-2 flex items-center justify-between text-xs font-semibold text-accent">
+          <div className="mb-2 flex items-center justify-between pr-8 text-xs font-semibold text-radiert">
             <span>DE {lookup?.phonetic ? `/${lookup.phonetic}/` : ''}</span>
             <span>VI</span>
           </div>
 
           <div className="mb-3 flex items-center gap-2">
-            <button
+            <Button variant="ghost" className="h-7 w-7 shrink-0 justify-center"
               onClick={() => speak(lookup?.germanWord ?? openWord)}
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-canvas/10 hover:bg-canvas/20"
-              aria-label="Nghe phát âm"
-            >
+             
+              aria-label="Nghe phát âm">
               <SpeakerIcon className="h-4 w-4" />
-            </button>
+            </Button>
             <span className="text-lg font-bold italic">{lookup?.germanWord ?? openWord}</span>
           </div>
 
-          {lookupLoading && <p className="text-sm text-canvas/70">Đang tra từ điển...</p>}
+          {lookupLoading && <p className="text-sm text-radiert">Đang tra từ điển...</p>}
 
           {!lookupLoading && lookup && (
             <>
               {lookup.wordType && (
-                <span className="mb-2 inline-block rounded-full bg-accent px-2 py-0.5 text-xs font-bold uppercase text-primary">
+                <span className="mb-2 inline-block rounded-rund bg-tinte-soft px-2 py-0.5 text-xs font-bold text-tinte uppercase">
                   {lookup.wordType}
                 </span>
               )}
               <p className="mt-1 text-sm font-medium">{lookup.vietnameseMeaning}</p>
-              {lookup.englishMeaning && <p className="text-xs italic text-canvas/70">{lookup.englishMeaning}</p>}
+              {lookup.englishMeaning && <p className="text-xs italic text-radiert">{lookup.englishMeaning}</p>}
               {lookup.exampleSentence && (
-                <p className="mt-2 rounded-lg bg-canvas/10 p-2 text-xs italic text-canvas/80">
+                <p className="mt-2 rounded-karte border border-linie bg-karteikarte-innen p-2 text-xs text-radiert italic">
                   "{lookup.exampleSentence}"
                 </p>
               )}
 
               {!showDeckPicker && (
                 <>
-                  <button
+                  <Button variant="secondary" className="mt-3 w-full" loading={saveState === 'saving'}
+                    icon={saveState === 'saved' ? <Check className="size-4" aria-hidden="true" /> : <Plus className="size-4" aria-hidden="true" />}
                     onClick={handleQuickSave}
-                    disabled={saveState === 'saving' || saveState === 'saved'}
-                    className="mt-3 w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-primary hover:bg-accent-deep disabled:opacity-60"
-                  >
-                    {saveState === 'saving' ? 'Đang lưu...' : saveState === 'saved' ? '✓ Đã lưu' : '+ LƯU TỪ'}
-                  </button>
+                    disabled={saveState === 'saved'}>
+                    {saveState === 'saving' ? 'Đang lưu...' : saveState === 'saved' ? 'Đã lưu' : 'Lưu từ'}
+                  </Button>
                   {saveState !== 'saved' && (
-                    <button
-                      onClick={handleChooseFolder}
-                      className="mt-2 block w-full text-center text-xs text-canvas/70 underline hover:text-canvas"
-                    >
+                    <Button variant="ghost" size="sm" className="mt-2 block w-full text-center"
+                      onClick={handleChooseFolder}>
                       Chọn thư mục
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
 
               {showDeckPicker && decks && decks.length > 0 && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <select
+                  <NativeSelect
                     value={selectedDeckId ?? ''}
                     onChange={(e) => setSelectedDeckId(Number(e.target.value))}
-                    className="rounded-sm border border-canvas/30 bg-transparent px-2 py-1.5 text-xs text-canvas"
+                   
                   >
                     {decks.map((deck) => (
-                      <option key={deck.id} value={deck.id} className="text-ink">
+                      <option key={deck.id} value={deck.id} className="text-bleistift">
                         {deck.name}
                       </option>
                     ))}
-                  </select>
-                  <button
+                  </NativeSelect>
+                  <Button variant="ghost" size="sm" className="disabled:opacity-60"
                     onClick={() => selectedDeckId && saveToDeck(selectedDeckId)}
-                    disabled={!selectedDeckId || saveState === 'saving'}
-                    className="rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-primary disabled:opacity-60"
-                  >
+                    disabled={!selectedDeckId || saveState === 'saving'}>
                     Lưu
-                  </button>
+                  </Button>
                 </div>
               )}
               {showDeckPicker && decks && decks.length === 0 && (
-                <p className="mt-2 text-xs text-canvas/70">
+                <p className="mt-2 text-xs text-radiert">
                   Bạn chưa có bộ từ nào.{' '}
                   <Link to="/app/decks" className="underline">
                     Tạo bộ từ mới
@@ -297,11 +291,11 @@ export default function ClickableWordText({
                   rồi quay lại đây.
                 </p>
               )}
-              {saveState === 'error' && <p className="mt-2 text-xs text-red-300 dark:text-red-700">Có lỗi xảy ra, thử lại sau.</p>}
+              {saveState === 'error' && <p className="mt-2 text-xs text-rotstift-soft">Có lỗi xảy ra, thử lại sau.</p>}
             </>
           )}
 
-          {!lookupLoading && !lookup && <p className="text-sm text-canvas/70">Không tra được nghĩa từ này.</p>}
+          {!lookupLoading && !lookup && <p className="text-sm text-radiert">Không tra được nghĩa từ này.</p>}
         </div>
       )}
     </div>

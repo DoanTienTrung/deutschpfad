@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Button, EmptyState, Input, Note } from '@kit'
 import {
   listMyListeningItems,
   createMyListeningItem,
@@ -75,90 +76,80 @@ export default function UserListeningHubPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <nav className="mb-4 text-sm text-muted">
-        <button onClick={() => navigate('/app/listening')} className="text-primary hover:underline">
+    <div className="mx-auto max-w-seite">
+      <nav className="mb-4 text-sm text-radiert">
+        <Button variant="ghost" onClick={() => navigate('/app/listening')}>
           Nghe
-        </button>
+        </Button>
         {' / '}Video của tôi
       </nav>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-2xl font-bold text-ink">Video của tôi</h2>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-canvas transition-colors hover:bg-primary-deep"
-        >
+        <h2 className="font-display text-2xl font-bold text-bleistift">Video của tôi</h2>
+        <Button variant="primary"
+          onClick={() => setShowForm((v) => !v)}>
           {showForm ? 'Đóng' : '+ Thêm video'}
-        </button>
+        </Button>
       </div>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       {showForm && (
-        <div className="mb-6 rounded-lg border border-hairline bg-card p-5">
-          <p className="mb-1 font-display text-lg font-semibold text-ink">Thêm Video</p>
-          <p className="mb-4 text-sm text-muted">Dán link YouTube để luyện nghe</p>
-          <input
+        <div className="mb-6 rounded-karte border border-kartenrand bg-karteikarte p-5">
+          <p className="mb-1 font-display text-lg font-semibold text-bleistift">Thêm Video</p>
+          <p className="mb-4 text-sm text-radiert">Dán link YouTube để luyện nghe</p>
+          <Input
             value={videoLink}
             onChange={(e) => setVideoLink(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
-            className="w-full rounded-sm border border-hairline px-3.5 py-2.5 text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full"
           />
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-xs text-radiert">
             Video cần có <strong>phụ đề tiếng Đức (CC)</strong> để hoạt động.
           </p>
-          <button
+          <Button variant="primary" className="mt-3 w-full disabled:opacity-50"
             onClick={handleStart}
-            disabled={saving || !videoLink}
-            className="mt-3 w-full rounded-md bg-primary px-4 py-2.5 font-medium text-canvas transition-colors hover:bg-primary-deep disabled:opacity-50"
-          >
-            {saving ? 'Đang xử lý...' : '→ Bắt đầu luyện tập'}
-          </button>
+            disabled={saving || !videoLink}>
+            {saving ? 'Đang xử lý...' : 'Bắt đầu luyện tập'}
+          </Button>
         </div>
       )}
 
       {loading && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="aspect-video animate-pulse rounded-lg bg-surface" />
+            <div key={i} className="aspect-video animate-pulse rounded-karte bg-karteikarte-innen" />
           ))}
         </div>
       )}
       {!loading && items.length === 0 && (
-        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
-          <p className="text-3xl">🎬</p>
-          <p className="mt-2 font-medium text-ink">Bạn chưa thêm video nào</p>
-          <p className="mt-1 text-sm text-muted">Bấm "+ Thêm video" và dán link YouTube có phụ đề tiếng Đức nhé.</p>
-        </div>
+        <EmptyState title="Bạn chưa thêm video nào" description='Bấm "+ Thêm video" và dán link YouTube có phụ đề tiếng Đức nhé.' />
       )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         {items.map((item) => (
           <div key={item.id}>
             <Link to={`/app/listening/mine/${item.id}`} className="group">
-              <div className="relative aspect-video overflow-hidden rounded-lg bg-surface">
+              <div className="relative aspect-video overflow-hidden rounded-karte bg-karteikarte-innen">
                 <img
                   src={getYoutubeThumbnailUrl(item.youtubeVideoId)}
                   alt={item.title}
                   className="h-full w-full object-cover transition-transform group-hover:scale-105"
                 />
                 {item.durationSeconds != null && (
-                  <span className="absolute bottom-2 right-2 rounded-sm bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
+                  <span className="absolute bottom-2 right-2 rounded-karte bg-foto-etikett px-1.5 py-0.5 text-xs font-medium text-foto-etikett-schrift">
                     {formatDuration(item.durationSeconds)}
                   </span>
                 )}
               </div>
-              <p className="mt-2 text-sm font-semibold text-ink group-hover:text-primary">{item.title}</p>
+              <p className="mt-2 text-sm font-semibold text-bleistift group-hover:text-bleistift">{item.title}</p>
             </Link>
             <div className="mt-0.5 flex items-center justify-between">
-              <p className="text-xs text-muted">{item.sentenceCount} câu</p>
-              <button
-                onClick={() => handleDelete(item.id)}
-                className="text-xs text-danger hover:underline"
-              >
+              <p className="text-xs text-radiert">{item.sentenceCount} câu</p>
+              <Button variant="ghost" size="sm" className="text-rotstift"
+                onClick={() => handleDelete(item.id)}>
                 Xoá
-              </button>
+              </Button>
             </div>
           </div>
         ))}

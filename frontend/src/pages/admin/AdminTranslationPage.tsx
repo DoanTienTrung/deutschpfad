@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { ExternalLink } from 'lucide-react'
+import { Button, Chip, Input, NativeSelect, Note, Textarea, TextLink } from '@kit'
 import {
   deleteTranslationSet,
   generateTranslationForTopic,
@@ -117,117 +118,113 @@ export default function AdminTranslationPage() {
 
   return (
     <div>
-      <h2 className="mb-1 font-display text-xl font-bold text-ink">Luyện dịch theo chủ điểm ngữ pháp</h2>
-      <p className="mb-4 text-sm text-muted">
+      <h2 className="mb-1 font-display text-xl font-bold text-bleistift">Luyện dịch theo chủ điểm ngữ pháp</h2>
+      <p className="mb-4 text-sm text-radiert">
         A1-A2 đã có sẵn 10 câu mỗi chủ điểm. Với chủ điểm chưa có: bấm "AI soạn 10 câu", xem lại từng câu rồi đăng.
         Bỏ qua các chủ điểm thuần lý thuyết (quy tắc giống, từ ghép).
       </p>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
-      {message && <div className="mb-4 rounded-sm bg-success-bg p-3 text-sm text-success">{message}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
+      {message && <Note tone="ok" className="mb-4">{message}</Note>}
 
       <div className="mb-4 flex gap-2">
         {LEVELS.map((l) => (
-          <button
+          <Chip selected={l === level}
             key={l}
-            onClick={() => setLevel(l)}
-            className={`rounded-full px-3 py-1 text-sm ${l === level ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink'}`}
-          >
+            onClick={() => setLevel(l)}>
             {l} ({rows.filter((r) => r.level === l && r.status === 'PUBLISHED').length}/{rows.filter((r) => r.level === l).length})
-          </button>
+          </Chip>
         ))}
       </div>
 
       <ul className="mb-8 space-y-2">
         {visible.map((r) => (
-          <li key={r.topicId} className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-hairline bg-card p-3">
+          <li key={r.topicId} className="flex flex-wrap items-center justify-between gap-3 rounded-karte border border-kartenrand bg-karteikarte p-3">
             <span className="min-w-0">
               <span
-                className={`mr-2 rounded-full px-2 py-0.5 text-xs font-medium ${
-                  r.status === 'PUBLISHED' ? 'bg-success-bg text-success' : r.status === 'DRAFT' ? 'bg-surface text-ink' : 'bg-surface text-muted'
+                className={`mr-2 rounded-rund px-2 py-0.5 text-xs font-medium ${
+                  r.status === 'PUBLISHED' ? 'bg-aufstieg-soft text-aufstieg' : r.status === 'DRAFT' ? 'bg-karteikarte-innen text-bleistift' : 'bg-karteikarte-innen text-radiert'
                 }`}
               >
                 {r.status === 'PUBLISHED' ? 'Đã đăng' : r.status === 'DRAFT' ? 'Nháp' : 'Chưa có'}
               </span>
-              <strong className="text-ink">{r.titleVi}</strong>
-              <span className="ml-2 text-xs text-muted">{r.titleDe}</span>
-              {r.setId && <span className="ml-2 text-xs text-muted">[{r.itemCount} câu]</span>}
+              <strong className="text-bleistift">{r.titleVi}</strong>
+              <span className="ml-2 text-xs text-radiert">{r.titleDe}</span>
+              {r.setId && <span className="ml-2 text-xs text-radiert">[{r.itemCount} câu]</span>}
             </span>
             <span className="flex shrink-0 gap-3 text-sm">
               {r.setId && (
-                <button onClick={() => open(r.setId!)} className="text-primary hover:underline">
+                <Button variant="ghost" onClick={() => open(r.setId!)}>
                   Sửa
-                </button>
+                </Button>
               )}
-              <button onClick={() => generate(r)} disabled={busyTopic !== null} className="text-primary hover:underline disabled:opacity-40">
+              <Button variant="ghost" className="disabled:opacity-40" onClick={() => generate(r)} disabled={busyTopic !== null}>
                 {busyTopic === r.topicId ? 'AI đang soạn...' : 'AI soạn 10 câu'}
-              </button>
+              </Button>
             </span>
           </li>
         ))}
       </ul>
 
       {editing && (
-        <div className="space-y-3 rounded-sm border border-hairline bg-card p-4">
+        <div className="space-y-3 rounded-karte border border-kartenrand bg-karteikarte p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-semibold text-ink">
-              {editing.title} <span className="text-sm font-normal text-muted">{editing.grammarTitleDe} · {editing.level}</span>
+            <p className="font-semibold text-bleistift">
+              {editing.title} <span className="text-sm font-normal text-radiert">{editing.grammarTitleDe} · {editing.level}</span>
             </p>
-            <Link to={`/app/writing/translate/${editing.id}`} target="_blank" className="text-sm text-primary hover:underline">
-              Xem như người học ↗
-            </Link>
+            <TextLink to={`/app/writing/translate/${editing.id}`} target="_blank" className="inline-flex items-center gap-1 text-sm">
+              Xem như người học <ExternalLink className="size-3.5" aria-hidden="true" />
+            </TextLink>
           </div>
           <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-            <input
+            <Input
               value={editing.title}
               onChange={(e) => setEditing({ ...editing, title: e.target.value })}
               placeholder="Tên bài"
-              className="rounded-sm border border-hairline px-3 py-2"
+             
             />
-            <select
+            <NativeSelect
               value={editing.status}
               onChange={(e) => setEditing({ ...editing, status: e.target.value as 'DRAFT' | 'PUBLISHED' })}
-              className="rounded-sm border border-hairline px-3 py-2"
+             
             >
               <option value="DRAFT">Nháp (người học chưa thấy)</option>
               <option value="PUBLISHED">Đã đăng</option>
-            </select>
+            </NativeSelect>
           </div>
-          <textarea
+          <Textarea
             value={editing.structureNote ?? ''}
             onChange={(e) => setEditing({ ...editing, structureNote: e.target.value || null })}
             placeholder="Công thức hiện đầu bài, vd: haben/sein + Partizip II cuối câu"
             rows={2}
-            className="w-full rounded-sm border border-hairline px-3 py-2 text-sm"
+            className="w-full"
           />
 
           <ol className="space-y-3">
             {editing.items.map((it, i) => (
-              <li key={it.id ?? `new-${i}`} className="rounded-sm border border-hairline p-3">
-                <div className="mb-2 flex items-center justify-between text-xs text-muted">
+              <li key={it.id ?? `new-${i}`} className="rounded-karte border border-linie p-3">
+                <div className="mb-2 flex items-center justify-between text-xs text-radiert">
                   <span>Câu {i + 1}</span>
-                  <button
-                    onClick={() => setEditing({ ...editing, items: editing.items.filter((_, x) => x !== i) })}
-                    className="text-danger hover:underline"
-                  >
+                  <Button variant="ghost" className="text-rotstift"
+                    onClick={() => setEditing({ ...editing, items: editing.items.filter((_, x) => x !== i) })}>
                     Xoá câu
-                  </button>
+                  </Button>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <input value={it.viText} onChange={(e) => updateItem(i, { viText: e.target.value })} placeholder="Câu tiếng Việt" className="rounded-sm border border-hairline px-3 py-2" />
-                  <input value={it.deReference} onChange={(e) => updateItem(i, { deReference: e.target.value })} placeholder="Câu tiếng Đức (đáp án chính)" className="rounded-sm border border-hairline px-3 py-2" />
-                  <textarea
+                  <Input value={it.viText} onChange={(e) => updateItem(i, { viText: e.target.value })} placeholder="Câu tiếng Việt" />
+                  <Input value={it.deReference} onChange={(e) => updateItem(i, { deReference: e.target.value })} placeholder="Câu tiếng Đức (đáp án chính)" />
+                  <Textarea
                     value={it.acceptedAnswers ?? ''}
                     onChange={(e) => updateItem(i, { acceptedAnswers: e.target.value || null })}
                     placeholder="Cách dịch đúng khác, mỗi dòng một câu"
                     rows={2}
-                    className="rounded-sm border border-hairline px-3 py-2 text-sm"
+                   
                   />
-                  <input
+                  <Input
                     value={it.hintKeywords ?? ''}
                     onChange={(e) => updateItem(i, { hintKeywords: e.target.value || null })}
                     placeholder="Từ khoá gợi ý, ngăn bằng dấu phẩy"
-                    className="rounded-sm border border-hairline px-3 py-2 text-sm"
+                   
                   />
                 </div>
               </li>
@@ -235,15 +232,15 @@ export default function AdminTranslationPage() {
           </ol>
 
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => setEditing({ ...editing, items: [...editing.items, emptyItem()] })} className="rounded-sm border border-hairline px-4 py-2 text-ink">
+            <Button variant="secondary" onClick={() => setEditing({ ...editing, items: [...editing.items, emptyItem()] })}>
               Thêm câu
-            </button>
-            <button onClick={save} disabled={saving} className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50">
+            </Button>
+            <Button variant="primary" className="flex-1 disabled:opacity-50" onClick={save} disabled={saving}>
               {saving ? 'Đang lưu...' : 'Lưu bài'}
-            </button>
-            <button onClick={remove} className="rounded-sm border border-hairline px-4 py-2 text-danger">
+            </Button>
+            <Button variant="secondary" className="text-rotstift" onClick={remove}>
               Xoá bài
-            </button>
+            </Button>
           </div>
         </div>
       )}

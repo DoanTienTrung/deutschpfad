@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { Eye, PencilLine, Play, RotateCcw, SkipBack } from 'lucide-react'
+import { BlankInput, Button, Segmented, Switch } from '@kit'
 import type { ListeningSentence } from '../../api/types'
 import type { YouTubePlayerRef } from './YouTubePlayer'
 
@@ -84,6 +86,7 @@ export default function ListeningClozePanel({
     if (!current) return
     playerRef.current?.seekTo(current.startSeconds)
     playerRef.current?.play()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- đổi câu thì xoá các ô đã điền
     setAnswers({})
     setRevealed(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only auto-play when the sentence changes
@@ -107,6 +110,7 @@ export default function ListeningClozePanel({
 
   useEffect(() => {
     if (allCorrect) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- đánh dấu câu xong ngay khi mọi ô đều đúng
       setAnsweredIndexes((prev) => new Set(prev).add(index))
       onSentenceComplete(index)
     }
@@ -155,98 +159,56 @@ export default function ListeningClozePanel({
 
   return (
     <div className="mt-4">
-      <div className="rounded-md border border-hairline bg-card p-6">
-        <div className="mb-3 flex items-center justify-between text-sm text-muted">
-          <span>✏️ Điền từ còn thiếu vào chỗ trống</span>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setDifficulty('easy')}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                difficulty === 'easy' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-              }`}
-            >
-              Dễ
-            </button>
-            <button
-              onClick={() => setDifficulty('hard')}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                difficulty === 'hard' ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-              }`}
-            >
-              Khó
-            </button>
-          </div>
+      <div className="rounded-karte border border-kartenrand bg-karteikarte p-6">
+        <div className="mb-3 flex items-center justify-between text-sm text-radiert">
+          <span className="inline-flex items-center gap-1.5"><PencilLine className="size-4" aria-hidden="true" /> Điền từ còn thiếu vào chỗ trống</span>
+          <Segmented label="Độ khó" value={difficulty} onChange={(v) => setDifficulty(v as 'easy' | 'hard')}
+            options={[{ value: 'easy', label: 'Dễ' }, { value: 'hard', label: 'Khó' }]} />
         </div>
 
-        <p className="mb-2 text-lg leading-loose text-ink">
+        <p className="mb-2 text-lg leading-loose text-bleistift">
           {tokens.map((token, i) => {
             if (!blankIndexes.has(i)) return <span key={i}>{token}</span>
 
             const value = answers[i] ?? ''
             const isCorrect = value.trim().toLowerCase() === token.toLowerCase()
-            const boxClass =
-              value.length === 0
-                ? 'border-hairline bg-surface'
-                : isCorrect
-                  ? 'border-success bg-success-bg text-success'
-                  : 'border-danger bg-danger-bg text-danger'
-
             return (
-              <input
-                key={i}
-                ref={(el) => {
-                  inputRefs.current[i] = el
-                }}
-                value={value}
-                disabled={revealed}
-                onChange={(e) => setAnswers((prev) => ({ ...prev, [i]: e.target.value }))}
-                onFocus={() => setFocusedBlank(i)}
-                style={{ width: `${Math.max(token.length, 3) + 2}ch` }}
-                className={`mx-1 inline-block rounded-sm border px-1 py-0.5 text-center text-base font-medium outline-none focus:border-primary ${boxClass}`}
-              />
+              <BlankInput key={i} ref={(el) => { inputRefs.current[i] = el }} value={value} disabled={revealed}
+                aria-label={`Chỗ trống ${i + 1}`} chars={Math.max(token.length, 3)}
+                state={value.length === 0 ? 'empty' : isCorrect ? 'correct' : 'wrong'}
+                onChange={(e) => setAnswers((prev) => ({ ...prev, [i]: e.target.value }))} onFocus={() => setFocusedBlank(i)} />
             )
           })}
         </p>
 
         {blankIndexes.size > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-xs text-muted">Không gõ được dấu?</span>
+            <span className="mr-1 text-xs text-radiert">Không gõ được dấu?</span>
             {UMLAUT_KEYS.map((key) => (
-              <button
+              <Button variant="secondary" size="sm" className="disabled:opacity-40"
                 key={key}
                 onClick={() => insertChar(key)}
-                disabled={focusedBlank === null || revealed}
-                className="rounded-sm border border-hairline px-2.5 py-1 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-              >
+                disabled={focusedBlank === null || revealed}>
                 {key}
-              </button>
+              </Button>
             ))}
           </div>
         )}
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={handleReveal}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-          >
-            👀 Hiện đáp án
-          </button>
-          <button
-            onClick={handleRetry}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-          >
-            ↻ Làm lại
-          </button>
-          <button
-            onClick={playSegment}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-          >
-            ▶ Nghe lại
-          </button>
+          <Button variant="secondary" icon={<Eye className="size-4" aria-hidden="true" />}
+            onClick={handleReveal}>
+            Hiện đáp án
+          </Button>
+          <Button variant="secondary" icon={<RotateCcw className="size-4" aria-hidden="true" />} onClick={handleRetry}>Làm lại</Button>
+          <Button variant="secondary" icon={<Play className="size-4" aria-hidden="true" />}
+            onClick={playSegment}>
+            Nghe lại
+          </Button>
         </div>
 
         {allCorrect && (
-          <p className="mt-3 text-center text-sm font-medium text-success">Chính xác!</p>
+          <p className="mt-3 text-center text-sm font-medium text-aufstieg">Chính xác!</p>
         )}
       </div>
 
@@ -255,42 +217,23 @@ export default function ListeningClozePanel({
           putting "Câu sau" back after the toggle -- same 3-column layout as before. */}
       <div className="mt-3 flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:items-center sm:gap-2">
         <div className="flex items-center justify-between gap-2 sm:contents">
-          <button
+          <Button variant="secondary" icon={<SkipBack className="size-4" aria-hidden="true" />} className="disabled:opacity-40"
             onClick={() => goTo(Math.max(0, index - 1))}
-            disabled={index === 0}
-            className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-          >
-            ⏮ Câu trước
-          </button>
+            disabled={index === 0}>
+            Câu trước
+          </Button>
 
-          <button
+          <Button variant="secondary" className="disabled:opacity-40 sm:order-3"
             onClick={() => goTo(Math.min(sentences.length - 1, index + 1))}
-            disabled={index === sentences.length - 1}
-            className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40 sm:order-3"
-          >
+            disabled={index === sentences.length - 1}>
             Câu sau ⏭
-          </button>
+          </Button>
         </div>
 
-        <label className="flex cursor-pointer items-center justify-center gap-2 text-sm font-medium text-ink">
-          <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${autoAdvance ? 'bg-primary' : 'bg-hairline'}`}>
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${
-                autoAdvance ? 'translate-x-4' : 'translate-x-1'
-              }`}
-            />
-          </span>
-          <input
-            type="checkbox"
-            checked={autoAdvance}
-            onChange={(e) => setAutoAdvance(e.target.checked)}
-            className="sr-only"
-          />
-          Tự động chuyển câu
-        </label>
+        <Switch checked={autoAdvance} onChange={setAutoAdvance} label="Tự động chuyển câu" className="mx-auto max-w-64" />
       </div>
 
-      <p className="mt-2 text-center text-xs text-muted">
+      <p className="mt-2 text-center text-xs text-radiert">
         Đã hoàn thành {answeredIndexes.size}/{sentences.length} câu
       </p>
     </div>

@@ -1,9 +1,9 @@
 import { ARTICLE_LABEL, articleOf, headword } from '../../lib/noun'
 
 const ARTICLE_COLOR = {
-  der: 'text-der',
-  die: 'text-die',
-  das: 'text-das',
+  der: 'text-reiter-der',
+  die: 'text-reiter-die',
+  das: 'text-reiter-das',
 } as const
 
 /** Từ tiếng Đức với mạo từ tô màu theo giống. Chỉ dùng ở chỗ HIỂN THỊ — đừng dùng trong đáp án

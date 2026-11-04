@@ -1,10 +1,8 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Button, Field, Input, Note, TextLink } from '@kit'
 import { apiFetch, ApiError } from '../api/client'
 import AuthCard from '../components/auth/AuthCard'
-import Field from '../components/ui/Field'
-import Button from '../components/ui/Button'
-import Alert from '../components/ui/Alert'
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams()
@@ -39,33 +37,30 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <AuthCard title="Link không hợp lệ">
-        <p className="mb-4 text-center text-sm text-muted">Link đặt lại mật khẩu này thiếu token hoặc đã hết hạn.</p>
-        <Link
-          to="/forgot-password"
-          className="block text-center font-medium text-primary hover:text-primary-deep"
-        >
-          Yêu cầu link mới
-        </Link>
+        <p className="mb-4 text-center text-sm text-radiert">Link đặt lại mật khẩu này thiếu token hoặc đã hết hạn.</p>
+        <p className="text-center">
+          <TextLink to="/forgot-password">Yêu cầu link mới</TextLink>
+        </p>
       </AuthCard>
     )
   }
 
   return (
     <AuthCard title="Đặt lại mật khẩu">
-      {error && <Alert tone="danger">{error}</Alert>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field
-          id="newPassword"
-          label="Mật khẩu mới"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-        <Button type="submit" loading={submitting}>
+        <Field label="Mật khẩu mới">
+          <Input
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </Field>
+        <Button type="submit" loading={submitting} className="w-full">
           {submitting ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
         </Button>
       </form>

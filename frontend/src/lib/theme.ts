@@ -20,7 +20,10 @@ export function resolveDark(pref: ThemePreference): boolean {
 }
 
 export function applyTheme(pref: ThemePreference) {
-  document.documentElement.classList.toggle('dark', resolveDark(pref))
+  const dark = resolveDark(pref)
+  document.documentElement.classList.toggle('dark', dark)
+  // data-theme cho lớp token mới (src/styles/tokens.css); class "dark" giữ tới khi app chuyển hết sang token.
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
 }
 
 export function setThemePreference(pref: ThemePreference) {

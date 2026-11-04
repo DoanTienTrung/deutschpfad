@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
+import { ArrowLeft, Mic, Play, Repeat, Sparkles, Square } from 'lucide-react'
+import { Button } from '@kit'
 import type { ListeningSentence, ShadowingFeedback, WordTranslation } from '../../api/types'
 import type { YouTubePlayerRef } from './YouTubePlayer'
 
@@ -57,6 +59,7 @@ export default function ShadowingPanel({
     if (!sentence) return
     playerRef.current?.seekTo(sentence.startSeconds)
     playerRef.current?.play()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- đổi câu thì bỏ bản ghi âm cũ
     setRecordingState('idle')
     setMicError(null)
     setGradingState('idle')
@@ -173,20 +176,20 @@ export default function ShadowingPanel({
   const tokens = tokenize(sentence.text)
 
   return (
-    <div className="mt-4 rounded-md border border-hairline bg-card p-4">
-      <p className="mb-3 text-sm text-muted">
+    <div className="mt-4 rounded-karte border border-kartenrand bg-karteikarte p-4">
+      <p className="mb-3 text-sm text-radiert">
         Câu {index + 1}/{sentences.length}
       </p>
 
-      <p className="mb-1 text-xs text-muted">Bấm vào 1 từ để xem nghĩa riêng</p>
-      <p className="mb-1 text-base font-medium text-ink">
+      <p className="mb-1 text-xs text-radiert">Bấm vào 1 từ để xem nghĩa riêng</p>
+      <p className="mb-1 text-base font-medium text-bleistift">
         {tokens.map((token, i) =>
           isWordToken(token) ? (
             <span
               key={i}
               onClick={() => handleWordClick(token)}
-              className={`cursor-pointer rounded-sm px-0.5 hover:bg-accent/30 ${
-                selectedWord === token ? 'bg-accent/40' : ''
+              className={`cursor-pointer rounded-karte px-0.5 hover:bg-reiter/30 ${
+                selectedWord === token ? 'bg-tinte-soft' : ''
               }`}
             >
               {token}
@@ -197,37 +200,31 @@ export default function ShadowingPanel({
         )}
       </p>
 
-      {sentence.phonetic && <p className="mb-3 text-sm italic text-muted">/{sentence.phonetic.replace(/^\/|\/$/g, '')}/</p>}
+      {sentence.phonetic && <p className="mb-3 text-sm italic text-radiert">/{sentence.phonetic.replace(/^\/|\/$/g, '')}/</p>}
 
       {selectedWord && (
-        <p className="mb-3 text-sm text-primary">
+        <p className="mb-3 text-sm text-bleistift">
           <span className="font-medium">{selectedWord}</span>
           {wordLoading ? ' - đang tra...' : wordTranslation ? ` - ${wordTranslation}` : ' - chưa tra được nghĩa'}
         </p>
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        <button
-          onClick={playOriginal}
-          className="rounded-sm border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-        >
-          ▶ Nghe câu gốc
-        </button>
+        <Button variant="secondary" icon={<Play className="size-4" aria-hidden="true" />}
+          onClick={playOriginal}>
+          Nghe câu gốc
+        </Button>
 
         {recordingState !== 'recording' ? (
-          <button
-            onClick={startRecording}
-            className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-canvas hover:bg-primary-deep"
-          >
-            🎤 Ghi âm
-          </button>
+          <Button variant="primary" icon={<Mic className="size-4" aria-hidden="true" />}
+            onClick={startRecording}>
+            Ghi âm
+          </Button>
         ) : (
-          <button
-            onClick={stopRecording}
-            className="rounded-sm bg-danger px-4 py-2 text-sm font-medium text-canvas"
-          >
-            ⏹ Dừng ghi âm
-          </button>
+          <Button variant="danger" icon={<Square className="size-4" aria-hidden="true" />}
+            onClick={stopRecording}>
+            Dừng ghi âm
+          </Button>
         )}
 
         {recordedUrl && (
@@ -237,39 +234,40 @@ export default function ShadowingPanel({
         )}
 
         {recordingState === 'recorded' && (
-          <button
+          <Button variant="secondary" icon={<Sparkles className="size-4" aria-hidden="true" />}
             onClick={handleGradePronunciation}
-            disabled={gradingState === 'loading'}
-            className="rounded-sm border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-          >
-            {gradingState === 'loading' ? 'Đang chấm...' : '🤖 Chấm phát âm bằng AI'}
-          </button>
+            disabled={gradingState === 'loading'}>
+            {gradingState === 'loading' ? 'Đang chấm...' : 'Chấm phát âm bằng AI'}
+          </Button>
         )}
       </div>
 
-      {micError && <p className="mt-3 text-sm text-danger">{micError}</p>}
+      {micError && <p className="mt-3 text-sm text-rotstift">{micError}</p>}
       {recordingState === 'recording' && (
-        <p className="mt-3 text-sm text-danger">🔴 Đang ghi âm... bấm "Dừng ghi âm" khi xong.</p>
+        <p className="mt-3 flex items-center gap-2 text-sm text-rotstift">
+          <span className="size-2.5 animate-pulse rounded-rund bg-rotstift" aria-hidden="true" />
+          Đang ghi âm... bấm "Dừng ghi âm" khi xong.
+        </p>
       )}
 
       {gradingState === 'error' && (
-        <p className="mt-3 text-sm text-muted">
+        <p className="mt-3 text-sm text-radiert">
           Chưa chấm được lúc này (dịch vụ AI đang bận hoặc chưa cấu hình) - bạn vẫn có thể tự nghe
           lại và so sánh bằng tai như bình thường.
         </p>
       )}
 
       {feedback && feedback.available && (
-        <div className="mt-4 rounded-md border border-hairline bg-surface p-3">
+        <div className="mt-4 rounded-karte border border-linie bg-karteikarte-innen p-3">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-medium text-ink">Kết quả chấm phát âm</span>
+            <span className="font-medium text-bleistift">Kết quả chấm phát âm</span>
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+              className={`rounded-rund px-2 py-0.5 text-xs font-semibold ${
                 feedback.scorePercent >= 80
-                  ? 'bg-success-bg text-success'
+                  ? 'bg-aufstieg-soft text-aufstieg'
                   : feedback.scorePercent >= 50
-                    ? 'bg-accent/30 text-ink'
-                    : 'bg-danger-bg text-danger'
+                    ? 'bg-tinte-soft text-bleistift'
+                    : 'bg-rotstift-soft text-rotstift'
               }`}
             >
               {feedback.scorePercent}%
@@ -277,36 +275,29 @@ export default function ShadowingPanel({
           </div>
           <p className="flex flex-wrap gap-x-1.5 gap-y-1 text-base">
             {feedback.words.map((w, i) => (
-              <span key={i} className={w.correct ? 'text-success' : 'font-medium text-danger underline decoration-wavy'}>
+              <span key={i} className={w.correct ? 'text-aufstieg' : 'font-medium text-rotstift underline decoration-wavy'}>
                 {w.word}
               </span>
             ))}
           </p>
-          <p className="mt-2 text-xs text-muted">AI nghe được: "{feedback.transcript}"</p>
-          <button
-            onClick={startRecording}
-            className="mt-3 rounded-sm border border-hairline bg-card px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-          >
-            🔁 Ghi âm lại
-          </button>
+          <p className="mt-2 text-xs text-radiert">AI nghe được: "{feedback.transcript}"</p>
+          <Button variant="secondary" icon={<Repeat className="size-4" aria-hidden="true" />} className="mt-3"
+            onClick={startRecording}>
+            Ghi âm lại
+          </Button>
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-between gap-2 border-t border-hairline pt-4">
-        <button
+      <div className="mt-4 flex items-center justify-between gap-2 border-t border-linie pt-4">
+        <Button variant="secondary" size="sm" icon={<ArrowLeft className="size-4" aria-hidden="true" />} className="disabled:opacity-40"
           onClick={() => goTo(index - 1)}
-          disabled={index === 0}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm text-ink hover:bg-surface disabled:opacity-40"
-        >
-          ← Câu trước
-        </button>
-        <button
+          disabled={index === 0}>
+          Câu trước
+        </Button>
+        <Button variant="secondary" size="sm" className="disabled:opacity-40"
           onClick={() => goTo(index + 1)}
-          disabled={index === sentences.length - 1}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm text-ink hover:bg-surface disabled:opacity-40"
-        >
-          Câu tiếp theo →
-        </button>
+          disabled={index === sentences.length - 1}>
+          Câu tiếp theo</Button>
       </div>
     </div>
   )

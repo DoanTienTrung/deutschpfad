@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Pause, Play, Settings2, Volume2 } from 'lucide-react'
+import { DropdownMenu, IconButton, Slider } from '@kit'
 import { speak } from '../../lib/speech'
 
 const RATES = [0.75, 1, 1.25]
@@ -14,7 +16,6 @@ export default function AudioBar({ text }: { text: string }) {
   const [playCount, setPlayCount] = useState(0)
   const [rate, setRate] = useState(1)
   const [volume, setVolume] = useState(1)
-  const [showSettings, setShowSettings] = useState(false)
   const [elapsed, setElapsed] = useState(0)
 
   const duration = Math.max(0.6, text.length * 0.09) / rate
@@ -50,59 +51,21 @@ export default function AudioBar({ text }: { text: string }) {
   }, [isPlaying, playCount])
 
   return (
-    <div className="flex items-center gap-3">
-      <button onClick={play} aria-label={isPlaying ? 'Đang phát' : 'Phát lại'} className="text-ink">
-        {isPlaying ? '⏸' : '▶'}
-      </button>
+    <div className="flex items-center gap-2">
+      <IconButton label={isPlaying ? 'Đang phát' : 'Phát lại'} variant="secondary" onClick={play}
+        icon={isPlaying ? <Pause className="size-4" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />} />
 
-      <div className="h-1 flex-1 overflow-hidden rounded-full bg-hairline">
-        <div
-          className="h-full bg-primary transition-[width] duration-100 linear"
-          style={{ width: `${(elapsed / duration) * 100}%` }}
-        />
+      <div className="h-1 flex-1 overflow-hidden rounded-rund bg-linie">
+        <div className="h-full bg-bleistift transition-[width] duration-100 ease-linear" style={{ width: `${(elapsed / duration) * 100}%` }} />
       </div>
 
-      <span className="text-xs tabular-nums text-muted">{formatTime(elapsed)}</span>
+      <span className="text-xs tabular-nums text-radiert">{formatTime(elapsed)}</span>
 
-      <span aria-hidden className="text-ink">🔊</span>
-      <input
-        type="range"
-        min={0}
-        max={1}
-        step={0.1}
-        value={volume}
-        onChange={(e) => setVolume(Number(e.target.value))}
-        className="w-16 accent-primary"
-        aria-label="Âm lượng"
-      />
+      <Volume2 className="size-4 shrink-0 text-radiert" aria-hidden="true" />
+      <Slider min={0} max={1} step={0.1} value={volume} onChange={(e) => setVolume(Number(e.target.value))} aria-label="Âm lượng" className="w-16" />
 
-      <div className="relative">
-        <button
-          onClick={() => setShowSettings((s) => !s)}
-          aria-label="Tốc độ đọc"
-          className="text-ink"
-        >
-          ⚙
-        </button>
-        {showSettings && (
-          <div className="absolute right-0 top-8 z-10 rounded-md border border-hairline bg-card p-2 shadow-floating">
-            {RATES.map((r) => (
-              <button
-                key={r}
-                onClick={() => {
-                  setRate(r)
-                  setShowSettings(false)
-                }}
-                className={`block w-full rounded-sm px-3 py-1.5 text-left text-sm ${
-                  rate === r ? 'bg-primary text-canvas' : 'text-ink hover:bg-surface'
-                }`}
-              >
-                {r}x
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <DropdownMenu label={`Tốc độ đọc: ${rate}x`} trigger={<Settings2 className="size-4" aria-hidden="true" />}
+        items={RATES.map((r) => ({ label: `${r}x${rate === r ? ' (đang dùng)' : ''}`, onSelect: () => setRate(r) }))} />
     </div>
   )
 }

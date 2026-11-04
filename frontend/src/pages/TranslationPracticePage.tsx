@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Breadcrumb, Button, ButtonLink, Input, Note, ProgressBar, Segmented } from '@kit'
 import {
   checkTranslation,
   getTranslationSet,
@@ -8,9 +9,7 @@ import {
   type TranslationSetDetail,
   type TranslationVerdict,
 } from '../api/translationApi'
-import ListeningBreadcrumb from '../components/listening/ListeningBreadcrumb'
-import Alert from '../components/ui/Alert'
-import SpeakerIcon from '../components/ui/SpeakerIcon'
+import { Volume2 as SpeakerIcon } from 'lucide-react'
 import { speak } from '../lib/speech'
 import { diffWords, firstLetterHint, wordBankTokens } from '../lib/wordDiff'
 
@@ -151,15 +150,15 @@ export default function TranslationPracticePage() {
   if (loadError) {
     return (
       <div className="mx-auto max-w-2xl">
-        <Alert tone="danger">Không tải được bài luyện dịch.</Alert>
+        <Note tone="bad" className="mb-4">Không tải được bài luyện dịch.</Note>
       </div>
     )
   }
   if (!set) {
     return (
       <div className="mx-auto max-w-2xl space-y-4">
-        <div className="h-10 animate-pulse rounded-lg bg-surface" />
-        <div className="h-72 animate-pulse rounded-xl bg-surface" />
+        <div className="h-10 animate-pulse rounded-karte bg-karteikarte-innen" />
+        <div className="h-72 animate-pulse rounded-karte bg-karteikarte-innen" />
       </div>
     )
   }
@@ -169,7 +168,7 @@ export default function TranslationPracticePage() {
   return (
     // pb-24 trên điện thoại: nút gia sư nổi ở góc dưới không che mất nút "Kiểm tra".
     <div className="mx-auto max-w-2xl pb-24 sm:pb-0">
-      <ListeningBreadcrumb
+      <Breadcrumb
         items={[
           { label: 'Viết', to: '/app/writing' },
           { label: 'Luyện dịch', to: listLink },
@@ -179,27 +178,25 @@ export default function TranslationPracticePage() {
 
       <header className="mb-4 flex flex-wrap items-end justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="font-display text-xl font-bold text-ink">{set.title}</h2>
-          {set.subtitle && <p className="text-sm text-muted">{set.subtitle} · {set.level}</p>}
+          <h2 className="font-display text-xl font-bold text-bleistift">{set.title}</h2>
+          {set.subtitle && <p className="text-sm text-radiert">{set.subtitle} · {set.level}</p>}
         </div>
         {set.grammarSlug && (
-          <Link to={`/app/grammar/${set.grammarSlug}`} className="text-sm font-semibold text-primary hover:underline">
-            Xem lại lý thuyết →
+          <Link to={`/app/grammar/${set.grammarSlug}`} className="text-sm font-semibold text-bleistift hover:underline">
+            Xem lại lý thuyết
           </Link>
         )}
       </header>
 
       {set.structureNote && (
-        <div className="mb-5 rounded-lg bg-surface px-4 py-3 text-sm">
-          <button
+        <div className="mb-5 rounded-karte bg-karteikarte-innen px-4 py-3 text-sm">
+          <Button variant="ghost" className="w-full justify-between text-left"
             onClick={() => setShowNote((v) => !v)}
-            aria-expanded={showNote}
-            className="flex w-full items-center justify-between text-left font-semibold text-ink"
-          >
+            aria-expanded={showNote}>
             Công thức
-            <span className="text-xs font-medium text-muted">{showNote ? 'Ẩn' : 'Hiện'}</span>
-          </button>
-          {showNote && <p className="mt-1 leading-relaxed text-ink">{set.structureNote}</p>}
+            <span className="text-xs font-medium text-radiert">{showNote ? 'Ẩn' : 'Hiện'}</span>
+          </Button>
+          {showNote && <p className="mt-1 leading-relaxed text-bleistift">{set.structureNote}</p>}
         </div>
       )}
 
@@ -215,55 +212,42 @@ export default function TranslationPracticePage() {
           <>
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="text-sm font-medium text-ink">
-                  Câu {pos + 1} <span className="font-normal text-muted">/ {queue.length}</span>
+                <span className="text-sm font-medium text-bleistift">
+                  Câu {pos + 1} <span className="font-normal text-radiert">/ {queue.length}</span>
                 </span>
-                <div className="flex rounded-full border border-hairline bg-surface p-0.5 text-xs font-medium" role="group" aria-label="Cách làm">
-                  {(['WORD_BANK', 'TYPING'] as const).map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => changeMode(m)}
-                      disabled={!!result}
-                      aria-pressed={mode === m}
-                      className={`rounded-full px-3 py-1 transition-colors ${mode === m ? 'bg-card text-ink shadow-sm' : 'text-muted hover:text-ink'}`}
-                    >
-                      {m === 'WORD_BANK' ? 'Xếp từ' : 'Gõ câu'}
-                    </button>
-                  ))}
-                </div>
+                <Segmented label="Cách làm" value={mode} onChange={(v) => { if (!result) changeMode(v as 'WORD_BANK' | 'TYPING') }}
+                  options={[{ value: 'WORD_BANK', label: 'Xếp từ' }, { value: 'TYPING', label: 'Gõ câu' }]} />
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-hairline" role="progressbar" aria-label="Tiến độ lượt luyện" aria-valuemin={0} aria-valuemax={queue.length} aria-valuenow={pos}>
-                <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${(pos / queue.length) * 100}%` }} />
-              </div>
+              <ProgressBar value={pos / queue.length} label="Tiến độ lượt luyện" />
             </div>
 
             {error && (
               <div className="mb-3">
-                <Alert tone="danger">{error}</Alert>
+                <Note tone="bad" className="mb-4">{error}</Note>
               </div>
             )}
 
-            <div key={item.id} className="rounded-xl border border-hairline bg-card px-5 pb-6 pt-5 sm:px-8">
-              <p className="text-xs font-medium text-muted">Dịch sang tiếng Đức</p>
-              <p className="mt-2 font-display text-2xl font-semibold leading-snug text-ink">{item.viText}</p>
+            <div key={item.id} className="rounded-karte border border-kartenrand bg-karteikarte px-5 pb-6 pt-5 sm:px-8">
+              <p className="text-xs font-medium text-radiert">Dịch sang tiếng Đức</p>
+              <p className="mt-2 font-display text-2xl font-semibold leading-snug text-bleistift">{item.viText}</p>
 
               {!result && (
                 <>
                   {hintLevel > 0 && (
-                    <div className="mt-4 space-y-2 rounded-lg bg-surface px-4 py-3 text-sm">
+                    <div className="mt-4 space-y-2 rounded-karte bg-karteikarte-innen px-4 py-3 text-sm">
                       {item.keywords.length > 0 && (
                         <p className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-muted">Từ khoá:</span>
+                          <span className="text-radiert">Từ khoá:</span>
                           {item.keywords.map((k) => (
-                            <span key={k} className="rounded-full border border-hairline bg-card px-2 py-0.5 font-medium text-ink">
+                            <span key={k} className="rounded-rund border border-kartenrand bg-karteikarte px-2 py-0.5 font-medium text-bleistift">
                               {k}
                             </span>
                           ))}
                         </p>
                       )}
                       {hintLevel > 1 && (
-                        <p className="font-mono tracking-wide text-ink">
-                          <span className="font-sans text-muted">Chữ đầu: </span>
+                        <p className="font-mono tracking-wide text-bleistift">
+                          <span className="font-sans text-radiert">Chữ đầu: </span>
                           {firstLetterHint(item.deReference)}
                         </p>
                       )}
@@ -280,7 +264,7 @@ export default function TranslationPracticePage() {
                         submit()
                       }}
                     >
-                      <input
+                      <Input
                         ref={inputRef}
                         value={typed}
                         onChange={(e) => setTyped(e.target.value)}
@@ -290,46 +274,38 @@ export default function TranslationPracticePage() {
                         autoCapitalize="off"
                         autoCorrect="off"
                         spellCheck={false}
-                        className="h-12 w-full rounded-md border border-hairline bg-canvas px-4 text-base text-ink placeholder:text-muted transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/20"
+                        className="h-12 w-full"
                       />
                       <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Chèn chữ có dấu">
                         {UMLAUT_KEYS.map((k) => (
-                          <button
+                          <Button variant="secondary" size="sm" className="h-8 min-w-8"
                             key={k}
                             type="button"
-                            onClick={() => insertChar(k)}
-                            className="h-8 min-w-8 rounded-sm border border-hairline bg-canvas px-2 text-sm font-medium text-ink transition-colors hover:bg-surface"
-                          >
+                            onClick={() => insertChar(k)}>
                             {k}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </form>
                   )}
 
                   <div className="mt-5 grid grid-cols-3 gap-2">
-                    <button
+                    <Button variant="secondary" className="disabled:opacity-40"
                       onClick={() => setHintLevel((h) => Math.min(2, h + 1))}
-                      disabled={hintLevel >= 2}
-                      className="rounded-md border border-hairline bg-canvas px-3 py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface disabled:opacity-40"
-                    >
+                      disabled={hintLevel >= 2}>
                       Gợi ý{hintLevel > 0 ? ` (${hintLevel}/2)` : ''}
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="secondary" className="disabled:opacity-40"
                       onClick={() => submit(true)}
-                      disabled={checking}
-                      className="rounded-md border border-hairline bg-canvas px-3 py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface disabled:opacity-40"
-                    >
+                      disabled={checking}>
                       <span className="sm:hidden">Đáp án</span>
                       <span className="hidden sm:inline">Xem đáp án</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="primary" className="hover:-translate-y-px disabled:translate-y-0 disabled:opacity-40"
                       onClick={() => submit()}
-                      disabled={checking || !answer.trim()}
-                      className="rounded-md bg-primary px-3 py-3 text-sm font-semibold text-canvas transition-[background,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-primary-deep hover:shadow-lifted disabled:translate-y-0 disabled:opacity-40 disabled:shadow-none"
-                    >
+                      disabled={checking || !answer.trim()}>
                       {checking ? 'Đang chấm...' : 'Kiểm tra'}
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}
@@ -338,13 +314,11 @@ export default function TranslationPracticePage() {
             </div>
 
             {result && (
-              <button
+              <Button variant="primary" className="mt-4 w-full hover:-translate-y-px"
                 ref={nextRef}
-                onClick={next}
-                className="mt-4 w-full rounded-md bg-primary px-4 py-3 font-semibold text-canvas transition-[background,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-primary-deep hover:shadow-lifted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
-              >
+                onClick={next}>
                 {pos + 1 < queue.length ? 'Câu tiếp' : 'Xem kết quả'}
-              </button>
+              </Button>
             )}
           </>
         )
@@ -368,45 +342,42 @@ function WordBank({
 }) {
   return (
     <div className="mt-5">
-      <div className="flex min-h-14 flex-wrap items-center gap-1.5 rounded-lg border border-dashed border-hairline bg-canvas px-3 py-2" aria-label="Câu đang xếp">
-        {picked.length === 0 && <span className="text-sm text-muted">Bấm các từ bên dưới theo đúng thứ tự</span>}
+      <div className="flex min-h-14 flex-wrap items-center gap-1.5 rounded-karte border border-dashed border-linie bg-karteikarte px-3 py-2" aria-label="Câu đang xếp">
+        {picked.length === 0 && <span className="text-sm text-radiert">Bấm các từ bên dưới theo đúng thứ tự</span>}
         {picked.map((t, k) => (
-          <button
+          <Button variant="secondary" size="sm" className="hover:text-rotstift"
             key={`${t}-${k}`}
             onClick={() => onUnpick(k)}
-            className="rounded-md border border-ink/20 bg-card px-2.5 py-1.5 text-base font-medium text-ink transition-colors hover:border-danger/50 hover:text-danger"
-            aria-label={`Bỏ từ ${tokens[t]}`}
-          >
+           
+            aria-label={`Bỏ từ ${tokens[t]}`}>
             {tokens[t]}
-          </button>
+          </Button>
         ))}
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Các từ để chọn">
         {tokens.map((w, i) => {
           const used = picked.includes(i)
           return (
-            <button
+            <Button variant="secondary" size="sm" className="hover:-translate-y-px"
               key={`${w}-${i}`}
               onClick={() => !used && onPick(i)}
-              disabled={used}
-              className="rounded-md border border-hairline bg-surface px-2.5 py-1.5 text-base font-medium text-ink transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-lifted disabled:invisible"
-            >
+              disabled={used}>
               {w}
-            </button>
+            </Button>
           )
         })}
       </div>
-      <p className="mt-2 hidden text-xs text-muted sm:block">Bấm vào từ đã xếp để bỏ ra. Phím Backspace bỏ từ cuối, Enter để kiểm tra.</p>
+      <p className="mt-2 hidden text-xs text-radiert sm:block">Bấm vào từ đã xếp để bỏ ra. Phím Backspace bỏ từ cuối, Enter để kiểm tra.</p>
     </div>
   )
 }
 
 const VERDICT_STYLE: Record<TranslationVerdict, { title: string; box: string; text: string }> = {
-  CORRECT: { title: 'Chính xác!', box: 'bg-success-bg', text: 'text-success' },
-  ALMOST: { title: 'Gần đúng', box: 'bg-success-bg', text: 'text-success' },
-  WRONG: { title: 'Chưa đúng', box: 'bg-danger-bg', text: 'text-danger' },
-  REVEALED: { title: 'Đáp án', box: 'bg-surface', text: 'text-ink' },
-  UNGRADED: { title: 'Chưa chấm được', box: 'bg-surface', text: 'text-ink' },
+  CORRECT: { title: 'Chính xác!', box: 'bg-aufstieg-soft', text: 'text-aufstieg' },
+  ALMOST: { title: 'Gần đúng', box: 'bg-aufstieg-soft', text: 'text-aufstieg' },
+  WRONG: { title: 'Chưa đúng', box: 'bg-rotstift-soft', text: 'text-rotstift' },
+  REVEALED: { title: 'Đáp án', box: 'bg-karteikarte-innen', text: 'text-bleistift' },
+  UNGRADED: { title: 'Chưa chấm được', box: 'bg-karteikarte-innen', text: 'text-bleistift' },
 }
 
 function Feedback({ result, answer }: { result: TranslationCheckResult; answer: string }) {
@@ -415,10 +386,10 @@ function Feedback({ result, answer }: { result: TranslationCheckResult; answer: 
     result.corrected && answer && result.verdict !== 'CORRECT' && normalize(result.corrected) !== normalize(answer)
   return (
     <div className="mt-5 space-y-4" role="status">
-      <div className={`rounded-lg px-4 py-3 ${style.box}`}>
+      <div className={`rounded-karte px-4 py-3 ${style.box}`}>
         <p className={`flex items-center gap-2 font-semibold ${style.text}`}>
           {result.verdict === 'CORRECT' && (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-ink" aria-hidden="true">
+            <span className="flex size-6 items-center justify-center rounded-rund bg-reiter text-reiter-beschriftung" aria-hidden="true">
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12.5l4.5 4.5L19 7.5" />
               </svg>
@@ -428,17 +399,17 @@ function Feedback({ result, answer }: { result: TranslationCheckResult; answer: 
         </p>
         {answer && result.verdict !== 'CORRECT' && (
           <p className="mt-2 text-sm">
-            <span className="text-muted">Bạn viết: </span>
-            <span className="text-ink">{answer}</span>
+            <span className="text-radiert">Bạn viết: </span>
+            <span className="text-bleistift">{answer}</span>
           </p>
         )}
         {showCorrection && (
           <p className="mt-1 text-sm">
-            <span className="text-muted">Sửa lại: </span>
+            <span className="text-radiert">Sửa lại: </span>
             {diffWords(answer, result.corrected!).map((w, i) => (
               <span key={i}>
                 {i > 0 && ' '}
-                <span className={w.changed ? 'font-semibold text-success underline decoration-2 underline-offset-2' : 'text-ink'}>{w.text}</span>
+                <span className={w.changed ? 'font-semibold text-aufstieg underline decoration-2 underline-offset-2' : 'text-bleistift'}>{w.text}</span>
               </span>
             ))}
           </p>
@@ -446,38 +417,36 @@ function Feedback({ result, answer }: { result: TranslationCheckResult; answer: 
         {result.errors.length > 0 && (
           <ul className="mt-2 space-y-1 text-sm">
             {result.errors.map((e, i) => (
-              <li key={i} className="text-ink">
+              <li key={i} className="text-bleistift">
                 {e.wrong && e.right && (
                   <>
-                    <span className="text-danger line-through">{e.wrong}</span> → <span className="font-semibold">{e.right}</span>
+                    <span className="text-rotstift line-through">{e.wrong}</span> → <span className="font-semibold">{e.right}</span>
                     {': '}
                   </>
                 )}
-                <span className="text-muted">{e.explain}</span>
+                <span className="text-radiert">{e.explain}</span>
               </li>
             ))}
           </ul>
         )}
-        {result.note && <p className="mt-2 text-sm text-ink">{result.note}</p>}
+        {result.note && <p className="mt-2 text-sm text-bleistift">{result.note}</p>}
       </div>
 
       <div>
-        <p className="text-xs font-medium text-muted">Câu mẫu</p>
+        <p className="text-xs font-medium text-radiert">Câu mẫu</p>
         <div className="mt-1 flex items-start justify-between gap-3">
-          <p className="font-display text-lg font-semibold leading-snug text-ink">{result.reference}</p>
-          <button
+          <p className="font-display text-lg font-semibold leading-snug text-bleistift">{result.reference}</p>
+          <Button variant="secondary" className="h-10 w-10 shrink-0 justify-center"
             type="button"
             onClick={() => speak(result.reference)}
-            aria-label="Nghe câu mẫu"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-hairline bg-canvas text-ink transition-colors hover:bg-surface"
-          >
+            aria-label="Nghe câu mẫu">
             <SpeakerIcon className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
         {result.alternatives.length > 0 && (
           <div className="mt-2 text-sm">
-            <p className="text-muted">Cũng đúng:</p>
-            <ul className="mt-0.5 space-y-0.5 text-ink">
+            <p className="text-radiert">Cũng đúng:</p>
+            <ul className="mt-0.5 space-y-0.5 text-bleistift">
               {result.alternatives.map((a) => (
                 <li key={a}>{a}</li>
               ))}
@@ -505,42 +474,35 @@ function Summary({
   const almost = count((v) => v === 'ALMOST')
   const notYet = queue.length - correct - almost
   const rows = [
-    { label: 'Đúng', value: correct, className: 'text-ink' },
-    { label: 'Gần đúng', value: almost, className: 'text-ink' },
-    { label: 'Chưa đúng', value: notYet, className: 'text-danger' },
+    { label: 'Đúng', value: correct, className: 'text-bleistift' },
+    { label: 'Gần đúng', value: almost, className: 'text-bleistift' },
+    { label: 'Chưa đúng', value: notYet, className: 'text-rotstift' },
   ]
   return (
-    <div className="rounded-xl border border-hairline bg-card px-6 py-8 text-center">
+    <div className="rounded-karte border border-kartenrand bg-karteikarte px-6 py-8 text-center">
       {/* Xong một lượt là khoảnh khắc đạt được: được dùng màu amber (DESIGN.md). */}
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent text-ink" aria-hidden="true">
+      <span className="mx-auto flex size-12 items-center justify-center rounded-rund bg-reiter text-reiter-beschriftung animate-stempel" aria-hidden="true">
         <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 12.5l4.5 4.5L19 7.5" />
         </svg>
       </span>
-      <p className="mt-4 font-display text-xl font-semibold text-ink">Xong lượt luyện</p>
-      <p className="mt-1 text-sm text-muted">Bạn đã dịch {queue.length} câu.</p>
-      <dl className="mx-auto mt-5 grid max-w-xs grid-cols-3 divide-x divide-hairline rounded-lg bg-surface py-3">
+      <p className="mt-4 font-display text-xl font-semibold text-bleistift">Xong lượt luyện</p>
+      <p className="mt-1 text-sm text-radiert">Bạn đã dịch {queue.length} câu.</p>
+      <dl className="mx-auto mt-5 grid max-w-xs grid-cols-3 divide-x divide-linie rounded-karte bg-karteikarte-innen py-3">
         {rows.map((r) => (
           <div key={r.label}>
             <dd className={`font-display text-2xl font-semibold ${r.className}`}>{r.value}</dd>
-            <dt className="text-xs text-muted">{r.label}</dt>
+            <dt className="text-xs text-radiert">{r.label}</dt>
           </div>
         ))}
       </dl>
       <div className={`mt-6 grid gap-2 ${notYet > 0 ? 'sm:grid-cols-2' : ''}`}>
-        <Link
-          to={listLink}
-          className="rounded-md border border-hairline bg-canvas px-4 py-3 font-semibold text-ink transition-colors hover:bg-surface"
-        >
-          Chọn chủ điểm khác
-        </Link>
+        <ButtonLink to={listLink} variant="secondary">Chọn chủ điểm khác</ButtonLink>
         {notYet > 0 && (
-          <button
-            onClick={onRetryWrong}
-            className="rounded-md bg-primary px-4 py-3 font-semibold text-canvas transition-[background,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-primary-deep hover:shadow-lifted"
-          >
+          <Button variant="primary" className="hover:-translate-y-px"
+            onClick={onRetryWrong}>
             Luyện lại {notYet} câu chưa đúng
-          </button>
+          </Button>
         )}
       </div>
     </div>

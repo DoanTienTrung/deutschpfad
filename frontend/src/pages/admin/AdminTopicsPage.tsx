@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button, Input, Note } from '@kit'
 import { listTopics, createTopic, deleteTopic } from '../../api/adminApi'
 import type { Topic } from '../../api/types'
 import { ApiError } from '../../api/client'
@@ -42,38 +43,34 @@ export default function AdminTopicsPage() {
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Chủ đề</h2>
+      <h2 className="mb-4 font-display text-xl font-bold text-bleistift">Quản lý Chủ đề</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       <div className="mb-6 flex gap-2">
-        <input
+        <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Tên chủ đề (vd. Bewerbung)"
-          className="flex-1 rounded-sm border border-hairline px-3 py-2"
+          className="flex-1"
         />
-        <button
-          onClick={handleCreate}
-          className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas"
-        >
+        <Button variant="primary"
+          onClick={handleCreate}>
           Thêm
-        </button>
+        </Button>
       </div>
 
       <ul className="space-y-2">
         {topics.map((topic) => (
           <li
             key={topic.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
+            className="flex items-center justify-between rounded-karte border border-kartenrand bg-karteikarte p-3"
           >
             <span>{topic.name}</span>
-            <button
-              onClick={() => handleDelete(topic.id)}
-              className="text-sm text-danger hover:underline"
-            >
+            <Button variant="ghost" className="text-rotstift"
+              onClick={() => handleDelete(topic.id)}>
               Xoá
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

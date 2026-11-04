@@ -1,3 +1,4 @@
+import { BookOpenText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { ReadingPassageSummary } from '../../api/types'
 
@@ -11,7 +12,7 @@ export default function ReadingPassageGrid({ passages }: { passages: ReadingPass
           style={{ '--stagger-index': i % 12 } as React.CSSProperties}
           className="stagger-in group"
         >
-          <div className="relative aspect-video overflow-hidden rounded-lg bg-surface">
+          <div className="relative aspect-video overflow-hidden rounded-karte bg-karteikarte-innen">
             {passage.imageUrl ? (
               <img
                 src={passage.imageUrl}
@@ -20,11 +21,11 @@ export default function ReadingPassageGrid({ passages }: { passages: ReadingPass
                 className="h-full w-full object-cover transition-transform group-hover:scale-105"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-accent/15 via-accent/5 to-transparent text-3xl">
-                📖
+              <div className="flex size-full items-center justify-center bg-karteikarte-innen textur-linien text-hauch">
+                <BookOpenText className="size-8" aria-hidden="true" />
               </div>
             )}
-            <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-canvas">
+            <span className="absolute top-2 left-2 rounded-rund bg-foto-etikett px-2 py-0.5 text-xs font-bold text-foto-etikett-schrift">
               {passage.levelMin === passage.levelMax ? passage.levelMin : `${passage.levelMin}-${passage.levelMax}`}
             </span>
             {passage.imageAttributionName && passage.imageAttributionUrl && (
@@ -33,14 +34,14 @@ export default function ReadingPassageGrid({ passages }: { passages: ReadingPass
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="absolute bottom-2 right-2 rounded-sm bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white hover:underline"
+                className="absolute bottom-2 right-2 rounded-karte bg-foto-etikett px-1.5 py-0.5 text-xs font-medium text-foto-etikett-schrift hover:underline"
               >
                 Ảnh: {passage.imageAttributionName}
               </a>
             )}
           </div>
-          <p className="mt-2 text-sm font-semibold text-ink group-hover:text-primary">{passage.title}</p>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="mt-2 text-sm font-semibold text-bleistift group-hover:text-bleistift">{passage.title}</p>
+          <p className="mt-0.5 text-xs text-radiert">
             {passage.questionCount} câu hỏi{passage.topic ? ` · ${passage.topic}` : ''}
             {passage.sourceLabel ? ` · ${passage.sourceLabel}` : ''}
           </p>

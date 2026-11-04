@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { AnswerFeedback, Breadcrumb, Button, ButtonLink, Input, Note, Radio, Skeleton, buttonClass, cn } from '@kit'
 import { getGrammarTopic, submitGrammarAnswers } from '../api/grammarApi'
 import { getTranslationSetForGrammar } from '../api/translationApi'
 import type { GrammarSubmitResult, GrammarTopicDetail } from '../api/types'
@@ -7,9 +8,6 @@ import { shuffleForPractice, type ShuffledExercise } from '../lib/shuffleExercis
 import { ApiError } from '../api/client'
 import { openTutorWithQuestion } from '../lib/tutorChat'
 import GrammarMarkdown from '../components/grammar/GrammarMarkdown'
-import ListeningBreadcrumb from '../components/listening/ListeningBreadcrumb'
-import Alert from '../components/ui/Alert'
-import { Skeleton } from '../components/ui/Skeleton'
 
 export default function GrammarTopicPage() {
   const { slug = '' } = useParams()
@@ -79,7 +77,7 @@ export default function GrammarTopicPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-3xl space-y-3">
+      <div className="mx-auto max-w-lesen space-y-3">
         <Skeleton className="h-8 w-2/3" />
         <Skeleton className="h-40 w-full" />
         <Skeleton className="h-40 w-full" />
@@ -89,45 +87,43 @@ export default function GrammarTopicPage() {
 
   if (!topic) {
     return (
-      <div className="mx-auto max-w-3xl">
-        <ListeningBreadcrumb items={[{ label: '📐 Ngữ pháp', to: '/app/grammar' }, { label: 'Không tìm thấy' }]} />
-        <Alert tone="danger">{error ?? 'Không tìm thấy chủ điểm này.'}</Alert>
+      <div className="mx-auto max-w-lesen">
+        <Breadcrumb items={[{ label: 'Ngữ pháp', to: '/app/grammar' }, { label: 'Không tìm thấy' }]} />
+        <Note tone="bad" className="mb-4">{error ?? 'Không tìm thấy chủ điểm này.'}</Note>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <ListeningBreadcrumb
+    <div className="mx-auto max-w-lesen">
+      <Breadcrumb
         items={[
-          { label: '📐 Ngữ pháp', to: `/app/grammar?level=${topic.level}` },
+          { label: 'Ngữ pháp', to: `/app/grammar?level=${topic.level}` },
           { label: topic.titleVi },
         ]}
       />
 
       <header className="mb-6">
-        <span className="inline-flex items-center gap-2 rounded-full bg-accent/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+        <span className="inline-flex items-center gap-2 rounded-rund border border-linie bg-karteikarte-innen px-3 py-1 text-xs font-bold tracking-widest text-radiert uppercase">
           {topic.level}
           {topic.groupLabel && ` · ${topic.groupLabel}`}
         </span>
-        <h2 className="mt-3 font-display text-2xl font-bold text-ink">{topic.titleVi}</h2>
-        <p className="mt-1 text-sm text-muted">{topic.titleDe}</p>
+        <h2 className="mt-3 font-display text-2xl font-bold text-bleistift">{topic.titleVi}</h2>
+        <p className="mt-1 text-sm text-radiert">{topic.titleDe}</p>
       </header>
 
       {topic.theoryMd ? (
-        <section className="mb-6 rounded-lg border border-hairline bg-surface p-5">
+        <section className="mb-6 rounded-karte border border-linie bg-karteikarte-innen p-5">
           <GrammarMarkdown>{topic.theoryMd}</GrammarMarkdown>
           <div className="mt-5 flex flex-wrap gap-2">
-            <button
+            <Button variant="secondary" size="sm"
               onClick={() =>
                 openTutorWithQuestion(
                   `Giải thích giúp mình chủ điểm ngữ pháp "${topic.titleDe}" (${topic.level}) bằng tiếng Việt, kèm ví dụ.`
                 )
-              }
-              className="rounded-full border border-hairline bg-canvas px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:border-primary/40 hover:bg-surface"
-            >
-              💬 Hỏi gia sư về chủ điểm này
-            </button>
+              }>
+              Hỏi gia sư về chủ điểm này
+            </Button>
             {/* Mở tab mới: người học đang làm dở bài tập bên dưới, điều hướng đi là mất câu trả lời.
                 Có referenceSlug thì nhảy thẳng tới đúng bảng thay vì bắt tự tìm trong 14 bảng. */}
             <a
@@ -138,42 +134,39 @@ export default function GrammarTopicPage() {
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-hairline bg-canvas px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:border-primary/40 hover:bg-surface"
+              className={buttonClass('secondary', 'sm')}
             >
-              📋 Mở bảng tra cứu
+              Mở bảng tra cứu
             </a>
             {translationSetId && (
-              <Link
-                to={`/app/writing/translate/${translationSetId}`}
-                className="rounded-full border border-hairline bg-canvas px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:border-primary/40 hover:bg-surface"
-              >
-                🔁 Luyện dịch chủ điểm này
-              </Link>
+              <ButtonLink to={`/app/writing/translate/${translationSetId}`} variant="secondary" size="sm">
+                Luyện dịch chủ điểm này
+                </ButtonLink>
             )}
           </div>
         </section>
       ) : (
-        <p className="mb-6 rounded-lg border border-dashed border-hairline p-5 text-sm text-muted">
+        <p className="mb-6 rounded-karte border border-dashed border-linie p-5 text-sm text-radiert">
           Chủ điểm này chưa có phần lý thuyết - bạn vẫn luyện được bài tập bên dưới.
         </p>
       )}
 
-      {error && <Alert tone="danger">{error}</Alert>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       {exercises.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-hairline p-5 text-sm text-muted">
+        <p className="rounded-karte border border-dashed border-linie p-5 text-sm text-radiert">
           Chủ điểm này chưa có bài tập nào.
         </p>
       ) : (
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-display text-lg font-bold text-ink">Bài tập</h3>
+            <h3 className="font-display text-lg font-bold text-bleistift">Bài tập</h3>
             {result && (
               <span
-                className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                className={`rounded-rund px-3 py-1 text-sm font-semibold ${
                   result.correctCount === result.totalCount
-                    ? 'bg-success-bg text-success'
-                    : 'bg-accent/20 text-primary'
+                    ? 'bg-aufstieg-soft text-aufstieg'
+                    : 'bg-tinte-soft text-tinte'
                 }`}
               >
                 Đúng {result.correctCount}/{result.totalCount}
@@ -197,20 +190,16 @@ export default function GrammarTopicPage() {
 
           <div className="mt-5 flex gap-2">
             {result ? (
-              <button
-                onClick={handleRetry}
-                className="rounded-md border border-hairline bg-canvas px-5 py-2.5 font-semibold text-ink transition-colors hover:bg-surface"
-              >
+              <Button variant="secondary"
+                onClick={handleRetry}>
                 Làm lại
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button variant="primary" className="disabled:opacity-50"
                 onClick={handleSubmit}
-                disabled={submitting}
-                className="rounded-md bg-primary px-6 py-2.5 font-semibold text-canvas transition-colors hover:bg-primary-deep disabled:opacity-50"
-              >
+                disabled={submitting}>
                 {submitting ? 'Đang chấm...' : 'Nộp bài'}
-              </button>
+              </Button>
             )}
           </div>
         </section>
@@ -238,15 +227,15 @@ function ExerciseCard({
   const graded = result !== null
 
   const borderTone = !graded
-    ? 'border-hairline'
+    ? 'border-linie'
     : result.correct
-      ? 'border-success'
-      : 'border-danger'
+      ? 'border-aufstieg'
+      : 'border-rotstift'
 
   return (
-    <div className={`rounded-lg border bg-surface p-4 ${borderTone}`}>
-      <p className="text-sm font-medium text-ink">
-        <span className="mr-2 text-muted">{index + 1}.</span>
+    <div className={`rounded-karte border bg-karteikarte-innen p-4 ${borderTone}`}>
+      <p className="text-sm font-medium text-bleistift">
+        <span className="mr-2 text-radiert">{index + 1}.</span>
         {exercise.exerciseType === 'WORD_ORDER' ? (
           <>Sắp xếp thành câu đúng: <span className="font-normal italic">{exercise.promptDe}</span></>
         ) : exercise.exerciseType === 'ERROR_CORRECTION' ? (
@@ -254,7 +243,7 @@ function ExerciseCard({
             Câu sau có một lỗi - viết lại cho đúng:{' '}
             {/* Gạch chân lượn sóng đỏ: ám hiệu "có lỗi ở đây" mà ai cũng đọc được ngay, nhưng
                 không chỉ ra lỗi nằm ở từ nào. */}
-            <span className="font-normal italic underline decoration-danger decoration-wavy underline-offset-4">
+            <span className="font-normal italic underline decoration-rotstift decoration-wavy underline-offset-4">
               {exercise.promptDe}
             </span>
           </>
@@ -262,36 +251,21 @@ function ExerciseCard({
           exercise.promptDe
         )}
       </p>
-      {exercise.hintVi && <p className="mt-1 text-xs text-muted">Gợi ý: {exercise.hintVi}</p>}
+      {exercise.hintVi && <p className="mt-1 text-xs text-radiert">Gợi ý: {exercise.hintVi}</p>}
 
       {exercise.exerciseType === 'MULTIPLE_CHOICE' ? (
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {options.map((option, i) =>
             option === null ? null : (
-              <label
-                key={OPTION_KEYS[i]}
-                className={`flex cursor-pointer items-center gap-2 rounded-sm border px-3 py-2 text-sm transition-colors ${
-                  value === OPTION_KEYS[i]
-                    ? 'border-primary bg-primary/10 text-primary-deep'
-                    : 'border-hairline bg-canvas text-ink hover:border-primary/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name={`exercise-${exercise.id}`}
-                  value={OPTION_KEYS[i]}
-                  checked={value === OPTION_KEYS[i]}
-                  onChange={(e) => onChange(e.target.value)}
-                  disabled={graded}
-                  className="accent-primary"
-                />
-                <span className="font-medium text-muted">{OPTION_KEYS[i]}.</span> {option}
-              </label>
+              <Radio key={OPTION_KEYS[i]} name={`exercise-${exercise.id}`} value={OPTION_KEYS[i]} checked={value === OPTION_KEYS[i]}
+                onChange={(e) => onChange(e.target.value)} disabled={graded}
+                className={cn('rounded-karte border px-3 py-2', value === OPTION_KEYS[i] ? 'border-bleistift bg-bleistift/10' : 'border-kante bg-karteikarte hover:bg-karteikarte-innen')}
+                label={<><span className="font-medium text-radiert">{OPTION_KEYS[i]}.</span> {option}</>} />
             )
           )}
         </div>
       ) : (
-        <input
+        <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={graded}
@@ -300,16 +274,15 @@ function ExerciseCard({
               ? 'Gõ cả câu...'
               : 'Điền vào chỗ trống...'
           }
-          className="mt-3 w-full rounded-sm border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface"
+          className="mt-3 w-full"
         />
       )}
 
       {graded && (
-        <div className="mt-3 border-t border-hairline pt-3 text-sm">
-          <p className={result.correct ? 'font-medium text-success' : 'font-medium text-danger'}>
-            {result.correct ? '✓ Đúng rồi!' : `✗ Đáp án đúng: ${result.correctAnswer.split('/').join(' hoặc ')}`}
-          </p>
-          {result.explanationVi && <p className="mt-1 text-muted">{result.explanationVi}</p>}
+        <div className="mt-3 border-t border-linie pt-3 text-sm">
+          <AnswerFeedback correct={result.correct}
+            title={result.correct ? 'Đúng rồi.' : `Đáp án đúng: ${result.correctAnswer.split('/').join(' hoặc ')}`} />
+          {result.explanationVi && <p className="mt-1 text-radiert">{result.explanationVi}</p>}
         </div>
       )}
     </div>

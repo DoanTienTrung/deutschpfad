@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { AnswerOption, Button, QuestionNav, cn, type AnswerState } from '@kit'
 import type { VocabularyItem } from '../../api/types'
 import { shuffle } from '../../lib/quiz'
 
@@ -74,7 +76,7 @@ export default function MatchingExercise({
   }, [finished])
 
   if (pairsPerRound < 2) {
-    return <p className="text-muted">Cần ít nhất 2 từ trong bài học để luyện dạng này.</p>
+    return <p className="text-radiert">Cần ít nhất 2 từ trong bài học để luyện dạng này.</p>
   }
 
   function clickTile(tile: Tile) {
@@ -124,85 +126,44 @@ export default function MatchingExercise({
     }, 600)
   }
 
-  function tileClass(tile: Tile) {
-    const isMatched = matched.has(tile.id)
-    const isFading = fading.has(tile.id)
-    const isSelected = selected?.id === tile.id && selected.side === tile.side
-    const isWrong = wrong?.some((w) => w.id === tile.id && w.side === tile.side)
-    if (isFading) return 'border-success bg-success-bg scale-75 opacity-0'
-    if (isMatched) return 'border-success bg-success-bg opacity-60'
-    if (isWrong) return 'border-danger bg-danger-bg text-danger'
-    if (isSelected) return 'border-primary bg-primary/10'
-    return 'border-hairline hover:bg-surface'
+  function tileState(tile: Tile): AnswerState {
+    if (matched.has(tile.id)) return 'correct'
+    if (wrong?.some((w) => w.id === tile.id && w.side === tile.side)) return 'wrong'
+    if (selected?.id === tile.id && selected.side === tile.side) return 'selected'
+    return 'idle'
   }
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <button
-          onClick={() => {
-            setRoundIndex((i) => Math.max(0, i - 1))
-            setSelected(null)
-          }}
-          disabled={roundIndex === 0}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          ← Vòng trước
-        </button>
-        <p className="text-sm text-muted">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <Button variant="secondary" size="sm" icon={<ArrowLeft className="size-4" aria-hidden="true" />}
+          onClick={() => { setRoundIndex((i) => Math.max(0, i - 1)); setSelected(null) }} disabled={roundIndex === 0}>
+          Vòng trước
+        </Button>
+        <p className="text-sm text-radiert">
           Đã hoàn thành {completedRounds}/{roundCount} vòng
         </p>
-        <button
-          onClick={() => {
-            setRoundIndex((i) => Math.min(roundCount - 1, i + 1))
-            setSelected(null)
-          }}
-          disabled={roundIndex === roundCount - 1}
-          className="rounded-sm border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-        >
-          Vòng sau →
-        </button>
+        <Button variant="secondary" size="sm" disabled={roundIndex === roundCount - 1}
+          onClick={() => { setRoundIndex((i) => Math.min(roundCount - 1, i + 1)); setSelected(null) }}>
+          Vòng sau
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Button>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
         {tiles[roundIndex].map((tile) => (
-          <button
-            key={tile.key}
-            onClick={() => clickTile(tile)}
-            disabled={matched.has(tile.id)}
-            className={`flex min-h-28 items-center justify-center rounded-md border p-5 text-center text-base font-medium transition-all duration-300 ease-out ${tileClass(tile)} ${
-              tile.side === 'left' ? 'text-accent-deep' : 'text-ink'
-            }`}
-          >
+          <AnswerOption key={tile.key} state={tileState(tile)} onClick={() => clickTile(tile)} disabled={matched.has(tile.id)}
+            className={cn('flex min-h-28 items-center justify-center p-5 text-center text-base transition-all duration-300 ease-out',
+              tile.side === 'left' ? 'font-display font-semibold' : 'font-normal',
+              matched.has(tile.id) && 'opacity-60', fading.has(tile.id) && 'scale-75 opacity-0')}>
             {tile.text}
-          </button>
+          </AnswerOption>
         ))}
       </div>
 
-      <p className="mb-2 font-medium text-ink">Danh sách vòng:</p>
-      <div className="flex flex-wrap gap-2">
-        {rounds.map((pairs, i) => {
-          const isCurrent = i === roundIndex
-          const isDone = (matchedByRound[i]?.size ?? 0) === pairs.length
-          const stateClass = isCurrent
-            ? 'bg-primary text-canvas'
-            : isDone
-              ? 'border border-success bg-success-bg text-success'
-              : 'border border-hairline text-ink hover:bg-surface'
-          return (
-            <button
-              key={i}
-              onClick={() => {
-                setRoundIndex(i)
-                setSelected(null)
-              }}
-              className={`h-9 w-9 rounded-sm text-sm font-medium ${stateClass}`}
-            >
-              {i + 1}
-            </button>
-          )
-        })}
-      </div>
+      <p className="mb-2 font-medium text-bleistift">Danh sách vòng:</p>
+      <QuestionNav label="Danh sách vòng" current={roundIndex} onSelect={(i) => { setRoundIndex(i); setSelected(null) }}
+        marks={rounds.map((pairs, i) => ((matchedByRound[i]?.size ?? 0) === pairs.length ? 'correct' : 'open'))} />
     </div>
   )
 }

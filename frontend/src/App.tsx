@@ -1,3 +1,6 @@
+import { lazy, Suspense } from 'react'
+import { Clapperboard, Mic } from 'lucide-react'
+import { ToastProvider } from '@kit'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -45,11 +48,14 @@ import GrammarReferencePage from './pages/GrammarReferencePage'
 import AdminGrammarPage from './pages/admin/AdminGrammarPage'
 import AdminTranslationPage from './pages/admin/AdminTranslationPage'
 
+// Trang duyệt design system: chỉ có khi chạy dev, bản build bỏ hẳn trang này.
+const DesignPage = import.meta.env.DEV ? lazy(() => import('./pages/dev/DesignPage')) : null
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ToastProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -79,11 +85,11 @@ function App() {
             <Route path="listening/exam" element={<ListeningExamPage />} />
             {/* Nói + Video của tôi chưa hoàn thiện -- chặn tạm bằng ComingSoonPage, đổi lại
                 <UserListeningHubPage />/<SpeakingHubPage />... khi xong. */}
-            <Route path="listening/mine" element={<ComingSoonPage title="Video của tôi" icon="🎬" />} />
-            <Route path="listening/mine/:itemId" element={<ComingSoonPage title="Video của tôi" icon="🎬" />} />
+            <Route path="listening/mine" element={<ComingSoonPage title="Video của tôi" icon={<Clapperboard />} />} />
+            <Route path="listening/mine/:itemId" element={<ComingSoonPage title="Video của tôi" icon={<Clapperboard />} />} />
             <Route path="listening/:exerciseId" element={<ListeningPracticePage />} />
-            <Route path="speaking" element={<ComingSoonPage title="Luyện nói" icon="🎤" />} />
-            <Route path="speaking/:promptId" element={<ComingSoonPage title="Luyện nói" icon="🎤" />} />
+            <Route path="speaking" element={<ComingSoonPage title="Luyện nói" icon={<Mic />} />} />
+            <Route path="speaking/:promptId" element={<ComingSoonPage title="Luyện nói" icon={<Mic />} />} />
             <Route path="writing" element={<WritingHubPage />} />
             <Route path="writing/translate" element={<TranslationHubPage />} />
             <Route path="writing/translate/:setId" element={<TranslationPracticePage />} />
@@ -119,9 +125,14 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
+          {DesignPage && (
+            <Route path="/design" element={<Suspense fallback={null}><DesignPage /></Suspense>} />
+          )}
+
           {/* Bắt mọi đường dẫn còn lại. Phải đứng cuối cùng. */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   )

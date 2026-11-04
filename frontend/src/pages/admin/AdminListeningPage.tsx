@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Button, Checkbox, Chip, Input, NativeSelect, Note, Textarea } from '@kit'
 import {
   listListeningAdmin,
   createListeningExercise,
@@ -17,11 +18,11 @@ import ListeningImportPanel from '../../components/admin/ListeningImportPanel'
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
 const STATUS_STYLE: Record<ListeningStatus, { label: string; className: string }> = {
-  PENDING: { label: 'Chờ phụ đề', className: 'bg-surface text-muted' },
-  TRANSLATING: { label: 'Chờ dịch', className: 'bg-surface text-muted' },
-  READY: { label: 'Đã hiện', className: 'bg-success-bg text-success' },
-  FAILED: { label: 'Lỗi', className: 'bg-danger-bg text-danger' },
-  HIDDEN: { label: 'Đã ẩn', className: 'bg-surface text-muted' },
+  PENDING: { label: 'Chờ phụ đề', className: 'bg-karteikarte-innen text-radiert' },
+  TRANSLATING: { label: 'Chờ dịch', className: 'bg-karteikarte-innen text-radiert' },
+  READY: { label: 'Đã hiện', className: 'bg-aufstieg-soft text-aufstieg' },
+  FAILED: { label: 'Lỗi', className: 'bg-rotstift-soft text-rotstift' },
+  HIDDEN: { label: 'Đã ẩn', className: 'bg-karteikarte-innen text-radiert' },
 }
 
 const STATUS_FILTERS: (ListeningStatus | '')[] = ['', 'READY', 'PENDING', 'TRANSLATING', 'FAILED', 'HIDDEN']
@@ -180,158 +181,149 @@ export default function AdminListeningPage() {
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Bài nghe</h2>
+      <h2 className="mb-4 font-display text-xl font-bold text-bleistift">Quản lý Bài nghe</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
-      {lastResult && <div className="mb-4 rounded-sm bg-success-bg p-3 text-sm text-success">{lastResult}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
+      {lastResult && <Note tone="ok" className="mb-4">{lastResult}</Note>}
 
       <ListeningImportPanel channels={channels} onChanged={load} />
 
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
-        <input
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-karte border border-kartenrand bg-karteikarte p-4 sm:grid-cols-2">
+        <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Tên bài nghe"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <select
+        <NativeSelect
           value={levelMin}
           onChange={(e) => setLevelMin(e.target.value)}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           {LEVELS.map((l) => (
             <option key={l} value={l}>Từ {l}</option>
           ))}
-        </select>
-        <select
+        </NativeSelect>
+        <NativeSelect
           value={levelMax}
           onChange={(e) => setLevelMax(e.target.value)}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           {LEVELS.map((l) => (
             <option key={l} value={l}>Đến {l}</option>
           ))}
-        </select>
-        <input
+        </NativeSelect>
+        <Input
           type="number"
           value={orderIndex}
           onChange={(e) => setOrderIndex(Number(e.target.value))}
           placeholder="Thứ tự"
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         />
-        <input
+        <Input
           value={youtubeVideoId}
           onChange={(e) => setYoutubeVideoId(e.target.value)}
           onBlur={handleVideoLinkBlur}
           placeholder="Dán link YouTube (bất kỳ dạng nào) hoặc mã video, vd. dQw4w9WgXcQ"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <p className="sm:col-span-2 text-xs text-muted">
+        <p className="sm:col-span-2 text-xs text-radiert">
           - hoặc, cho bài nghe không phải YouTube (vd. đề thi Goethe Modellsatz) -
         </p>
-        <input
+        <Input
           value={audioUrl}
           onChange={(e) => setAudioUrl(e.target.value)}
           placeholder="Link file audio trực tiếp (mp3/mp4), thay cho YouTube"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <input
+        <Input
           value={sourceLabel}
           onChange={(e) => setSourceLabel(e.target.value)}
           placeholder="Tên nguồn hiển thị (vd. Goethe-Institut Modellsatz B1 – Hören Teil 2)"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <input
+        <Input
           value={sourceUrl}
           onChange={(e) => setSourceUrl(e.target.value)}
           placeholder="Link gốc tới nguồn (tuỳ chọn)"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <input
+        <Input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Mô tả (tuỳ chọn)"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <input
+        <Input
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           placeholder="Chủ đề (vd. Erziehung, Gastronomie...)"
           list="topic-suggestions"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <select
+        <NativeSelect
           value={channelId}
           onChange={(e) => setChannelId(e.target.value)}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           <option value="">Kênh: không có</option>
           {channels.map((c) => (
             <option key={c.id} value={c.id}>Kênh: {c.name}</option>
           ))}
-        </select>
-        <select
+        </NativeSelect>
+        <NativeSelect
           value={kind}
           onChange={(e) => setKind(e.target.value as ListeningKind | '')}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           <option value="">Trang: tự chọn (có audio là đề thi)</option>
           <option value="YOUTUBE">Trang: Video YouTube</option>
           <option value="EXAM">Trang: Luyện đề thi</option>
-        </select>
+        </NativeSelect>
         {(editingStatus === 'READY' || editingStatus === 'HIDDEN') && (
-          <label className="sm:col-span-2 flex items-center gap-2 text-sm text-ink">
-            <input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} />
-            Ẩn bài này với người học
-          </label>
+          <Checkbox className="sm:col-span-2" checked={hidden} onChange={(e) => setHidden(e.target.checked)} label="Ẩn bài này với người học" />
         )}
         <datalist id="topic-suggestions">
           {topicSuggestions.map((t) => (
             <option key={t} value={t} />
           ))}
         </datalist>
-        <textarea
+        <Textarea
           value={rawTranscript}
           onChange={(e) => setRawTranscript(e.target.value)}
           placeholder="Dán transcript từ YouTube (mở video → &quot;...&quot; → Hiển thị bản ghi → copy). Để trống để hệ thống tự động thử lấy phụ đề."
           rows={6}
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2 font-mono text-xs"
+          className="sm:col-span-2 font-mono"
         />
-        <label className="sm:col-span-2 flex items-center gap-2 text-sm text-ink">
-          <input type="checkbox" checked={autoFetch} onChange={(e) => setAutoFetch(e.target.checked)} />
-          Tự động lấy phụ đề qua yt-dlp (bỏ qua nếu đã dán transcript ở trên)
-        </label>
-        <p className="sm:col-span-2 text-xs text-muted">
+        <Checkbox className="sm:col-span-2" checked={autoFetch} onChange={(e) => setAutoFetch(e.target.checked)}
+          label="Tự động lấy phụ đề qua yt-dlp (bỏ qua nếu đã dán transcript ở trên)" />
+        <p className="sm:col-span-2 text-xs text-radiert">
           {editingId
             ? 'Sửa bài: để trống transcript và bỏ tick ô trên nếu không muốn đổi lại các câu đã có. Tick ô trên để thử lấy lại phụ đề tự động (ghi đè câu cũ).'
             : 'Tạo mới: để trống transcript, hệ thống sẽ tự thử lấy phụ đề qua yt-dlp; nếu video không có phụ đề, hãy dán tay.'}
         </p>
         <div className="sm:col-span-2 flex gap-2">
-          <button
+          <Button variant="primary" className="flex-1 disabled:opacity-50"
             onClick={handleSave}
-            disabled={saving}
-            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
-          >
+            disabled={saving}>
             {saving ? 'Đang lưu...' : editingId ? 'Cập nhật bài nghe' : 'Thêm bài nghe'}
-          </button>
+          </Button>
           {editingId && (
-            <button onClick={resetForm} className="rounded-sm border border-hairline px-4 py-2 text-ink">
+            <Button variant="secondary" onClick={resetForm}>
               Huỷ
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-muted">Lọc:</span>
+        <span className="text-radiert">Lọc:</span>
         {STATUS_FILTERS.map((s) => (
-          <button
+          <Chip selected={statusFilter === s}
             key={s || 'all'}
-            onClick={() => setStatusFilter(s)}
-            className={`rounded-full px-3 py-1 ${statusFilter === s ? 'bg-primary/12 text-primary-deep' : 'border border-hairline text-ink'}`}
-          >
+            onClick={() => setStatusFilter(s)}>
             {s ? STATUS_STYLE[s].label : 'Tất cả'} ({s ? exercises.filter((e) => e.status === s).length : exercises.length})
-          </button>
+          </Chip>
         ))}
       </div>
 
@@ -339,31 +331,31 @@ export default function AdminListeningPage() {
         {visibleExercises.map((exercise) => (
           <li
             key={exercise.id}
-            className="flex items-center justify-between gap-3 rounded-sm border border-hairline bg-card p-3"
+            className="flex items-center justify-between gap-3 rounded-karte border border-kartenrand bg-karteikarte p-3"
           >
             <span className="min-w-0">
-              <span className={`mr-2 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[exercise.status].className}`}>
+              <span className={`mr-2 rounded-rund px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[exercise.status].className}`}>
                 {STATUS_STYLE[exercise.status].label}
               </span>
               <strong>{exercise.levelMin === exercise.levelMax ? exercise.levelMin : `${exercise.levelMin}-${exercise.levelMax}`}</strong> - Bài {exercise.orderIndex}: {exercise.title}
-              {exercise.kind === 'EXAM' && <span className="ml-2 text-xs text-muted">[đề thi]</span>}
-              {exercise.channelName && <span className="ml-2 text-xs text-muted">{exercise.channelName}</span>}
-              {exercise.topic && <span className="ml-2 text-xs text-muted">#{exercise.topic}</span>}
-              <span className="ml-2 text-xs text-muted">[{exercise.sentenceCount} câu]</span>
-              {exercise.importError && <span className="ml-2 text-xs text-danger">{exercise.importError}</span>}
+              {exercise.kind === 'EXAM' && <span className="ml-2 text-xs text-radiert">[đề thi]</span>}
+              {exercise.channelName && <span className="ml-2 text-xs text-radiert">{exercise.channelName}</span>}
+              {exercise.topic && <span className="ml-2 text-xs text-radiert">#{exercise.topic}</span>}
+              <span className="ml-2 text-xs text-radiert">[{exercise.sentenceCount} câu]</span>
+              {exercise.importError && <span className="ml-2 text-xs text-rotstift">{exercise.importError}</span>}
             </span>
             <span className="flex shrink-0 gap-3">
               {exercise.status === 'FAILED' && (
-                <button onClick={() => handleRetry(exercise.id)} className="text-sm text-primary hover:underline">
+                <Button variant="ghost" onClick={() => handleRetry(exercise.id)}>
                   Thử lại
-                </button>
+                </Button>
               )}
-              <button onClick={() => startEdit(exercise)} className="text-sm text-primary hover:underline">
+              <Button variant="ghost" onClick={() => startEdit(exercise)}>
                 Sửa
-              </button>
-              <button onClick={() => handleDelete(exercise.id)} className="text-sm text-danger hover:underline">
+              </Button>
+              <Button variant="ghost" className="text-rotstift" onClick={() => handleDelete(exercise.id)}>
                 Xoá
-              </button>
+              </Button>
             </span>
           </li>
         ))}

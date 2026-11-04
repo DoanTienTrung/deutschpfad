@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button, Chip, FileInput, Input, NativeSelect, Note, Textarea } from '@kit'
 import {
   listTutorGrammarNotes,
   createTutorGrammarNote,
@@ -91,102 +92,90 @@ export default function AdminTutorKnowledgePage() {
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Kiến thức Gia sư (RAG)</h2>
+      <h2 className="mb-4 font-display text-xl font-bold text-bleistift">Quản lý Kiến thức Gia sư (RAG)</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
-      {message && <div className="mb-4 rounded-sm bg-accent/10 p-3 text-sm text-ink">{message}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
+      {message && <Note tone="info" className="mb-4">{message}</Note>}
 
-      <div className="mb-6 space-y-3 rounded-sm border border-hairline bg-card p-4">
+      <div className="mb-6 space-y-3 rounded-karte border border-kartenrand bg-karteikarte p-4">
         <div className="flex gap-2">
-          <button
-            onClick={() => setMode('upload')}
-            className={`rounded-sm px-3 py-1.5 text-sm font-medium ${mode === 'upload' ? 'bg-primary text-canvas' : 'border border-hairline text-ink'}`}
-          >
+          <Chip selected={mode === 'upload'}
+            onClick={() => setMode('upload')}>
             Upload file
-          </button>
-          <button
-            onClick={() => setMode('paste')}
-            className={`rounded-sm px-3 py-1.5 text-sm font-medium ${mode === 'paste' ? 'bg-primary text-canvas' : 'border border-hairline text-ink'}`}
-          >
+          </Chip>
+          <Chip selected={mode === 'paste'}
+            onClick={() => setMode('paste')}>
             Dán text
-          </button>
+          </Chip>
         </div>
 
-        <input
+        <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Tiêu đề (để trống dùng tên file khi upload)"
-          className="w-full rounded-sm border border-hairline px-3 py-2"
+          className="w-full"
         />
         <div className="grid grid-cols-2 gap-2">
-          <select
+          <NativeSelect
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           >
             {LEVELS.map((l) => (
               <option key={l} value={l}>{l}</option>
             ))}
-          </select>
-          <input
+          </NativeSelect>
+          <Input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="Chủ đề (tuỳ chọn, vd. Perfekt)"
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           />
         </div>
 
         {mode === 'upload' ? (
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,.rtf,.odt"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-sm border border-hairline px-3 py-2"
-          />
+          <FileInput accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,.rtf,.odt" aria-label="Tệp tài liệu"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         ) : (
-          <textarea
+          <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Dán nội dung ngữ pháp tiếng Đức vào đây"
             rows={8}
-            className="w-full rounded-sm border border-hairline px-3 py-2"
+            className="w-full"
           />
         )}
 
-        <button
+        <Button variant="primary" className="disabled:opacity-50"
           onClick={handleSave}
-          disabled={saving || !canSave}
-          className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
-        >
+          disabled={saving || !canSave}>
           {saving ? 'Đang lưu...' : 'Lưu & tạo embedding'}
-        </button>
+        </Button>
       </div>
 
       <div className="mb-6">
-        <button
+        <Button variant="secondary" className="disabled:opacity-50"
           onClick={handleSyncVocabulary}
-          disabled={syncing}
-          className="rounded-sm border border-hairline bg-card px-4 py-2 text-sm font-medium text-ink hover:bg-accent/10 disabled:opacity-50"
-        >
+          disabled={syncing}>
           {syncing ? 'Đang đồng bộ...' : 'Đồng bộ từ vựng'}
-        </button>
+        </Button>
       </div>
 
       <ul className="space-y-2">
         {batches.map((batch) => (
           <li
             key={batch.batchId}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
+            className="flex items-center justify-between rounded-karte border border-kartenrand bg-karteikarte p-3"
           >
             <span>
               <strong>{batch.title}</strong>
-              {batch.level && <span className="ml-2 text-xs text-muted">[{batch.level}]</span>}
-              {batch.topic && <span className="ml-2 text-xs text-muted">#{batch.topic}</span>}
-              <span className="ml-2 text-xs text-muted">[{batch.chunkCount} chunk]</span>
+              {batch.level && <span className="ml-2 text-xs text-radiert">[{batch.level}]</span>}
+              {batch.topic && <span className="ml-2 text-xs text-radiert">#{batch.topic}</span>}
+              <span className="ml-2 text-xs text-radiert">[{batch.chunkCount} chunk]</span>
             </span>
-            <button onClick={() => handleDelete(batch.batchId)} className="text-sm text-danger hover:underline">
+            <Button variant="ghost" className="text-rotstift" onClick={() => handleDelete(batch.batchId)}>
               Xoá
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

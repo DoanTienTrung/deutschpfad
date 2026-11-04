@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { Button, Note } from '@kit'
 import { apiFetch, ApiError } from '../../api/client'
-import Alert from '../ui/Alert'
 
 /**
  * Nút gửi lại email xác thực.
@@ -39,7 +39,6 @@ export default function ResendVerification({
       })
       setMessage(successMessage ?? res.message)
     } catch (err) {
-      // 429 (gửi quá nhiều) trả message riêng — hiện nguyên văn để người dùng biết cần chờ.
       setError(
         err instanceof ApiError
           ? ((err.data as { message?: string })?.message ?? 'Không gửi lại được, thử lại sau nhé')
@@ -51,17 +50,12 @@ export default function ResendVerification({
   }
 
   return (
-    <div>
-      {message && <Alert tone="success">{message}</Alert>}
-      {error && <Alert tone="danger">{error}</Alert>}
-      <button
-        type="button"
-        onClick={handleResend}
-        disabled={sending || !email}
-        className="w-full rounded-sm border border-hairline bg-canvas px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:border-primary/40 hover:bg-surface disabled:opacity-50"
-      >
+    <div className="space-y-3">
+      {message && <Note tone="ok">{message}</Note>}
+      {error && <Note tone="bad">{error}</Note>}
+      <Button variant="secondary" onClick={handleResend} disabled={!email} loading={sending} className="w-full">
         {sending ? 'Đang gửi...' : 'Gửi lại email xác thực'}
-      </button>
+      </Button>
     </div>
   )
 }

@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Check, Volume2, X } from 'lucide-react'
+import { AnswerOption, Badge, Button, Card, IconButton, Input, Note, ProgressBar, cn, type AnswerState } from '@kit'
 import { submitReview } from '../../api/vocabularyApi'
 import type { VocabularyItem, ReviewQuality } from '../../api/types'
 import { buildChoices, questionDisplay, shuffle, type QuestionDisplay } from '../../lib/quiz'
 import { checkAnswer, spokenForm } from '../../lib/answer'
 import { speak } from '../../lib/speech'
-import Alert from '../ui/Alert'
-import SpeakerIcon from '../ui/SpeakerIcon'
 import QuestionSentence from './QuestionSentence'
 import { GermanWord, PluralLine } from './GermanWord'
 
@@ -212,34 +212,22 @@ export default function LessonFlashcardExercise({
   }
 
   const display = questionDisplay(card)
-  const progress = (index / order.length) * 100
 
   return (
     <div className="mx-auto max-w-xl">
       {/* Tiến độ phiên */}
       <div className="mb-5">
         <div className="mb-2 flex items-baseline justify-between text-sm">
-          <span className="font-medium text-ink">
-            Thẻ {index + 1} <span className="font-normal text-muted">/ {order.length}</span>
+          <span className="font-medium text-bleistift">
+            Thẻ {index + 1} <span className="font-normal text-radiert">/ {order.length}</span>
           </span>
-          <span className="text-xs font-medium text-muted">{MODE_LABEL[mode]}</span>
+          <span className="text-xs font-medium text-radiert">{MODE_LABEL[mode]}</span>
         </div>
-        <div
-          className="h-1.5 overflow-hidden rounded-full bg-hairline"
-          role="progressbar"
-          aria-label="Tiến độ phiên ôn"
-          aria-valuemin={0}
-          aria-valuemax={order.length}
-          aria-valuenow={index}
-        >
-          <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${progress}%` }} />
-        </div>
+        <ProgressBar value={index / order.length} label="Tiến độ phiên ôn" />
       </div>
 
       {error && (
-        <div className="mb-4">
-          <Alert tone="danger">{error}</Alert>
-        </div>
+        <Note tone="bad" className="mb-4">{error}</Note>
       )}
 
       {mode === 'flip' && (
@@ -251,15 +239,15 @@ export default function LessonFlashcardExercise({
           aria-label={flipped ? 'Lật lại mặt trước' : 'Lật thẻ để xem nghĩa'}
         >
           <div className={`flip-card-inner h-full ${flipped ? 'is-flipped' : ''}`}>
-            <div className="flip-card-face relative flex h-full flex-col items-center justify-center rounded-xl border border-hairline bg-card px-8 text-center">
+            <div className="flip-card-face relative flex h-full flex-col items-center justify-center rounded-karte border border-kartenrand bg-karteikarte lampenlicht px-8 text-center shadow-lift">
               <CardTags card={card} />
-              <p className="font-display text-4xl font-semibold leading-tight text-ink">
+              <p className="font-display text-4xl font-semibold leading-tight text-bleistift">
                 <GermanWord item={card} />
               </p>
-              <PluralLine plural={card.plural} className="mt-2 block text-sm text-muted" />
-              {card.phonetic && <p className="mt-1 text-sm text-muted">[{card.phonetic}]</p>}
+              <PluralLine plural={card.plural} className="mt-2 block text-sm text-radiert" />
+              {card.phonetic && <p className="mt-1 text-sm text-radiert">[{card.phonetic}]</p>}
               <SpeakButton word={card.germanWord} className="mt-5" />
-              <p className="absolute inset-x-0 bottom-5 text-xs text-muted">
+              <p className="absolute inset-x-0 bottom-5 text-xs text-radiert">
                 Chạm để lật thẻ
                 <span className="hidden sm:inline">
                   {' '}
@@ -267,13 +255,13 @@ export default function LessonFlashcardExercise({
                 </span>
               </p>
             </div>
-            <div className="flip-card-face flip-card-face-back flex h-full flex-col items-center justify-center rounded-xl border border-hairline bg-card px-8 text-center">
-              <p className="font-display text-2xl font-semibold leading-snug text-ink">{card.vietnameseMeaning}</p>
-              {card.englishMeaning && <p className="mt-1 text-sm text-muted">{card.englishMeaning}</p>}
+            <div className="flip-card-face flip-card-face-back flex h-full flex-col items-center justify-center rounded-karte border border-kartenrand bg-karteikarte textur-linien px-8 text-center shadow-lift">
+              <p className="font-display text-2xl font-semibold leading-snug text-bleistift">{card.vietnameseMeaning}</p>
+              {card.englishMeaning && <p className="mt-1 text-sm text-radiert">{card.englishMeaning}</p>}
               {card.exampleSentence && (
-                <div className="mt-6 w-full border-t border-hairline pt-5">
-                  <p className="text-base text-ink">{card.exampleSentence}</p>
-                  {card.exampleSentenceVi && <p className="mt-1 text-sm text-muted">{card.exampleSentenceVi}</p>}
+                <div className="mt-6 w-full border-t border-linie pt-5">
+                  <p className="text-base text-bleistift">{card.exampleSentence}</p>
+                  {card.exampleSentenceVi && <p className="mt-1 text-sm text-radiert">{card.exampleSentenceVi}</p>}
                 </div>
               )}
             </div>
@@ -282,16 +270,16 @@ export default function LessonFlashcardExercise({
       )}
 
       {mode !== 'flip' && (
-        <div key={card.id} className="relative rounded-xl border border-hairline bg-card px-5 pb-6 pt-10 sm:px-8">
+        <Card key={card.id} className="relative px-5 pt-10 pb-6 sm:px-8">
           <CardTags card={card} />
 
           <div className="text-center">
-            <p className="font-display text-2xl font-semibold leading-snug text-ink">{card.vietnameseMeaning}</p>
-            {card.englishMeaning && <p className="mt-1 text-sm text-muted">{card.englishMeaning}</p>}
+            <p className="font-display text-2xl font-semibold leading-snug text-bleistift">{card.vietnameseMeaning}</p>
+            {card.englishMeaning && <p className="mt-1 text-sm text-radiert">{card.englishMeaning}</p>}
           </div>
 
           {display && (
-            <div className="mt-6 rounded-lg bg-surface px-4 py-4 text-center text-lg leading-relaxed text-ink">
+            <div className="mt-6 rounded-karte border border-linie bg-karteikarte-innen px-4 py-4 text-center text-lg leading-relaxed text-bleistift">
               {revealed && card.exampleSentence && display.text.includes(BLANK) ? (
                 <RevealedSentence sentence={card.exampleSentence} display={display} />
               ) : display.text.includes(BLANK) ? (
@@ -300,71 +288,40 @@ export default function LessonFlashcardExercise({
                 <QuestionSentence display={display} />
               )}
               {revealed && card.exampleSentenceVi && (
-                <p className="mt-2 text-sm text-muted">{card.exampleSentenceVi}</p>
+                <p className="mt-2 text-sm text-radiert">{card.exampleSentenceVi}</p>
               )}
             </div>
           )}
 
           {mode === 'fill' && !fillRevealed && (
             <div className="mt-6">
-              <p className="mb-2 text-center text-sm text-muted">Gõ từ tiếng Đức còn thiếu, rồi nhấn Enter</p>
+              <p className="mb-2 text-center text-sm text-radiert">Gõ từ tiếng Đức còn thiếu, rồi nhấn Enter</p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
                   handleFillCheck()
                 }}
               >
-                <input
-                  ref={fillInputRef}
-                  value={fillInput}
-                  onChange={(e) => {
-                    setFillInput(e.target.value)
-                    setFillWrong(false)
-                  }}
-                  aria-label="Từ tiếng Đức"
-                  aria-invalid={fillWrong}
-                  placeholder="Gõ ở đây..."
-                  autoComplete="off"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  autoFocus
-                  className={`h-14 w-full rounded-md border bg-canvas px-4 text-center font-display text-xl text-ink placeholder:font-sans placeholder:text-base placeholder:text-muted transition-[border-color,box-shadow] duration-150 focus:outline-none focus:ring-3 ${
-                    fillWrong ? 'border-danger focus:border-danger focus:ring-danger/20' : 'border-hairline focus:border-primary focus:ring-primary/20'
-                  }`}
-                />
+                <Input ref={fillInputRef} value={fillInput}
+                  onChange={(e) => { setFillInput(e.target.value); setFillWrong(false) }}
+                  aria-label="Từ tiếng Đức" invalid={fillWrong} placeholder="Gõ ở đây..."
+                  autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} autoFocus
+                  className="h-14 text-center font-display text-xl placeholder:font-sans placeholder:text-base" />
                 <div className="mt-2 flex flex-wrap justify-center gap-1.5" role="group" aria-label="Chèn chữ có dấu">
                   {UMLAUT_KEYS.map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => insertFillChar(key)}
-                      className="h-8 min-w-8 rounded-sm border border-hairline bg-canvas px-2 text-sm font-medium text-ink transition-colors hover:bg-surface active:translate-y-px"
-                    >
+                    <Button key={key} variant="secondary" size="sm" onClick={() => insertFillChar(key)} aria-label={`Thêm chữ ${key}`}>
                       {key}
-                    </button>
+                    </Button>
                   ))}
                 </div>
 
-                <p className="mt-3 min-h-5 text-center text-sm font-medium text-danger" aria-live="polite">
+                <p className="mt-3 min-h-5 text-center text-sm font-medium text-rotstift" aria-live="polite">
                   {fillWrong ? (fillHint ?? 'Chưa đúng, thử lại nhé.') : ''}
                 </p>
 
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={handleFillReveal}
-                    className="rounded-md border border-hairline bg-canvas px-4 py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface"
-                  >
-                    Xem đáp án
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!fillInput.trim()}
-                    className="rounded-md bg-primary px-4 py-3 text-sm font-semibold text-canvas transition-[background,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-primary-deep hover:shadow-lifted disabled:translate-y-0 disabled:opacity-40 disabled:shadow-none"
-                  >
-                    Kiểm tra
-                  </button>
+                  <Button variant="secondary" onClick={handleFillReveal}>Xem đáp án</Button>
+                  <Button type="submit" disabled={!fillInput.trim()}>Kiểm tra</Button>
                 </div>
               </form>
             </div>
@@ -372,35 +329,24 @@ export default function LessonFlashcardExercise({
 
           {mode === 'choice' && (
             <div className="mt-6">
-              <p className="mb-2 text-center text-sm text-muted">Chọn từ tiếng Đức đúng</p>
+              <p className="mb-2 text-center text-sm text-radiert">Chọn từ tiếng Đức đúng</p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {choices.map((choice, i) => {
                   const isCorrect = choice === card.germanWord
-                  const showResult = choiceSelected !== null
-                  const stateClass = !showResult
-                    ? 'border-hairline bg-canvas hover:-translate-y-px hover:border-ink/30 hover:shadow-lifted'
-                    : isCorrect
-                      ? 'border-success bg-success-bg text-success'
-                      : choice === choiceSelected
-                        ? 'border-danger bg-danger-bg text-danger'
-                        : 'border-hairline bg-canvas opacity-50'
+                  const state: AnswerState = choiceSelected === null ? 'idle' : isCorrect ? 'correct' : choice === choiceSelected ? 'wrong' : 'dim'
                   return (
-                    <button
-                      key={choice}
-                      onClick={() => choiceSelected === null && setChoiceSelected(choice)}
-                      disabled={choiceSelected !== null}
-                      className={`flex items-center gap-3 rounded-md border px-3 py-3 text-left text-base font-medium transition-[transform,box-shadow,border-color] duration-150 ${stateClass}`}
-                    >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border border-current/25 text-xs font-semibold opacity-70">
+                    <AnswerOption key={choice} state={state} onClick={() => choiceSelected === null && setChoiceSelected(choice)}
+                      disabled={choiceSelected !== null} className="flex items-center gap-3 px-3 text-left text-base font-medium">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-karte border border-current/25 text-xs font-semibold opacity-70">
                         {CHOICE_LETTERS[i]}
                       </span>
                       <span className="min-w-0 flex-1">{choice}</span>
-                    </button>
+                    </AnswerOption>
                   )
                 })}
               </div>
               {choiceSelected === null && (
-                <p className="mt-3 hidden text-center text-xs text-muted sm:block">
+                <p className="mt-3 hidden text-center text-xs text-radiert sm:block">
                   Phím <Kbd>1</Kbd>-<Kbd>{choices.length}</Kbd> để chọn nhanh
                 </p>
               )}
@@ -408,50 +354,41 @@ export default function LessonFlashcardExercise({
           )}
 
           {revealed && objectiveOutcome !== null && (
-            <AnswerFeedback
+            <WordFeedback
               card={card}
               outcome={objectiveOutcome}
               firstTryCorrect={mode === 'fill' ? fillCorrect && !fillMistake : objectiveOutcome === 'passed'}
               correctAfterRetry={mode === 'fill' && fillCorrect && fillMistake}
             />
           )}
-        </div>
+        </Card>
       )}
 
       {revealed && (
         <div className="mt-5">
           {objectiveOutcome === 'failed' && (
-            <p className="mb-2 text-center text-sm text-muted">Chưa nhớ ra ngay lần đầu, từ này sẽ quay lại sớm để ôn.</p>
+            <p className="mb-2 text-center text-sm text-radiert">Chưa nhớ ra ngay lần đầu, từ này sẽ quay lại sớm để ôn.</p>
           )}
           {objectiveOutcome === null && (
-            <p className="mb-2 text-center text-sm text-muted">Bạn nhớ từ này đến đâu?</p>
+            <p className="mb-2 text-center text-sm text-radiert">Bạn nhớ từ này đến đâu?</p>
           )}
-          <div className={`grid gap-2 ${availableRatings.length === 3 ? 'grid-cols-3' : availableRatings.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <div className={cn('grid gap-2', availableRatings.length === 3 ? 'grid-cols-3' : availableRatings.length === 2 ? 'grid-cols-2' : 'grid-cols-1')}>
             {availableRatings.map((r, i) => {
               const primary = i === availableRatings.length - 1
               const label = objectiveOutcome === 'failed' ? 'Tiếp tục' : r.label
               return (
-                <button
-                  key={r.quality}
-                  ref={primary ? nextButtonRef : undefined}
-                  onClick={() => handleAnswer(r.quality)}
-                  disabled={submitting}
-                  className={`flex flex-col items-center rounded-md px-3 py-3 transition-[background,transform,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-50 ${
-                    primary
-                      ? 'bg-primary text-canvas hover:-translate-y-px hover:bg-primary-deep hover:shadow-lifted'
-                      : 'border border-hairline bg-canvas text-ink hover:bg-surface'
-                  }`}
-                >
-                  <span className={`text-base font-semibold ${r.quality === 'FORGOT' && !primary ? 'text-danger' : ''}`}>
+                <Button key={r.quality} ref={primary ? nextButtonRef : undefined} onClick={() => handleAnswer(r.quality)} disabled={submitting}
+                  variant={primary ? 'primary' : 'secondary'} className="h-auto flex-col gap-0 px-3 py-3">
+                  <span className={cn('text-base font-semibold', r.quality === 'FORGOT' && !primary && 'text-rotstift')}>
                     {label}
                     <span className="hidden sm:inline">
-                      <Kbd className={`ml-2 ${primary ? 'border-canvas/30 text-canvas/70' : ''}`}>{r.key}</Kbd>
+                      <Kbd className={`ml-2 ${primary ? 'border-karteikarte/30 text-bleistift-invers/70' : ''}`}>{r.key}</Kbd>
                     </span>
                   </span>
                   {objectiveOutcome !== 'failed' && (
-                    <span className={`mt-0.5 text-xs ${primary ? 'text-canvas/70' : 'text-muted'}`}>{r.hint}</span>
+                    <span className={cn('mt-0.5 text-xs font-normal', primary ? 'text-bleistift-invers/70' : 'text-radiert')}>{r.hint}</span>
                   )}
-                </button>
+                </Button>
               )
             })}
           </div>
@@ -465,32 +402,24 @@ export default function LessonFlashcardExercise({
 
 function CardTags({ card }: { card: VocabularyItem }) {
   return (
-    <div className="absolute inset-x-4 top-3.5 flex items-center justify-between gap-2 text-xs text-muted">
+    <div className="absolute inset-x-4 top-3.5 flex items-center justify-between gap-2 text-xs text-radiert">
       <span>{card.wordType ?? ''}</span>
-      {card.level && <span className="rounded-full border border-hairline px-2 py-0.5 font-medium">{card.level}</span>}
+      {card.level && <Badge>{card.level}</Badge>}
     </div>
   )
 }
 
-function SpeakButton({ word, className = '' }: { word: string; className?: string }) {
+function SpeakButton({ word, className }: { word: string; className?: string }) {
+  // Nằm trong thẻ lật (cả thẻ bấm được): chặn sự kiện để bấm loa không lật thẻ.
   return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation()
-        speak(spokenForm(word))
-      }}
-      aria-label="Nghe phát âm"
-      className={`flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-canvas text-ink transition-colors hover:bg-surface ${className}`}
-    >
-      <SpeakerIcon className="h-5 w-5" />
-    </button>
+    <IconButton variant="secondary" label="Nghe phát âm" icon={<Volume2 className="size-5" aria-hidden="true" />} className={cn('rounded-rund', className)}
+      onClick={(e) => { e.stopPropagation(); speak(spokenForm(word)) }} />
   )
 }
 
-function Kbd({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function Kbd({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <kbd className={`inline-flex h-5 min-w-5 items-center justify-center rounded-sm border border-hairline px-1 font-sans text-xs font-medium leading-none text-muted ${className}`}>
+    <kbd className={`inline-flex h-5 min-w-5 items-center justify-center rounded-karte border border-linie px-1 font-sans text-xs font-medium leading-none text-radiert ${className}`}>
       {children}
     </kbd>
   )
@@ -505,7 +434,7 @@ function BlankSentence({ text }: { text: string }) {
         <span key={i}>
           {part}
           {i < parts.length - 1 && (
-            <span className="mx-0.5 inline-block w-20 translate-y-1 border-b-2 border-ink/50 align-baseline" aria-label="chỗ trống" />
+            <span className="mx-0.5 inline-block w-20 translate-y-1 border-b-2 border-bleistift/50 align-baseline" aria-label="chỗ trống" />
           )}
         </span>
       ))}
@@ -527,7 +456,7 @@ function RevealedSentence({ sentence, display }: { sentence: string; display: Qu
   )
 }
 
-function AnswerFeedback({
+function WordFeedback({
   card,
   outcome,
   firstTryCorrect,
@@ -542,30 +471,19 @@ function AnswerFeedback({
   const good = outcome === 'passed'
   return (
     <div
-      className={`mt-5 flex items-center gap-3 rounded-lg px-4 py-3 ${good ? 'bg-success-bg' : 'bg-danger-bg'}`}
+      className={cn('mt-5 flex items-center gap-3 rounded-karte border px-4 py-3', good ? 'border-aufstieg/50 bg-aufstieg-soft animate-richtig' : 'border-rotstift/50 bg-rotstift-soft animate-falsch')}
       role="status"
     >
-      <span
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${good ? 'bg-accent text-ink' : 'bg-danger text-canvas'}`}
-        aria-hidden="true"
-      >
-        {good ? (
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12.5l4.5 4.5L19 7.5" />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-            <path d="M7 7l10 10M17 7L7 17" />
-          </svg>
-        )}
+      <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-rund text-bleistift-invers', good ? 'bg-aufstieg' : 'bg-rotstift')} aria-hidden="true">
+        {good ? <Check className="size-4" strokeWidth={3} /> : <X className="size-4" strokeWidth={3} />}
       </span>
       <div className="min-w-0 flex-1">
-        <p className={`text-sm font-semibold ${good ? 'text-success' : 'text-danger'}`}>{title}</p>
-        <p className="font-display text-lg font-semibold text-ink">
+        <p className={`text-sm font-semibold ${good ? 'text-aufstieg' : 'text-rotstift'}`}>{title}</p>
+        <p className="font-display text-lg font-semibold text-bleistift">
           <GermanWord item={card} />
-          {card.phonetic && <span className="ml-2 font-sans text-sm font-normal text-muted">[{card.phonetic}]</span>}
+          {card.phonetic && <span className="ml-2 font-sans text-sm font-normal text-radiert">[{card.phonetic}]</span>}
         </p>
-        <PluralLine plural={card.plural} className="block text-xs text-muted" />
+        <PluralLine plural={card.plural} className="block text-xs text-radiert" />
       </div>
       <SpeakButton word={card.germanWord} />
     </div>
@@ -574,28 +492,26 @@ function AnswerFeedback({
 
 function SessionSummary({ reviewed, tally }: { reviewed: number; tally: Record<ReviewQuality, number> }) {
   const rows: { label: string; value: number; className: string }[] = [
-    { label: 'Dễ', value: tally.EASY, className: 'text-ink' },
-    { label: 'Nhớ', value: tally.REMEMBERED, className: 'text-ink' },
-    { label: 'Quên', value: tally.FORGOT, className: 'text-danger' },
+    { label: 'Dễ', value: tally.EASY, className: 'text-bleistift' },
+    { label: 'Nhớ', value: tally.REMEMBERED, className: 'text-bleistift' },
+    { label: 'Quên', value: tally.FORGOT, className: 'text-rotstift' },
   ]
   return (
-    <div className="mx-auto max-w-xl rounded-xl border border-hairline bg-card px-6 py-8 text-center">
-      {/* Hoàn thành phiên ôn là "khoảnh khắc đạt được" nên được dùng màu amber (DESIGN.md). */}
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent text-ink" aria-hidden="true">
-        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 12.5l4.5 4.5L19 7.5" />
-        </svg>
+    <Card className="mx-auto max-w-xl px-6 py-8 text-center">
+      {/* Hoàn thành phiên ôn là "khoảnh khắc đạt được" nên được dùng hổ phách (DESIGN.md). */}
+      <span className="mx-auto flex size-12 items-center justify-center rounded-rund bg-reiter text-reiter-beschriftung animate-stempel" aria-hidden="true">
+        <Check className="size-6" strokeWidth={2.6} />
       </span>
-      <p className="mt-4 font-display text-xl font-semibold text-ink">Xong phiên ôn tập</p>
-      <p className="mt-1 text-sm text-muted">Bạn đã ôn {reviewed} thẻ. Từng bước một, không cần vội.</p>
-      <dl className="mx-auto mt-5 grid max-w-xs grid-cols-3 divide-x divide-hairline rounded-lg bg-surface py-3">
+      <p className="mt-4 font-display text-xl font-semibold text-bleistift">Xong phiên ôn tập</p>
+      <p className="mt-1 text-sm text-radiert">Bạn đã ôn {reviewed} thẻ. Từng bước một, không cần vội.</p>
+      <dl className="mx-auto mt-5 grid max-w-xs grid-cols-3 divide-x divide-linie rounded-karte border border-linie bg-karteikarte-innen py-3">
         {rows.map((r) => (
           <div key={r.label}>
             <dd className={`font-display text-2xl font-semibold ${r.className}`}>{r.value}</dd>
-            <dt className="text-xs text-muted">{r.label}</dt>
+            <dt className="text-xs text-radiert">{r.label}</dt>
           </div>
         ))}
       </dl>
-    </div>
+    </Card>
   )
 }

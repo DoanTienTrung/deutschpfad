@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { MessageSquare, X } from 'lucide-react'
+import { Button, IconButton, Note, Spinner, Textarea } from '@kit'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { askTutor } from '../api/tutorApi'
 import type { TutorHistoryTurn } from '../api/types'
 import { ApiError } from '../api/client'
 import { onOpenTutor } from '../lib/tutorChat'
-import Alert from './ui/Alert'
 
 export default function TutorChatWidget() {
   const [open, setOpen] = useState(false)
@@ -59,19 +60,17 @@ export default function TutorChatWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-30">
+    <div className="fixed right-4 bottom-safe z-panel sm:right-6">
       {open ? (
-        <div className="flex h-[32rem] w-80 flex-col overflow-hidden rounded-lg border border-hairline bg-card shadow-lifted sm:w-96">
-          <div className="flex items-center justify-between bg-primary px-4 py-3 text-canvas">
-            <span className="font-display text-sm font-semibold">Gia sư tiếng Đức</span>
-            <button onClick={() => setOpen(false)} aria-label="Đóng chat" className="text-canvas/80 hover:text-canvas">
-              ✕
-            </button>
+        <div className="flex h-128 max-h-[80dvh] w-[calc(100vw-2rem)] max-w-96 flex-col overflow-hidden rounded-karte bg-karteikarte shadow-pop animate-erscheinen">
+          <div className="flex items-center justify-between border-b-2 border-kopfzeile py-1.5 pr-1 pl-4">
+            <span className="font-display font-semibold text-bleistift">Gia sư tiếng Đức</span>
+            <IconButton label="Đóng chat" icon={<X className="size-4" aria-hidden="true" />} onClick={() => setOpen(false)} />
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-surface p-3">
+          <div className="flex-1 overflow-y-auto bg-karteikarte-innen p-3">
             {messages.length === 0 && (
-              <p className="text-xs text-muted">
+              <p className="text-xs text-radiert">
                 Hỏi mình về từ vựng hay ngữ pháp tiếng Đức nhé - vd. "der/die/das của Haus là gì?"
               </p>
             )}
@@ -79,11 +78,11 @@ export default function TutorChatWidget() {
               {messages.map((m, i) => (
                 <li
                   key={i}
-                  className={`rounded-md p-2 text-sm ${
-                    m.role === 'assistant' ? 'bg-card text-ink' : 'ml-4 bg-accent/20 text-ink'
+                  className={`rounded-karte p-2 text-sm ${
+                    m.role === 'assistant' ? 'border border-linie bg-karteikarte text-bleistift' : 'ml-4 bg-tinte-soft text-bleistift'
                   }`}
                 >
-                  <p className="mb-0.5 text-[10px] font-medium text-muted">
+                  <p className="mb-0.5 text-xs font-medium text-radiert">
                     {m.role === 'assistant' ? 'Gia sư' : 'Bạn'}
                   </p>
                   {m.role === 'assistant' ? (
@@ -96,7 +95,7 @@ export default function TutorChatWidget() {
                 </li>
               ))}
               {loading && (
-                <li className="rounded-md bg-card p-2 text-sm text-muted">Gia sư đang trả lời...</li>
+                <li className="flex items-center gap-2 rounded-karte border border-linie bg-karteikarte p-2 text-sm text-radiert"><Spinner /> Gia sư đang trả lời...</li>
               )}
             </ul>
             <div ref={bottomRef} />
@@ -104,39 +103,30 @@ export default function TutorChatWidget() {
 
           {error && (
             <div className="px-2 pt-2">
-              <Alert tone="danger">{error}</Alert>
+              <Note tone="bad">{error}</Note>
             </div>
           )}
 
-          <div className="flex gap-2 border-t border-hairline p-2">
-            <textarea
+          <div className="flex gap-2 border-t border-linie p-2">
+            <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Nhập câu hỏi..."
               rows={1}
               disabled={loading}
-              className="flex-1 resize-none rounded-md border border-hairline px-2 py-1.5 text-sm"
+              className="flex-1"
             />
-            <button
+            <Button className="shrink-0"
               onClick={handleSend}
-              disabled={loading || !input.trim()}
-              className="shrink-0 rounded-md bg-primary px-3 text-sm font-medium text-canvas hover:bg-primary-deep disabled:opacity-50"
-            >
+              disabled={loading || !input.trim()}>
               Gửi
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Mở chat với Gia sư"
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-canvas shadow-lifted hover:bg-primary-deep"
-        >
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M4 4h16v12H8l-4 4V4Z" />
-          </svg>
-        </button>
+        <IconButton variant="primary" label="Mở chat với Gia sư" onClick={() => setOpen(true)}
+          icon={<MessageSquare className="size-6" aria-hidden="true" />} className="size-14 rounded-rund shadow-pop" />
       )}
     </div>
   )

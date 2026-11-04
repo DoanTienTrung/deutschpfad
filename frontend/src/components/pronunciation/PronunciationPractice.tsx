@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { ArrowLeft, ArrowRight, CaseSensitive, Ear, IdCard, Keyboard, PartyPopper, Snail, Trophy, Volume2 } from 'lucide-react'
+import { AnswerFeedback, AnswerOption, Button, Card, CardButton, Input, ProgressBar, type AnswerState } from '@kit'
 import {
   LETTERS,
   MINIMAL_PAIRS,
@@ -13,11 +15,11 @@ import { markAlphabetVisited } from '../../lib/onboarding'
 
 type Activity = 'letters' | 'pairs' | 'spelling' | 'name'
 
-const ACTIVITIES: { id: Activity; title: string; desc: string; icon: string }[] = [
-  { id: 'letters', title: 'Nghe & chọn chữ cái', desc: 'Nghe tên một chữ cái, chọn đúng chữ trong 4 đáp án.', icon: '🔤' },
-  { id: 'pairs', title: 'Cặp từ dễ nhầm', desc: 'schon hay schön? Nghe và chọn đúng từ vừa đọc.', icon: '👂' },
-  { id: 'spelling', title: 'Nghe đánh vần, gõ lại', desc: 'App đánh vần từng chữ cái, bạn gõ lại cả từ.', icon: '⌨️' },
-  { id: 'name', title: 'Đánh vần tên của bạn', desc: 'Gõ tên, xem và nghe cách đánh vần - dùng khi gọi điện, ở Bürgeramt.', icon: '🪪' },
+const ACTIVITIES: { id: Activity; title: string; desc: string; icon: ReactNode }[] = [
+  { id: 'letters', title: 'Nghe & chọn chữ cái', desc: 'Nghe tên một chữ cái, chọn đúng chữ trong 4 đáp án.', icon: <CaseSensitive /> },
+  { id: 'pairs', title: 'Cặp từ dễ nhầm', desc: 'schon hay schön? Nghe và chọn đúng từ vừa đọc.', icon: <Ear /> },
+  { id: 'spelling', title: 'Nghe đánh vần, gõ lại', desc: 'App đánh vần từng chữ cái, bạn gõ lại cả từ.', icon: <Keyboard /> },
+  { id: 'name', title: 'Đánh vần tên của bạn', desc: 'Gõ tên, xem và nghe cách đánh vần - dùng khi gọi điện, ở Bürgeramt.', icon: <IdCard /> },
 ]
 
 const QUESTIONS = 10
@@ -44,46 +46,32 @@ function keyOf(l: Letter) {
 function ResultScreen({ score, total, onRestart, onBack }: { score: number; total: number; onRestart: () => void; onBack: () => void }) {
   const great = score >= total * 0.8
   return (
-    <div className="rounded-lg border border-hairline bg-card p-8 text-center">
-      <p className="text-4xl">{great ? '🎉' : '💪'}</p>
-      <p className="mt-3 font-display text-2xl font-semibold text-ink">
+    <Card className="p-8 text-center">
+      <span className="inline-flex text-radiert [&_svg]:size-9" aria-hidden="true">{great ? <PartyPopper /> : <Trophy />}</span>
+      <p className="mt-3 font-display text-2xl font-semibold text-bleistift">
         {score}/{total} câu đúng
       </p>
-      <p className="mt-1 text-sm text-muted">{great ? 'Tai bạn đã quen với những âm này rồi.' : 'Nghe lại vài lần nữa là quen - từng bước một.'}</p>
+      <p className="mt-1 text-sm text-radiert">{great ? 'Tai bạn đã quen với những âm này rồi.' : 'Nghe lại vài lần nữa là quen - từng bước một.'}</p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <button onClick={onRestart} className="rounded-md bg-primary px-5 py-2.5 font-medium text-canvas hover:bg-primary-deep">
-          Làm lại
-        </button>
-        <button onClick={onBack} className="rounded-md border border-hairline px-5 py-2.5 font-medium text-ink hover:bg-surface">
-          Chọn bài khác
-        </button>
+        <Button onClick={onRestart}>Làm lại</Button>
+        <Button variant="secondary" onClick={onBack}>Chọn bài khác</Button>
       </div>
-    </div>
+    </Card>
   )
 }
 
 function Progress({ index, total, score }: { index: number; total: number; score: number }) {
   return (
     <div className="mb-4">
-      <div className="flex justify-between text-sm text-muted">
+      <div className="flex justify-between text-sm text-radiert">
         <span>
           Câu {index + 1}/{total}
         </span>
         <span>Đúng {score}</span>
       </div>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface">
-        <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${(index / total) * 100}%` }} />
-      </div>
+      <ProgressBar value={index / total} label="Tiến độ bài luyện" className="mt-1.5" />
     </div>
   )
-}
-
-function choiceClass(state: 'idle' | 'correct' | 'wrong' | 'dim') {
-  const base = 'rounded-lg border px-4 py-4 font-display font-bold transition-colors disabled:cursor-default'
-  if (state === 'correct') return `${base} border-success bg-success-bg text-success`
-  if (state === 'wrong') return `${base} border-danger bg-danger-bg text-danger`
-  if (state === 'dim') return `${base} border-hairline bg-card text-muted`
-  return `${base} border-hairline bg-card text-ink hover:bg-surface`
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -134,35 +122,32 @@ function LetterQuiz({ onBack }: { onBack: () => void }) {
   return (
     <div>
       <Progress index={index} total={questions.length} score={score} />
-      <div className="rounded-lg border border-hairline bg-card p-6 text-center">
-        <p className="text-sm text-muted">Chữ cái nào vừa được đọc?</p>
-        <button
-          onClick={() => speak(q.answer.speak)}
-          className="mt-3 rounded-full border border-hairline px-5 py-2.5 text-ink hover:bg-surface"
-        >
-          🔊 Nghe lại
-        </button>
+      <Card className="p-6 text-center">
+        <p className="text-sm text-radiert">Chữ cái nào vừa được đọc?</p>
+        <Button variant="secondary" size="sm" className="mt-3" icon={<Volume2 className="size-4" aria-hidden="true" />} onClick={() => speak(q.answer.speak)}>
+          Nghe lại
+        </Button>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {q.choices.map((c) => {
-            const state = !picked ? 'idle' : c === q.answer ? 'correct' : c === picked ? 'wrong' : 'dim'
+            const state: AnswerState = !picked ? 'idle' : c === q.answer ? 'correct' : c === picked ? 'wrong' : 'dim'
             return (
-              <button key={c.upper} onClick={() => pick(c)} disabled={!!picked} className={`${choiceClass(state)} text-3xl`}>
+              <AnswerOption key={c.upper} state={state} onClick={() => pick(c)} disabled={!!picked} className="py-4 font-display text-3xl font-bold">
                 {c.upper}
-              </button>
+              </AnswerOption>
             )
           })}
         </div>
         {picked && (
           <div className="mt-5">
-            <p className={`text-sm font-medium ${picked === q.answer ? 'text-success' : 'text-danger'}`}>
-              {picked === q.answer ? 'Chính xác!' : `Chưa đúng - đó là chữ ${q.answer.upper} (đọc "${q.answer.name}").`}
-            </p>
-            <button onClick={next} className="mt-3 rounded-md bg-primary px-5 py-2.5 font-medium text-canvas hover:bg-primary-deep">
-              {index === questions.length - 1 ? 'Xem kết quả' : 'Câu tiếp →'}
-            </button>
+            <AnswerFeedback correct={picked === q.answer} className="text-left"
+              title={picked === q.answer ? 'Chính xác.' : `Chưa đúng - đó là chữ ${q.answer.upper} (đọc "${q.answer.name}").`} />
+            <Button onClick={next} className="mt-3">
+              {index === questions.length - 1 ? 'Xem kết quả' : 'Câu tiếp'}
+              {index < questions.length - 1 && <ArrowRight className="size-4" aria-hidden="true" />}
+            </Button>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }
@@ -206,47 +191,39 @@ function PairQuiz({ onBack }: { onBack: () => void }) {
   return (
     <div>
       <Progress index={index} total={questions.length} score={score} />
-      <div className="rounded-lg border border-hairline bg-card p-6 text-center">
-        <p className="text-sm text-muted">Từ nào vừa được đọc? (khác nhau ở: {q.pair.focus})</p>
-        <button
-          onClick={() => speak(q.target.word)}
-          className="mt-3 rounded-full border border-hairline px-5 py-2.5 text-ink hover:bg-surface"
-        >
-          🔊 Nghe lại
-        </button>
+      <Card className="p-6 text-center">
+        <p className="text-sm text-radiert">Từ nào vừa được đọc? (khác nhau ở: {q.pair.focus})</p>
+        <Button variant="secondary" size="sm" className="mt-3" icon={<Volume2 className="size-4" aria-hidden="true" />} onClick={() => speak(q.target.word)}>
+          Nghe lại
+        </Button>
         <div className="mt-6 grid grid-cols-2 gap-3">
           {q.order.map((ex) => {
-            const state = !picked ? 'idle' : ex.word === q.target.word ? 'correct' : ex.word === picked ? 'wrong' : 'dim'
+            const state: AnswerState = !picked ? 'idle' : ex.word === q.target.word ? 'correct' : ex.word === picked ? 'wrong' : 'dim'
             return (
-              <button key={ex.word} onClick={() => pick(ex.word)} disabled={!!picked} className={`${choiceClass(state)} text-2xl`}>
+              <AnswerOption key={ex.word} state={state} onClick={() => pick(ex.word)} disabled={!!picked} className="py-4 font-display text-2xl font-bold">
                 {ex.word}
                 {picked && <span className="mt-1 block font-sans text-sm font-normal">{ex.meaning}</span>}
-              </button>
+              </AnswerOption>
             )
           })}
         </div>
         {picked && (
           <div className="mt-5">
-            <p className="text-sm text-muted">Nghe lại cả hai để so sánh:</p>
+            <p className="text-sm text-radiert">Nghe lại cả hai để so sánh:</p>
             <div className="mt-2 flex justify-center gap-2">
               {q.order.map((ex) => (
-                <button key={ex.word} onClick={() => speak(ex.word, { rate: 0.8 })} className="rounded-full border border-hairline px-4 py-2 text-sm text-ink hover:bg-surface">
-                  🔊 {ex.word}
-                </button>
+                <Button key={ex.word} variant="secondary" size="sm" icon={<Volume2 className="size-4" aria-hidden="true" />} onClick={() => speak(ex.word, { rate: 0.8 })}>
+                  {ex.word}
+                </Button>
               ))}
             </div>
-            <button
-              onClick={() => {
-                setPicked(null)
-                setIndex((i) => i + 1)
-              }}
-              className="mt-4 rounded-md bg-primary px-5 py-2.5 font-medium text-canvas hover:bg-primary-deep"
-            >
-              {index === questions.length - 1 ? 'Xem kết quả' : 'Câu tiếp →'}
-            </button>
+            <Button className="mt-4" onClick={() => { setPicked(null); setIndex((i) => i + 1) }}>
+              {index === questions.length - 1 ? 'Xem kết quả' : 'Câu tiếp'}
+              {index < questions.length - 1 && <ArrowRight className="size-4" aria-hidden="true" />}
+            </Button>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }
@@ -308,70 +285,49 @@ function SpellingDrill({ onBack }: { onBack: () => void }) {
   return (
     <div>
       <Progress index={index} total={words.length} score={score} />
-      <div className="rounded-lg border border-hairline bg-card p-6 text-center">
-        <p className="text-sm text-muted">Nghe đánh vần từng chữ cái, rồi gõ lại cả từ.</p>
+      <Card className="p-6 text-center">
+        <p className="text-sm text-radiert">Nghe đánh vần từng chữ cái, rồi gõ lại cả từ.</p>
         <div className="mt-3 flex justify-center gap-2">
-          <button
-            onClick={() => play()}
-            className="rounded-full border border-hairline px-5 py-2.5 text-ink hover:bg-surface"
-          >
-            🔊 Nghe lại
-          </button>
-          <button onClick={() => play(0.55)} className="rounded-full border border-hairline px-5 py-2.5 text-ink hover:bg-surface">
-            🐢 Chậm
-          </button>
+          <Button variant="secondary" size="sm" icon={<Volume2 className="size-4" aria-hidden="true" />} onClick={() => play()}>Nghe lại</Button>
+          <Button variant="secondary" size="sm" icon={<Snail className="size-4" aria-hidden="true" />} onClick={() => play(0.55)}>Chậm</Button>
         </div>
 
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+        <Input value={input} onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (result ? next() : check())}
-          readOnly={!!result}
-          autoFocus
-          autoComplete="off"
-          spellCheck={false}
-          aria-label="Gõ từ vừa nghe đánh vần"
-          className={`mt-6 w-full rounded-sm border bg-canvas px-4 py-3 text-center font-display text-2xl text-ink outline-none focus:ring-2 focus:ring-primary/20 ${
-            result === 'correct' ? 'border-success' : result === 'wrong' ? 'border-danger' : 'border-hairline focus:border-primary'
-          }`}
-        />
+          readOnly={!!result} autoFocus autoComplete="off" spellCheck={false} aria-label="Gõ từ vừa nghe đánh vần"
+          invalid={result === 'wrong'}
+          className={`mt-6 min-h-14 text-center font-display text-2xl ${result === 'correct' ? 'border-aufstieg' : ''}`} />
         {!result && (
           <div className="mt-2 flex justify-center gap-1.5">
             {UMLAUT_KEYS.map((k) => (
-              <button key={k} type="button" onClick={() => setInput((v) => v + k)} className="rounded-sm border border-hairline px-3 py-1 text-ink hover:bg-surface">
+              <Button key={k} variant="secondary" size="sm" onClick={() => setInput((v) => v + k)} aria-label={`Thêm chữ ${k}`}>
                 {k}
-              </button>
+              </Button>
             ))}
           </div>
         )}
 
         {result && (
           <div className="mt-4">
-            <p className={`text-sm font-medium ${result === 'correct' ? 'text-success' : 'text-danger'}`}>
-              {result === 'correct' ? 'Chính xác!' : `Đáp án: ${word.word}`}{' '}
-              <span className="font-normal text-muted">({word.meaning})</span>
-            </p>
-            <p className="mt-2 text-sm text-muted">
-              {spellOut(word.word)
-                .filter((c) => c.letter)
-                .map((c) => c.letter!.name)
-                .join(' – ')}
-            </p>
+            <AnswerFeedback correct={result === 'correct'} className="text-left"
+              title={result === 'correct' ? 'Chính xác.' : `Đáp án: ${word.word}`}>
+              <span className="text-radiert">({word.meaning}) </span>
+              {spellOut(word.word).filter((c) => c.letter).map((c) => c.letter!.name).join(' - ')}
+            </AnswerFeedback>
           </div>
         )}
 
         <div className="mt-5">
           {result ? (
-            <button onClick={next} className="rounded-md bg-primary px-5 py-2.5 font-medium text-canvas hover:bg-primary-deep">
-              {index === words.length - 1 ? 'Xem kết quả' : 'Câu tiếp →'}
-            </button>
+            <Button onClick={next}>
+              {index === words.length - 1 ? 'Xem kết quả' : 'Câu tiếp'}
+              {index < words.length - 1 && <ArrowRight className="size-4" aria-hidden="true" />}
+            </Button>
           ) : (
-            <button onClick={check} disabled={!input.trim()} className="rounded-md bg-primary px-5 py-2.5 font-medium text-canvas hover:bg-primary-deep disabled:opacity-40">
-              Kiểm tra
-            </button>
+            <Button onClick={check} disabled={!input.trim()}>Kiểm tra</Button>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   )
 }
@@ -384,59 +340,41 @@ function SpellMyName() {
   const letters = chars.filter((c) => c.letter)
 
   return (
-    <div className="rounded-lg border border-hairline bg-card p-6">
-      <label htmlFor="spell-name" className="text-sm font-medium text-ink">
+    <Card className="p-6">
+      <label htmlFor="spell-name" className="text-sm font-medium text-bleistift">
         Gõ tên của bạn (có dấu cũng được - sẽ đánh vần theo chữ không dấu, như trên giấy tờ ở Đức)
       </label>
-      <input
-        id="spell-name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="vd. Nguyễn Văn An"
-        autoComplete="off"
-        spellCheck={false}
-        className="mt-2 w-full rounded-sm border border-hairline bg-canvas px-4 py-3 font-display text-xl text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-      />
+      <Input id="spell-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="vd. Nguyễn Văn An"
+        autoComplete="off" spellCheck={false} className="mt-2 min-h-12 font-display text-xl" />
 
       {letters.length > 0 && (
         <>
           <div className="mt-4 flex flex-wrap gap-2">
-            <button onClick={() => speak(spellingSpeech(name), { rate: 0.8 })} className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-canvas hover:bg-primary-deep">
-              🔊 Nghe đánh vần
-            </button>
-            <button
-              onClick={() =>
-                speak(
-                  letters.map((c) => `${c.letter!.speak} wie ${c.spellingWord}`).join(', '),
-                  { rate: 0.85 },
-                )
-              }
-              className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-            >
-              🔊 Đánh vần kiểu điện thoại ("A wie Anton")
-            </button>
+            <Button size="sm" icon={<Volume2 className="size-4" aria-hidden="true" />} onClick={() => speak(spellingSpeech(name), { rate: 0.8 })}>
+              Nghe đánh vần
+            </Button>
+            <Button variant="secondary" size="sm" icon={<Volume2 className="size-4" aria-hidden="true" />}
+              onClick={() => speak(letters.map((c) => `${c.letter!.speak} wie ${c.spellingWord}`).join(', '), { rate: 0.85 })}>
+              Đánh vần kiểu điện thoại ("A wie Anton")
+            </Button>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {chars.map((c, i) =>
               c.letter ? (
-                <button
-                  key={i}
-                  onClick={() => speak(c.letter!.speak)}
-                  className="rounded-md border border-hairline bg-canvas px-3 py-2 text-left transition-colors hover:bg-surface"
-                >
-                  <span className="font-display text-2xl font-bold text-ink">{c.letter.lower === 'ß' ? 'ß' : c.letter.upper}</span>
-                  <span className="ml-2 text-sm text-ink">{c.letter.name}</span>
-                  <span className="block text-xs text-muted">wie {c.spellingWord}</span>
-                </button>
+                <CardButton key={i} onClick={() => speak(c.letter!.speak)} className="px-3 py-2">
+                  <span className="font-display text-2xl font-bold text-bleistift">{c.letter.lower === 'ß' ? 'ß' : c.letter.upper}</span>
+                  <span className="ml-2 text-sm text-bleistift">{c.letter.name}</span>
+                  <span className="block text-xs text-radiert">wie {c.spellingWord}</span>
+                </CardButton>
               ) : null,
             )}
           </div>
-          <p className="mt-4 text-xs text-muted">
-            Khi gọi điện, người Đức hay đánh vần kèm một từ cho chắc: "N wie Nordpol, G wie Gustav…".
+          <p className="mt-4 text-xs text-radiert">
+            Khi gọi điện, người Đức hay đánh vần kèm một từ cho chắc: "N wie Nordpol, G wie Gustav...".
           </p>
         </>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -450,20 +388,13 @@ export default function PronunciationPractice() {
     return (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {ACTIVITIES.map((a) => (
-          <button
-            key={a.id}
-            onClick={() => {
-              markAlphabetVisited()
-              setActivity(a.id)
-            }}
-            className="flex items-start gap-4 rounded-lg border border-hairline bg-card p-5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
-          >
-            <span className="text-3xl">{a.icon}</span>
+          <CardButton key={a.id} onClick={() => { markAlphabetVisited(); setActivity(a.id) }} className="flex items-start gap-4">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-rund bg-karteikarte-innen text-radiert [&_svg]:size-5" aria-hidden="true">{a.icon}</span>
             <span>
-              <span className="block font-display font-semibold text-ink">{a.title}</span>
-              <span className="mt-1 block text-sm text-muted">{a.desc}</span>
+              <span className="block font-display font-semibold text-bleistift">{a.title}</span>
+              <span className="mt-1 block text-sm text-radiert">{a.desc}</span>
             </span>
-          </button>
+          </CardButton>
         ))}
       </div>
     )
@@ -472,10 +403,10 @@ export default function PronunciationPractice() {
   const title = ACTIVITIES.find((a) => a.id === activity)!.title
   return (
     <div className="mx-auto max-w-xl">
-      <button onClick={back} className="mb-4 text-sm text-primary hover:underline">
-        ← Các bài luyện
-      </button>
-      <h3 className="mb-4 font-display text-lg font-semibold text-ink">{title}</h3>
+      <Button variant="ghost" size="sm" onClick={back} icon={<ArrowLeft className="size-4" aria-hidden="true" />} className="mb-2 -ml-3">
+        Các bài luyện
+      </Button>
+      <h3 className="mb-4 font-display text-lg font-semibold text-bleistift">{title}</h3>
       {activity === 'letters' && <LetterQuiz onBack={back} />}
       {activity === 'pairs' && <PairQuiz onBack={back} />}
       {activity === 'spelling' && <SpellingDrill onBack={back} />}

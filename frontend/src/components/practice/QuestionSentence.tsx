@@ -13,7 +13,7 @@ export default function QuestionSentence({ display, className }: { display: Ques
   return (
     <p className={className}>
       {display.text.slice(0, idx)}
-      <span className="font-bold text-primary underline decoration-2 underline-offset-2">{matched}</span>
+      <span className="font-bold text-bleistift underline decoration-2 underline-offset-2">{matched}</span>
       {display.text.slice(idx + display.highlightWord.length)}
     </p>
   )

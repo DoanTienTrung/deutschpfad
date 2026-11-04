@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Volume2 } from 'lucide-react'
+import { Article, Button, Card, IconButton, Pagination } from '@kit'
 import type { VocabularyItem } from '../../api/types'
 import { speak } from '../../lib/speech'
 import { spokenForm } from '../../lib/answer'
@@ -19,78 +21,48 @@ export default function FlashcardBrowseList({
 
   return (
     <div>
-      <button
-        onClick={onStartPractice}
-        className="mb-4 w-full rounded-md border border-primary bg-primary/5 px-6 py-3 text-center font-medium text-primary hover:bg-primary/10"
-      >
-        Luyện tập flashcards
-      </button>
+      <Button onClick={onStartPractice} className="mb-4 w-full">Luyện tập flashcards</Button>
 
-      <p className="mb-1 text-sm text-muted">List có {items.length} từ</p>
-      <p className="mb-4 text-xs text-muted">
-        Màu mạo từ: <span className="font-medium text-der">der</span> giống đực ·{' '}
-        <span className="font-medium text-die">die</span> giống cái ·{' '}
-        <span className="font-medium text-das">das</span> giống trung
+      <p className="mb-1 text-sm text-radiert">List có {items.length} từ</p>
+      <p className="mb-4 text-xs text-radiert">
+        Màu mạo từ: <Article gender="der" /> giống đực ·{' '}
+        <Article gender="die" /> giống cái ·{' '}
+        <Article gender="das" /> giống trung
       </p>
 
       <div className="space-y-3">
         {pageItems.map((item) => (
-          <div key={item.id} className="rounded-md border border-hairline bg-card p-4">
+          <Card key={item.id} className="p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <GermanWord item={item} className="font-display text-lg font-semibold text-ink" />
-              {item.wordType && <span className="text-sm text-muted">({item.wordType})</span>}
-              {item.phonetic && <span className="text-sm text-muted">/{item.phonetic}/</span>}
-              <button
-                onClick={() => speak(spokenForm(item.germanWord))}
-                aria-label="Phát âm"
-                className="text-lg text-primary"
-              >
-                🔊
-              </button>
+              <GermanWord item={item} className="font-display text-lg font-semibold text-bleistift" />
+              {item.wordType && <span className="text-sm text-radiert">({item.wordType})</span>}
+              {item.phonetic && <span className="text-sm text-radiert">/{item.phonetic}/</span>}
+              <IconButton label="Phát âm" icon={<Volume2 className="size-4" aria-hidden="true" />} onClick={() => speak(spokenForm(item.germanWord))} />
             </div>
-            <PluralLine plural={item.plural} className="mt-1 block text-sm text-muted" />
+            <PluralLine plural={item.plural} className="mt-1 block text-sm text-radiert" />
 
             <div className="mt-3">
-              <p className="text-xs font-medium uppercase text-muted">Định nghĩa</p>
-              <p className="text-ink">{item.vietnameseMeaning}</p>
-              {item.englishMeaning && <p className="text-sm text-muted">= {item.englishMeaning}</p>}
+              <p className="text-xs font-medium uppercase text-radiert">Định nghĩa</p>
+              <p className="text-bleistift">{item.vietnameseMeaning}</p>
+              {item.englishMeaning && <p className="text-sm text-radiert">= {item.englishMeaning}</p>}
             </div>
 
             {item.exampleSentence && (
               <div className="mt-3">
-                <p className="text-xs font-medium uppercase text-muted">Ví dụ</p>
-                <p className="flex items-start gap-2 text-sm text-ink">
-                  <button
-                    onClick={() => speak(item.exampleSentence as string)}
-                    aria-label="Phát âm câu ví dụ"
-                    className="mt-0.5 shrink-0 text-primary"
-                  >
-                    🔊
-                  </button>
+                <p className="text-xs font-medium uppercase text-radiert">Ví dụ</p>
+                <p className="flex items-center gap-1 text-sm text-bleistift">
+                  <IconButton label="Phát âm câu ví dụ" icon={<Volume2 className="size-4" aria-hidden="true" />}
+                    onClick={() => speak(item.exampleSentence as string)} className="-ml-2" />
                   <span className="italic">{item.exampleSentence}</span>
                 </p>
-                {item.exampleSentenceVi && <p className="ml-6 text-sm text-muted">{item.exampleSentenceVi}</p>}
+                {item.exampleSentenceVi && <p className="ml-9 text-sm text-radiert">{item.exampleSentenceVi}</p>}
               </div>
             )}
-          </div>
+          </Card>
         ))}
       </div>
 
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2">
-          {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`rounded-sm px-3 py-1.5 text-sm font-medium ${
-                page === p ? 'bg-primary text-canvas' : 'border border-hairline text-ink hover:bg-surface'
-              }`}
-            >
-              Trang {p + 1}
-            </button>
-          ))}
-        </div>
-      )}
+      <Pagination page={page + 1} pageCount={totalPages} onChange={(p) => setPage(p - 1)} className="mt-6" />
     </div>
   )
 }

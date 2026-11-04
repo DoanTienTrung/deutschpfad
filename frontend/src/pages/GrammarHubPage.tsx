@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { ArrowRight, Check, Repeat2, Ruler, Table2 } from 'lucide-react'
+import { Badge, Card, CardButton, Chip, EmptyState, ListCardSkeleton, PageHeader, RowButton, SearchInput } from '@kit'
 import { getGrammarReview, listGrammarTopics } from '../api/grammarApi'
 import type { GrammarReview, GrammarTopicSummary } from '../api/types'
-import { ListCardSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2']
 
@@ -45,163 +46,94 @@ export default function GrammarHubPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
-        📐 Trung tâm ngữ pháp
-      </span>
-
-      <h2 className="font-display text-3xl font-bold text-ink">
-        Ngữ <span className="text-accent-deep">pháp</span> tiếng Đức
-      </h2>
-      <p className="mt-2 text-sm text-muted">
-        Lý thuyết ngắn gọn bằng tiếng Việt cho từng chủ điểm, kèm bài tập chấm tự động ngay. Học
-        từng chủ điểm một, không cần theo thứ tự.
-      </p>
+    <div className="mx-auto max-w-lesen">
+      <PageHeader title="Ngữ pháp tiếng Đức"
+        description="Lý thuyết ngắn gọn bằng tiếng Việt cho từng chủ điểm, kèm bài tập chấm tự động ngay. Học từng chủ điểm một, không cần theo thứ tự." />
 
       {/* Vào trang là biết ngay làm gì tiếp: chủ điểm tới hạn ôn (SM-2) đứng trước, hết hạn ôn
           thì gợi ý chủ điểm chưa học. Không có gì thì giấu hẳn thẻ, tránh chiếm chỗ vô ích. */}
       {review && (review.due.length > 0 || review.next) && (
-        <section className="mt-6 rounded-lg border border-hairline bg-surface p-4 shadow-lifted">
+        <Card className="mb-4 p-4">
           {review.due.length > 0 ? (
             <>
-              <p className="text-xs font-bold uppercase tracking-widest text-accent-deep">
-                🔁 Cần ôn hôm nay · {review.due.length} chủ điểm
+              <p className="flex items-center gap-1.5 px-3 text-xs font-bold tracking-widest text-radiert uppercase">
+                <Repeat2 className="size-4" aria-hidden="true" /> Cần ôn hôm nay · {review.due.length} chủ điểm
               </p>
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-2">
                 {review.due.slice(0, 3).map((topic) => (
                   <li key={topic.id}>
-                    <Link
-                      to={`/app/grammar/${topic.slug}`}
-                      className="group flex items-center justify-between gap-3 rounded-sm border border-hairline bg-canvas px-3 py-2 transition-colors hover:border-primary/40"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-ink">
-                          {topic.titleVi}
-                        </span>
-                        <span className="block truncate text-xs text-muted">{topic.titleDe}</span>
-                      </span>
-                      <span className="shrink-0 text-primary transition-transform group-hover:translate-x-1">
-                        →
-                      </span>
-                    </Link>
+                    <RowButton to={`/app/grammar/${topic.slug}`} title={topic.titleVi} description={topic.titleDe} />
                   </li>
                 ))}
               </ul>
               {review.due.length > 3 && (
-                <p className="mt-2 text-xs text-muted">
-                  …và {review.due.length - 3} chủ điểm nữa tới hạn ôn.
-                </p>
+                <p className="mt-1 px-3 text-xs text-radiert">...và {review.due.length - 3} chủ điểm nữa tới hạn ôn.</p>
               )}
             </>
           ) : (
             review.next && (
               <>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted">
-                  ▶ Học tiếp
-                </p>
-                <Link
-                  to={`/app/grammar/${review.next.slug}`}
-                  className="group mt-2 flex items-center justify-between gap-3"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate font-semibold text-ink">
-                      {review.next.titleVi}
-                    </span>
-                    <span className="block truncate text-xs text-muted">{review.next.titleDe}</span>
-                  </span>
-                  <span className="shrink-0 text-lg text-primary transition-transform group-hover:translate-x-1">
-                    →
-                  </span>
-                </Link>
+                <p className="px-3 text-xs font-bold tracking-widest text-radiert uppercase">Học tiếp</p>
+                <RowButton to={`/app/grammar/${review.next.slug}`} title={review.next.titleVi} description={review.next.titleDe} className="mt-1" />
               </>
             )
           )}
-        </section>
+        </Card>
       )}
 
-      <Link
-        to="/app/grammar/reference"
-        className="group mt-6 flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface p-4 shadow-lifted transition-transform hover:-translate-y-0.5"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg">
-            📋
+      <CardButton to="/app/grammar/reference" className="group flex items-center justify-between gap-3 p-4">
+        <span className="flex items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-rund bg-karteikarte-innen text-radiert" aria-hidden="true">
+            <Table2 className="size-5" />
           </span>
-          <div>
-            <p className="font-semibold text-ink">Bảng tra cứu nhanh</p>
-            <p className="mt-0.5 text-xs text-muted">
-              Chia động từ, biến cách, giới từ - mở xem giữa chừng lúc đang làm bài
-            </p>
-          </div>
-        </div>
-        <span className="text-lg text-primary transition-transform group-hover:translate-x-1">→</span>
-      </Link>
+          <span>
+            <span className="block font-semibold text-bleistift">Bảng tra cứu nhanh</span>
+            <span className="mt-0.5 block text-xs text-radiert">Chia động từ, biến cách, giới từ - mở xem giữa chừng lúc đang làm bài</span>
+          </span>
+        </span>
+        <ArrowRight className="size-4 shrink-0 text-radiert transition-transform group-hover:translate-x-1" aria-hidden="true" />
+      </CardButton>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm chủ điểm (vd. Perfekt, mạo từ...)"
-        className="mt-6 mb-4 w-full rounded-sm border border-hairline px-3.5 py-2.5 text-sm text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-      />
+      <div className="mt-6">
+        <SearchInput value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Tìm chủ điểm"
+          placeholder="Tìm chủ điểm (vd. Perfekt, mạo từ...)" />
+      </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mt-4 mb-6 flex flex-wrap gap-2" role="group" aria-label="Cấp độ">
         {LEVELS.map((l) => (
-          <button
-            key={l}
-            onClick={() => setLevel(l)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              level === l
-                ? 'bg-primary/12 text-primary-deep'
-                : 'border border-hairline bg-surface text-ink hover:border-primary/40 hover:text-primary'
-            }`}
-          >
-            {l}
-          </button>
+          <Chip key={l} selected={level === l} onClick={() => setLevel(l)}>{l}</Chip>
         ))}
       </div>
 
       {loading && <ListCardSkeleton />}
 
       {!loading && topics.length === 0 && (
-        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
-          <p className="text-3xl">📐</p>
-          <p className="mt-2 font-medium text-ink">Chưa có chủ điểm nào ở cấp độ này</p>
-          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ khác ở trên nhé.</p>
-        </div>
+        <EmptyState icon={<Ruler />} title="Chưa có chủ điểm nào ở cấp độ này" description="Thử chọn cấp độ khác ở trên nhé." />
       )}
       {!loading && topics.length > 0 && visible.length === 0 && (
-        <p className="text-muted">Không tìm thấy chủ điểm nào khớp với tên bạn tìm.</p>
+        <p className="text-radiert">Không tìm thấy chủ điểm nào khớp với tên bạn tìm.</p>
       )}
 
       {!loading &&
         groups.map((group, i) => (
           <section key={i} className="mb-6">
             {group.label && (
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted">
-                {group.label}
-              </h3>
+              <h2 className="mb-2 text-xs font-bold tracking-widest text-radiert uppercase">{group.label}</h2>
             )}
             <ul className="space-y-2">
               {group.items.map((topic) => (
                 <li key={topic.id}>
-                  <Link
-                    to={`/app/grammar/${topic.slug}`}
-                    className="group flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface p-4 shadow-lifted transition-transform hover:-translate-y-0.5"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-ink">{topic.titleVi}</p>
-                      <p className="truncate text-xs text-muted">{topic.titleDe}</p>
-                      {topic.summaryVi && (
-                        <p className="mt-1 line-clamp-2 text-sm text-muted">{topic.summaryVi}</p>
-                      )}
-                    </div>
+                  <CardButton to={`/app/grammar/${topic.slug}`} className="group flex items-center justify-between gap-3 p-4">
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-bleistift">{topic.titleVi}</span>
+                      <span className="block truncate text-xs text-radiert">{topic.titleDe}</span>
+                      {topic.summaryVi && <span className="mt-1 line-clamp-2 block text-sm text-radiert">{topic.summaryVi}</span>}
+                    </span>
                     <span className="flex shrink-0 items-center gap-3">
                       <TopicStatusBadge topic={topic} />
-                      <span className="text-lg text-primary transition-transform group-hover:translate-x-1">
-                        →
-                      </span>
+                      <ArrowRight className="size-4 text-radiert transition-transform group-hover:translate-x-1" aria-hidden="true" />
                     </span>
-                  </Link>
+                  </CardButton>
                 </li>
               ))}
             </ul>
@@ -212,28 +144,16 @@ export default function GrammarHubPage() {
 }
 
 /**
- * Huy hiệu bên phải mỗi chủ điểm. "Thành thạo" là mốc ghi nhận tiến bộ nên dùng accent — đúng
- * tinh thần "The One Warm Color Rule" trong DESIGN.md: amber dành cho những gì người học giành
+ * Huy hiệu bên phải mỗi chủ điểm. "Thành thạo" là mốc ghi nhận tiến bộ nên dùng hổ phách — đúng
+ * tinh thần "The One Warm Color Rule" trong DESIGN.md: hổ phách dành cho những gì người học giành
  * được, không dùng làm trang trí.
  */
 function TopicStatusBadge({ topic }: { topic: GrammarTopicSummary }) {
   if (topic.status === 'MASTERED') {
-    return (
-      <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-ink">
-        ✓ Thành thạo
-      </span>
-    )
+    return <Badge tone="emph"><Check className="size-3.5" strokeWidth={3} aria-hidden="true" /> Thành thạo</Badge>
   }
   if (topic.status === 'LEARNING') {
-    return (
-      <span className="rounded-full bg-primary/12 px-2.5 py-0.5 text-xs font-medium text-primary-deep">
-        {topic.correctCount}/{topic.totalCount} câu đúng
-      </span>
-    )
+    return <Badge tone="info">{topic.correctCount}/{topic.totalCount} câu đúng</Badge>
   }
-  return (
-    <span className="rounded-full border border-hairline px-2.5 py-0.5 text-xs font-medium text-muted">
-      {topic.exerciseCount} bài tập
-    </span>
-  )
+  return <Badge>{topic.exerciseCount} bài tập</Badge>
 }

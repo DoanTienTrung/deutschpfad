@@ -23,7 +23,7 @@ const AudioPlayer = forwardRef<YouTubePlayerRef, { src: string; onTimeUpdate?: (
         src={src}
         controls
         onTimeUpdate={(e) => onTimeUpdate?.(e.currentTarget.currentTime)}
-        className="w-full rounded-md bg-surface"
+        className="w-full rounded-karte bg-karteikarte-innen"
       />
     )
   }

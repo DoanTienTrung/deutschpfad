@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button, Input, NativeSelect, Note, Textarea } from '@kit'
 import {
   listVocabularyItems,
   createVocabularyItem,
@@ -125,137 +126,133 @@ export default function AdminVocabularyPage() {
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Từ vựng</h2>
+      <h2 className="mb-4 font-display text-xl font-bold text-bleistift">Quản lý Từ vựng</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       {translation && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-hairline bg-card p-4 text-sm">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-karte border border-kartenrand bg-karteikarte p-4 text-sm">
           <div>
-            <p className="font-medium text-ink">Dịch câu ví dụ sang tiếng Việt (AI)</p>
+            <p className="font-medium text-bleistift">Dịch câu ví dụ sang tiếng Việt (AI)</p>
             {translation.running ? (
-              <p className="text-muted">
+              <p className="text-radiert">
                 Đang dịch {translation.processed}/{translation.total} - dịch mới {translation.translated}, dùng
                 lại {translation.reused}
               </p>
             ) : (
-              <p className="text-muted">Còn {translation.remaining} câu chưa có bản dịch</p>
+              <p className="text-radiert">Còn {translation.remaining} câu chưa có bản dịch</p>
             )}
             {!translation.running && translation.stopReason && (
-              <p className="mt-1 text-danger">{translation.stopReason}</p>
+              <p className="mt-1 text-rotstift">{translation.stopReason}</p>
             )}
           </div>
-          <button
+          <Button variant="primary" className="disabled:opacity-40"
             onClick={handleStartTranslation}
-            disabled={translation.running || translation.remaining === 0}
-            className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-40"
-          >
+            disabled={translation.running || translation.remaining === 0}>
             {translation.running ? 'Đang dịch…' : 'Dịch các câu còn thiếu'}
-          </button>
+          </Button>
         </div>
       )}
 
-      <div className="mb-6 space-y-2 rounded-sm border border-hairline bg-card p-4">
+      <div className="mb-6 space-y-2 rounded-karte border border-kartenrand bg-karteikarte p-4">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <input
+          <Input
             value={form.germanWord}
             onChange={(e) => setForm({ ...form, germanWord: e.target.value })}
             placeholder="Từ tiếng Đức"
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           />
-          <input
+          <Input
             value={form.vietnameseMeaning}
             onChange={(e) => setForm({ ...form, vietnameseMeaning: e.target.value })}
             placeholder="Nghĩa tiếng Việt"
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           />
-          <input
+          <Input
             value={form.englishMeaning}
             onChange={(e) => setForm({ ...form, englishMeaning: e.target.value })}
             placeholder="Nghĩa tiếng Anh (tuỳ chọn)"
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           />
-          <input
+          <Input
             value={form.phonetic}
             onChange={(e) => setForm({ ...form, phonetic: e.target.value })}
             placeholder="Phiên âm IPA (tuỳ chọn)"
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           />
-          <input
+          <Input
             value={form.wordType}
             onChange={(e) => setForm({ ...form, wordType: e.target.value })}
             placeholder="Loại từ (vd. Nomen, Verb)"
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           />
-          <select
+          <NativeSelect
             value={form.level}
             onChange={(e) => setForm({ ...form, level: e.target.value })}
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           >
             {LEVELS.map((l) => (
               <option key={l} value={l}>{l}</option>
             ))}
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={form.source}
             onChange={(e) => setForm({ ...form, source: e.target.value as VocabularySource })}
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           >
             <option value="FREQUENCY">Nguồn: Tần suất</option>
             <option value="GOETHE">Nguồn: Goethe-Zertifikat</option>
             <option value="TEXTBOOK">Nguồn: Giáo trình</option>
             <option value="LIFE">Nguồn: Sống ở Đức</option>
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={form.topicId ?? ''}
             onChange={(e) => setForm({ ...form, topicId: e.target.value ? Number(e.target.value) : null })}
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           >
             <option value="">-- Không chọn chủ đề --</option>
             {topics.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={form.lessonId ?? ''}
             onChange={(e) => setForm({ ...form, lessonId: e.target.value ? Number(e.target.value) : null })}
-            className="rounded-sm border border-hairline px-3 py-2"
+           
           >
             <option value="">-- Không chọn bài học --</option>
             {lessons.map((l) => (
               <option key={l.id} value={l.id}>{l.level} - Bài {l.orderIndex}: {l.title}</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
-        <textarea
+        <Textarea
           value={form.exampleSentence}
           onChange={(e) => setForm({ ...form, exampleSentence: e.target.value })}
           placeholder="Câu ví dụ"
-          className="w-full rounded-sm border border-hairline px-3 py-2"
+          className="w-full"
         />
-        <textarea
+        <Textarea
           value={form.exampleSentenceVi}
           onChange={(e) => setForm({ ...form, exampleSentenceVi: e.target.value })}
           placeholder="Bản dịch câu ví dụ (để trống thì AI dịch khi bấm “Dịch các câu còn thiếu”)"
-          className="w-full rounded-sm border border-hairline px-3 py-2"
+          className="w-full"
         />
-        <input
+        <Input
           value={form.imageUrl}
           onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
           placeholder="URL ảnh minh hoạ (tuỳ chọn)"
-          className="w-full rounded-sm border border-hairline px-3 py-2"
+          className="w-full"
         />
         <div className="flex gap-2">
-          <button
-            onClick={handleSubmit}
-            className="rounded-sm bg-primary px-4 py-2 font-medium text-canvas"
-          >
+          <Button variant="primary"
+            onClick={handleSubmit}>
             {editingId ? 'Cập nhật' : 'Thêm từ vựng'}
-          </button>
+          </Button>
           {editingId && (
-            <button onClick={cancelEdit} className="rounded-sm border border-hairline px-4 py-2">
+            <Button variant="secondary" onClick={cancelEdit}>
               Huỷ
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -264,24 +261,24 @@ export default function AdminVocabularyPage() {
         {items.map((item) => (
           <li
             key={item.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
+            className="flex items-center justify-between rounded-karte border border-kartenrand bg-karteikarte p-3"
           >
             <div>
               <strong>{item.germanWord}</strong>
-              {item.phonetic && <span className="text-muted"> [{item.phonetic}]</span>}
+              {item.phonetic && <span className="text-radiert"> [{item.phonetic}]</span>}
               {' - '}{item.vietnameseMeaning}
-              {item.englishMeaning && <span className="text-muted"> ({item.englishMeaning})</span>}
-              <span className="ml-2 text-xs text-muted">
+              {item.englishMeaning && <span className="text-radiert"> ({item.englishMeaning})</span>}
+              <span className="ml-2 text-xs text-radiert">
                 [{item.level}{item.topicName ? ` · ${item.topicName}` : ''}{item.lessonTitle ? ` · ${item.lessonTitle}` : ''}]
               </span>
             </div>
             <div className="flex gap-3 text-sm">
-              <button onClick={() => startEdit(item)} className="text-primary hover:underline">
+              <Button variant="ghost" onClick={() => startEdit(item)}>
                 Sửa
-              </button>
-              <button onClick={() => handleDelete(item.id)} className="text-danger hover:underline">
+              </Button>
+              <Button variant="ghost" className="text-rotstift" onClick={() => handleDelete(item.id)}>
                 Xoá
-              </button>
+              </Button>
             </div>
           </li>
         ))}

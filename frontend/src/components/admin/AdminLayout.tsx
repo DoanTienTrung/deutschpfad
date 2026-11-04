@@ -1,4 +1,5 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Button, buttonClass } from '@kit'
 import { useAuth } from '../../context/AuthContext'
 import { apiFetch } from '../../api/client'
 
@@ -16,45 +17,27 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="border-b border-hairline bg-card px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <h1 className="font-display text-lg font-bold text-ink">DeutschPfad Admin</h1>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link to="/admin/vocabulary" className="text-primary hover:text-primary-deep">
-              Từ vựng
-            </Link>
-            <Link to="/admin/topics" className="text-primary hover:text-primary-deep">
-              Chủ đề
-            </Link>
-            <Link to="/admin/lessons" className="text-primary hover:text-primary-deep">
-              Bài học
-            </Link>
-            <Link to="/admin/listening" className="text-primary hover:text-primary-deep">
-              Bài nghe
-            </Link>
-            <Link to="/admin/speaking" className="text-primary hover:text-primary-deep">
-              Đề nói
-            </Link>
-            <Link to="/admin/reading" className="text-primary hover:text-primary-deep">
-              Bài đọc
-            </Link>
-            <Link to="/admin/grammar" className="text-primary hover:text-primary-deep">
-              Ngữ pháp
-            </Link>
-            <Link to="/admin/translation" className="text-primary hover:text-primary-deep">
-              Luyện dịch
-            </Link>
-            <Link to="/admin/tutor-knowledge" className="text-primary hover:text-primary-deep">
-              Kiến thức Gia sư
-            </Link>
-            <button onClick={handleLogout} className="text-muted hover:text-ink">
+    <div className="min-h-screen">
+      <header className="border-b border-kartenrand bg-karteikarte px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-seite flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <h1 className="font-display text-lg font-bold text-bleistift">DeutschPfad Admin</h1>
+          <nav aria-label="Quản trị" className="flex flex-wrap items-center gap-1 text-sm">
+            <NavLink to="/admin/vocabulary" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Từ vựng</NavLink>
+            <NavLink to="/admin/topics" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Chủ đề</NavLink>
+            <NavLink to="/admin/lessons" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Bài học</NavLink>
+            <NavLink to="/admin/listening" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Bài nghe</NavLink>
+            <NavLink to="/admin/speaking" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Đề nói</NavLink>
+            <NavLink to="/admin/reading" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Bài đọc</NavLink>
+            <NavLink to="/admin/grammar" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Ngữ pháp</NavLink>
+            <NavLink to="/admin/translation" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Luyện dịch</NavLink>
+            <NavLink to="/admin/tutor-knowledge" className={({ isActive }) => buttonClass('ghost', 'sm', isActive ? 'bg-bleistift/10 text-bleistift-tief' : 'font-medium text-radiert')}>Kiến thức Gia sư</NavLink>
+            <Button variant="ghost" size="sm" className="font-medium text-rotstift" onClick={handleLogout}>
               Đăng xuất
-            </button>
+            </Button>
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl p-6">
+      <main className="mx-auto max-w-seite p-6">
         <Outlet />
       </main>
     </div>

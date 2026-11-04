@@ -1,110 +1,202 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Patrick+Hand&display=swap');
 @import "tailwindcss";
+/* Lớp token của design system (ẩn dụ Hộp thẻ Leitner). Mọi màu/bóng/bo góc/nền lấy từ đây. */
+@import "./styles/tokens.css";
 
-/* Chế độ tối bật bằng class "dark" trên <html> (xem public/theme-init.js, lib/theme.ts) — không
-   dựa vào media query, để người dùng chọn được Sáng/Tối/Theo hệ thống. */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Chế độ tối bật bằng data-theme="dark" trên <html> (xem public/theme-init.js, lib/theme.ts) — không
+   dựa vào media query, để người dùng chọn được Sáng/Tối/Theo máy. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Xoá bảng màu, bóng, bo góc và font mặc định của Tailwind: class lệch hệ như bg-blue-500, shadow-lg,
+   rounded-xl không sinh ra CSS nữa. Chỉ còn các tên trỏ về token bên dưới. */
 @theme {
-  /* Neutrals share the same warm hue (70) as --color-accent below -- a grey (or near-white/
-     near-black) with a hue bias toward the page's accent reads as chosen rather than an
-     unconsidered default. Reverted here after two rounds of blue primaries (teal hue 202, then
-     Prussian Blue hue 258) both read as clashing against the amber accent -- this near-black
-     primary paired with amber was the original, unremarked-on combination. */
-  --color-canvas: oklch(0.995 0.004 70);
-  --color-surface: oklch(0.97 0.012 70);
-  /* Nền thẻ nổi trên trang (danh sách từ, thẻ bài học, form). Trước đây viết thẳng bg-white —
-     không đổi được theo chế độ tối. */
-  --color-card: oklch(1 0 0);
-  --color-ink: oklch(0.22 0.018 70);
-  --color-muted: oklch(0.55 0.014 70);
-  --color-hairline: oklch(0.88 0.014 70);
-  --color-primary: oklch(0.22 0.014 70);
-  --color-primary-deep: oklch(0.15 0.014 70);
-  --color-accent: oklch(0.75 0.15 70);
-  --color-accent-deep: oklch(0.62 0.16 68);
-  --color-danger: oklch(0.55 0.19 25);
-  --color-danger-bg: oklch(0.96 0.03 25);
-  /* "Patina" -- a muted teal-green, borrowed as a color relationship (a cool secondary sitting
-     quietly alongside a warm near-black primary + amber accent, never competing for primary
-     attention) rather than a literal palette copy. Replaces a generic hue-152 green with a more
-     considered hue-188 teal for the same semantic slot (correct answers, completed states). */
-  --color-success: oklch(0.49 0.13 188);
-  --color-success-bg: oklch(0.96 0.03 188);
-  /* Màu theo giống của danh từ — quy ước quen thuộc trong sách học tiếng Đức (der xanh dương,
-     die đỏ, das xanh lá). "die" lệch sang hồng (hue 355) để không lẫn với màu báo sai (hue 25),
-     "das" lệch sang lục (hue 145) để không lẫn với màu đúng (hue 188). Độ sáng 0,5 cho đủ tương
-     phản chữ trên nền canvas. */
-  --color-der: oklch(0.5 0.15 255);
-  --color-die: oklch(0.52 0.18 355);
-  --color-das: oklch(0.5 0.13 145);
-  /* Biểu đồ mức thuộc từ (trang chủ): 4 bậc CÙNG MỘT hue (188, họ màu "đúng"), nhạt → đậm theo mức nhớ.
-     Đã chạy bộ kiểm palette (dataviz): đơn sắc, độ sáng tăng dần, mỗi bậc cách ≥ 0,06, bậc nhạt nhất
-     vẫn ≥ 2:1 so với nền thẻ. Chế độ tối có bộ bậc riêng (đảo chiều: nhớ lâu là sáng nhất). */
-  --color-m1: oklch(0.76 0.07 188);
-  --color-m2: oklch(0.65 0.09 188);
-  --color-m3: oklch(0.54 0.1 188);
-  --color-m4: oklch(0.42 0.095 188);
-  /* Cột biểu đồ ngày chưa đạt mục tiêu: trung tính, để cột amber (ngày đạt) là thứ nổi lên. */
-  --color-bar-muted: oklch(0.78 0.012 70);
-
-  --font-display: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-
-  --shadow-lifted: 0 2px 8px oklch(0.22 0.018 70 / 0.08);
-  --shadow-floating: 0 12px 32px oklch(0.22 0.018 70 / 0.14);
+  --color-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --radius-*: initial;
+  --font-*: initial;
 
   --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Chế độ tối — "đèn bàn học ban đêm": cùng hue ấm 70 như chế độ sáng (The Shared-Hue Neutral Rule),
-   chỉ đảo độ sáng. Graphite (primary) đảo thành ngà sáng để nút chính vẫn là thứ tương phản nhất
-   — mọi chỗ đang dùng `bg-primary text-canvas` tự đúng mà không phải sửa. Amber giữ nguyên vai trò
-   "chỉ cho thứ đã đạt được". Thẻ (card) sáng hơn nền một bậc thay cho bóng đổ — bóng gần như vô hình
-   trên nền tối (The Tonal-First Rule). Các màu chữ (danger/success/der/die/das) sáng lên để đủ tương
-   phản trên nền tối. */
-html.dark {
-  color-scheme: dark;
-  --color-canvas: oklch(0.17 0.01 70);
-  --color-surface: oklch(0.215 0.012 70);
-  --color-card: oklch(0.235 0.013 70);
-  --color-ink: oklch(0.93 0.01 70);
-  --color-muted: oklch(0.7 0.012 70);
-  --color-hairline: oklch(0.33 0.012 70);
-  --color-primary: oklch(0.9 0.014 70);
-  --color-primary-deep: oklch(0.97 0.008 70);
-  --color-accent: oklch(0.78 0.15 70);
-  --color-accent-deep: oklch(0.8 0.14 70);
-  --color-danger: oklch(0.72 0.16 25);
-  --color-danger-bg: oklch(0.28 0.06 25);
-  --color-success: oklch(0.75 0.11 188);
-  --color-success-bg: oklch(0.27 0.04 188);
-  --color-der: oklch(0.74 0.12 255);
-  --color-die: oklch(0.76 0.14 355);
-  --color-das: oklch(0.76 0.13 145);
-  --color-m1: oklch(0.46 0.06 188);
-  --color-m2: oklch(0.59 0.085 188);
-  --color-m3: oklch(0.72 0.1 188);
-  --color-m4: oklch(0.85 0.1 188);
-  --color-bar-muted: oklch(0.45 0.012 70);
-  --shadow-lifted: 0 2px 8px oklch(0 0 0 / 0.35);
-  --shadow-floating: 0 12px 32px oklch(0 0 0 / 0.55);
+/* Mỗi token một tên Tailwind. "inline" để class đọc thẳng var(--token): đổi cảnh sáng/tối là đổi theo. */
+@theme inline {
+  /* Bề mặt */
+  --color-pappe: var(--pappe);
+  --color-pappe-dunkel: var(--pappe-dunkel);
+  --color-karteikarte: var(--karteikarte);
+  --color-karteikarte-innen: var(--karteikarte-innen);
+  /* Chữ */
+  --color-bleistift: var(--bleistift);
+  --color-bleistift-tief: var(--bleistift-tief);
+  --color-bleistift-invers: var(--bleistift-invers);
+  --color-radiert: var(--radiert);
+  --color-hauch: var(--hauch);
+  /* Đường kẻ */
+  --color-linie: var(--linie);
+  --color-kante: var(--kante);
+  --color-kartenrand: var(--kartenrand);
+  --color-kopfzeile: var(--kopfzeile);
+  /* Trạng thái */
+  --color-reiter: var(--reiter);
+  --color-reiter-soft: var(--reiter-soft);
+  --color-reiter-tief: var(--reiter-tief);
+  --color-reiter-beschriftung: var(--reiter-beschriftung);
+  --color-aufstieg: var(--aufstieg);
+  --color-aufstieg-soft: var(--aufstieg-soft);
+  --color-rotstift: var(--rotstift);
+  --color-rotstift-soft: var(--rotstift-soft);
+  --color-tinte: var(--tinte);
+  --color-tinte-soft: var(--tinte-soft);
+  --color-fokus: var(--fokus);
+  /* Giống danh từ */
+  --color-reiter-der: var(--reiter-der);
+  --color-reiter-der-soft: var(--reiter-der-soft);
+  --color-reiter-die: var(--reiter-die);
+  --color-reiter-die-soft: var(--reiter-die-soft);
+  --color-reiter-das: var(--reiter-das);
+  --color-reiter-das-soft: var(--reiter-das-soft);
+  /* Ngăn hộp (mức nhớ) */
+  --color-fach-1: var(--fach-1);
+  --color-fach-2: var(--fach-2);
+  --color-fach-3: var(--fach-3);
+  --color-fach-4: var(--fach-4);
+  /* Lớp phủ, nhãn trên ảnh */
+  --color-schleier: var(--schleier);
+  --color-foto-etikett: var(--foto-etikett);
+  --color-foto-etikett-schrift: var(--foto-etikett-schrift);
+
+  --shadow-lift: var(--schatten-lift);
+  --shadow-pop: var(--schatten-pop);
+  --shadow-offset: var(--schatten-offset);
+
+  --radius-karte: var(--ecke-karte);
+  --radius-reiter: var(--ecke-reiter);
+  --radius-rund: var(--ecke-rund);
+
+  --container-seite: var(--seitenbreite);
+  --container-lesen: var(--seitenbreite-lesen);
+
+  /* Ba vai chữ: giao diện (Inter), tiêu đề và số lớn (Fira Sans), ghi chú viết tay (Patrick Hand). */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-hand: "Patrick Hand", "Comic Sans MS", cursive;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Chuyển động của ẩn dụ, 80-320ms. */
+  --animate-erscheinen: erscheinen 200ms var(--ease-standard) both;
+  --animate-stempel: stempel 280ms var(--ease-standard) both;
+  --animate-sheet: sheet-hoch 280ms var(--ease-standard) both;
+  --animate-drawer: drawer-rein 240ms var(--ease-standard) both;
+  --animate-richtig: richtig 240ms var(--ease-standard);
+  --animate-falsch: falsch 320ms var(--ease-standard);
+
+  @keyframes erscheinen {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* Đóng dấu: con dấu ấn xuống giấy rồi nảy nhẹ. */
+  @keyframes stempel {
+    0% { opacity: 0; transform: scale(1.25) rotate(-6deg); }
+    60% { opacity: 1; transform: scale(0.96) rotate(-6deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-6deg); }
+  }
+  @keyframes sheet-hoch {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @keyframes drawer-rein {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+  /* Đúng: thẻ nhấc lên một chút (lên ngăn). */
+  @keyframes richtig {
+    0% { transform: translateY(0); }
+    40% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+  }
+  /* Sai: thẻ lắc nhẹ trước khi về ngăn 1. */
+  @keyframes falsch {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+  }
 }
 
+/* Texture nền: đặt tên không có tiền tố bg- để không đè lẫn với màu nền khi gộp class. */
+@utility textur-pappe {
+  background-image: var(--textur-pappe);
+  background-size: var(--textur-pappe-groesse);
+}
+@utility textur-linien {
+  background-image: var(--textur-linien);
+  background-size: var(--textur-linien-groesse);
+}
+@utility lampenlicht {
+  background-image: var(--lampenlicht);
+}
+
+/* Lớp chồng đặt tên theo vai: nav < panel < sheet < modal < popover < toast. */
+@utility z-nav { z-index: 10; }
+@utility z-panel { z-index: 20; }
+@utility z-sheet { z-index: 30; }
+@utility z-modal { z-index: 40; }
+@utility z-popover { z-index: 50; }
+@utility z-toast { z-index: 60; }
+
+/* Chừa vùng an toàn dưới đáy (thanh home của iPhone) cho toast, nút nổi, thanh điều hướng dưới. */
+@utility pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+@utility bottom-safe { bottom: max(1rem, env(safe-area-inset-bottom)); }
+
 @layer base {
+  html {
+    background-color: var(--pappe);
+    /* Mở hộp thoại (khoá cuộn) không làm trang giật ngang vì thanh cuộn biến mất. */
+    scrollbar-gutter: stable;
+    /* Cuộn tới đáy không kéo cả app nảy theo. */
+    overscroll-behavior-y: contain;
+  }
+  /* Bấm trên điện thoại không loé ô xanh của trình duyệt. */
+  a, button, summary, [role="button"], label {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Thanh cuộn: mảnh trên máy tính, ẩn trên thiết bị cảm ứng. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--kante) transparent;
+  }
+  @media (pointer: coarse) {
+    * { scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+  }
+  /* Điện thoại: thang chữ gốc nhỏ đi một bậc (15px) để cả thang rem co theo; riêng ô nhập giữ 16px
+     để Safari trên iPhone không tự phóng to trang khi chạm vào. */
+  @media (max-width: 639px) {
+    html { font-size: 93.75%; }
+    input, textarea, select { font-size: 16px; }
+  }
   body {
-    background: var(--color-canvas);
-    color: var(--color-ink);
+    background-color: var(--pappe);
+    background-image: var(--textur-pappe);
+    background-size: var(--textur-pappe-groesse);
+    color: var(--bleistift);
     font-family: var(--font-sans);
   }
 
   ::selection {
-    background: color-mix(in oklch, var(--color-primary) 25%, transparent);
+    background: color-mix(in oklch, var(--bleistift) 22%, transparent);
   }
+}
+
+/* Thẻ lồng trong thẻ tự nhẹ đi: nền lõm, viền kẻ nhạt, không bóng, không ánh đèn. Để ngoài @layer để
+   thắng class tiện ích trên thẻ con. */
+[data-card] [data-card] {
+  background-color: var(--karteikarte-innen);
+  background-image: none;
+  border-color: var(--linie);
+  box-shadow: none;
 }
 
 @keyframes practice-audio-progress {
@@ -221,6 +313,21 @@ html.dark {
   animation: answer-pop 0.3s var(--ease-standard);
 }
 
+/* Giảm chuyển động: theo cài đặt của máy, hoặc công tắc trong trang Hồ sơ (data-motion="reduce"). */
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}
+
+/* In: bỏ khung app và nền texture, chỉ còn nội dung. */
+@media print {
+  body { background: none; }
+  aside, header, [data-print-hide] { display: none !important; }
+  [data-card] { box-shadow: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -275,11 +382,11 @@ html.dark {
 }
 .prose-chat th,
 .prose-chat td {
-  border: 1px solid var(--color-hairline, #e5e5e5);
+  border: 1px solid var(--linie);
   padding: 0.25rem 0.5rem;
 }
 .prose-chat code {
-  background: var(--color-surface, #f5f5f5);
+  background: var(--karteikarte-innen);
   border-radius: 0.25rem;
   padding: 0.1rem 0.3rem;
   font-size: 0.8125rem;
@@ -292,7 +399,7 @@ html.dark {
   font-size: 0.9375rem;
   line-height: 1.6;
   max-width: 70ch;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--bleistift);
 }
 .prose-theory p {
   margin-bottom: 0.75rem;
@@ -341,12 +448,12 @@ html.dark {
    DESIGN.md, amber chỉ dành cho streak/mốc thành tích, không dùng làm trang trí. */
 .prose-theory blockquote {
   margin: 0.75rem 0;
-  border-left: 2px solid var(--color-hairline, #e5e5e5);
+  border-left: 2px solid var(--linie);
   padding-left: 0.875rem;
-  color: var(--color-muted, #6b6b6b);
+  color: var(--radiert);
 }
 .prose-theory code {
-  background: var(--color-surface, #f5f5f5);
+  background: var(--karteikarte-innen);
   border-radius: 0.25rem;
   padding: 0.1rem 0.35rem;
   font-size: 0.875rem;
@@ -365,12 +472,12 @@ html.dark {
 }
 .prose-theory-table th,
 .prose-theory-table td {
-  border: 1px solid var(--color-hairline, #e5e5e5);
+  border: 1px solid var(--linie);
   padding: 0.375rem 0.625rem;
   text-align: left;
   white-space: nowrap;
 }
 .prose-theory-table th {
-  background: var(--color-surface, #f5f5f5);
+  background: var(--karteikarte-innen);
   font-weight: 600;
 }

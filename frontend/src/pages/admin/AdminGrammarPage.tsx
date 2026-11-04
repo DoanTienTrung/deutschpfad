@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button, Chip, Input, NativeSelect, Note, Textarea } from '@kit'
 import {
   createGrammarExercise,
   createGrammarTopic,
@@ -294,92 +295,81 @@ export default function AdminGrammarPage() {
     }
   }
 
-  const input = 'rounded-sm border border-hairline px-3 py-2'
   const isMultipleChoice = exerciseForm.exerciseType === 'MULTIPLE_CHOICE'
   const typeHint = EXERCISE_TYPES.find((t) => t.value === exerciseForm.exerciseType)?.hint
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Ngữ pháp</h2>
+      <h2 className="mb-4 font-display text-xl font-bold text-bleistift">Quản lý Ngữ pháp</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       <div className="mb-4 flex gap-2">
         {([
           ['topics', `Chủ điểm (${topics.length})`],
           ['reference', `Bảng tra cứu (${references.length})`],
         ] as const).map(([value, label]) => (
-          <button
+          <Chip selected={tab === value}
             key={value}
-            onClick={() => setTab(value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              tab === value
-                ? 'bg-primary/12 text-primary-deep'
-                : 'border border-hairline bg-card text-ink hover:border-primary/40'
-            }`}
-          >
+            onClick={() => setTab(value)}>
             {label}
-          </button>
+          </Chip>
         ))}
       </div>
 
       {tab === 'reference' && (
         <>
-          <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
-            <input
+          <div className="mb-6 grid grid-cols-1 gap-2 rounded-karte border border-kartenrand bg-karteikarte p-4 sm:grid-cols-2">
+            <Input
               value={refForm.slug}
               onChange={(e) => setRefForm({ ...refForm, slug: e.target.value })}
               placeholder="Slug (vd. artikel-bestimmt)"
-              className={input}
+             
             />
-            <input
+            <Input
               value={refForm.category}
               onChange={(e) => setRefForm({ ...refForm, category: e.target.value })}
               placeholder="Nhóm (vd. Mạo từ, Động từ, Giới từ)"
-              className={input}
+             
             />
-            <input
+            <Input
               value={refForm.titleVi}
               onChange={(e) => setRefForm({ ...refForm, titleVi: e.target.value })}
-              placeholder="Tiêu đề tiếng Việt"
-              className={`sm:col-span-2 ${input}`}
+              placeholder="Tiêu đề tiếng Việt" className="sm:col-span-2"
             />
-            <select
+            <NativeSelect
               value={refForm.level ?? ''}
               onChange={(e) => setRefForm({ ...refForm, level: e.target.value || null })}
-              className={input}
+             
             >
               <option value="">Mọi trình độ</option>
               {LEVELS.map((l) => (
                 <option key={l} value={l}>{l}</option>
               ))}
-            </select>
-            <input
+            </NativeSelect>
+            <Input
               type="number"
               value={refForm.orderIndex}
               onChange={(e) => setRefForm({ ...refForm, orderIndex: Number(e.target.value) })}
               placeholder="Thứ tự trong nhóm"
-              className={input}
+             
             />
-            <textarea
+            <Textarea
               value={refForm.contentMd}
               onChange={(e) => setRefForm({ ...refForm, contentMd: e.target.value })}
               placeholder={'Nội dung bảng, viết bằng markdown GFM:\n\n| Cách | der | die |\n| --- | --- | --- |\n| Nominativ | der | die |'}
-              rows={12}
-              className={`sm:col-span-2 font-mono text-sm ${input}`}
+              rows={12} className="sm:col-span-2 font-mono text-sm"
             />
             <div className="sm:col-span-2 flex gap-2">
-              <button
+              <Button variant="primary" className="flex-1 disabled:opacity-50"
                 onClick={handleSaveReference}
-                disabled={saving}
-                className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
-              >
+                disabled={saving}>
                 {saving ? 'Đang lưu...' : refEditingId ? 'Cập nhật bảng' : 'Thêm bảng'}
-              </button>
+              </Button>
               {refEditingId && (
-                <button onClick={resetRefForm} className="rounded-sm border border-hairline px-4 py-2 text-ink">
+                <Button variant="secondary" onClick={resetRefForm}>
                   Huỷ
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -388,22 +378,20 @@ export default function AdminGrammarPage() {
             {references.map((table) => (
               <li
                 key={table.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-hairline bg-card p-3"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-karte border border-kartenrand bg-karteikarte p-3"
               >
                 <span className="min-w-0">
                   <strong>{table.category}</strong>
-                  {table.level && <span className="text-muted"> · {table.level}</span>} - {table.titleVi}
+                  {table.level && <span className="text-radiert"> · {table.level}</span>} - {table.titleVi}
                 </span>
                 <span className="flex shrink-0 gap-3">
-                  <button onClick={() => startEditReference(table)} className="text-sm text-primary hover:underline">
+                  <Button variant="ghost" onClick={() => startEditReference(table)}>
                     Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDeleteReference(table.id)}
-                    className="text-sm text-danger hover:underline"
-                  >
+                  </Button>
+                  <Button variant="ghost" className="text-rotstift"
+                    onClick={() => handleDeleteReference(table.id)}>
                     Xoá
-                  </button>
+                  </Button>
                 </span>
               </li>
             ))}
@@ -413,60 +401,57 @@ export default function AdminGrammarPage() {
 
       {tab === 'topics' && (
       <>
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
-        <input
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-karte border border-kartenrand bg-karteikarte p-4 sm:grid-cols-2">
+        <Input
           value={form.slug}
           onChange={(e) => setForm({ ...form, slug: e.target.value })}
           placeholder="Slug (vd. a1-verb-konjugation)"
-          className={input}
+         
         />
-        <select value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })} className={input}>
+        <NativeSelect value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })}>
           {LEVELS.map((l) => (
             <option key={l} value={l}>{l}</option>
           ))}
-        </select>
-        <input
+        </NativeSelect>
+        <Input
           value={form.titleDe}
           onChange={(e) => setForm({ ...form, titleDe: e.target.value })}
           placeholder="Tên chủ điểm (tiếng Đức)"
-          className={input}
+         
         />
-        <input
+        <Input
           value={form.titleVi}
           onChange={(e) => setForm({ ...form, titleVi: e.target.value })}
           placeholder="Tên chủ điểm (tiếng Việt)"
-          className={input}
+         
         />
-        <input
+        <Input
           value={form.groupLabel ?? ''}
           onChange={(e) => setForm({ ...form, groupLabel: e.target.value })}
           placeholder="Nhóm hiển thị (vd. Lektion 1) - tuỳ chọn"
-          className={input}
+         
         />
-        <input
+        <Input
           type="number"
           value={form.orderIndex}
           onChange={(e) => setForm({ ...form, orderIndex: Number(e.target.value) })}
           placeholder="Thứ tự"
-          className={input}
+         
         />
-        <input
+        <Input
           value={form.summaryVi ?? ''}
           onChange={(e) => setForm({ ...form, summaryVi: e.target.value })}
-          placeholder="Tóm tắt 1-2 câu (hiện ở danh sách)"
-          className={`sm:col-span-2 ${input}`}
+          placeholder="Tóm tắt 1-2 câu (hiện ở danh sách)" className="sm:col-span-2"
         />
         <div className="sm:col-span-2 flex items-center justify-between gap-2">
-          <label className="text-sm font-medium text-ink">Lý thuyết (markdown, tiếng Việt)</label>
-          <button
+          <label className="text-sm font-medium text-bleistift">Lý thuyết (markdown, tiếng Việt)</label>
+          <Button variant="secondary" size="sm" className="disabled:opacity-50"
             onClick={handleGenerateTheory}
-            disabled={busy === 'theory'}
-            className="rounded-full border border-hairline px-3 py-1 text-xs font-medium text-primary hover:border-primary/40 disabled:opacity-50"
-          >
-            {busy === 'theory' ? 'AI đang soạn...' : '✨ AI soạn nháp'}
-          </button>
+            disabled={busy === 'theory'}>
+            {busy === 'theory' ? 'AI đang soạn...' : 'AI soạn nháp'}
+          </Button>
         </div>
-        <textarea
+        <Textarea
           value={form.theoryMd ?? ''}
           onChange={(e) => setForm({ ...form, theoryMd: e.target.value })}
           placeholder={
@@ -474,235 +459,219 @@ export default function AdminGrammarPage() {
             'Hỗ trợ **in đậm**, danh sách, và bảng GFM:\n' +
             '| Ngôi | Đuôi |\n| --- | --- |\n| ich | -e |'
           }
-          rows={10}
-          className={`sm:col-span-2 font-mono text-sm ${input}`}
+          rows={10} className="sm:col-span-2 font-mono text-sm"
         />
-        <p className="sm:col-span-2 -mt-1 text-xs text-muted">
+        <p className="sm:col-span-2 -mt-1 text-xs text-radiert">
           AI chỉ soạn nháp và đổ vào ô trên - đọc lại, sửa cho đúng rồi mới bấm lưu.
         </p>
         <div className="sm:col-span-2 flex gap-2">
-          <button
+          <Button variant="primary" className="flex-1 disabled:opacity-50"
             onClick={handleSaveTopic}
-            disabled={saving}
-            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
-          >
+            disabled={saving}>
             {saving ? 'Đang lưu...' : editingId ? 'Cập nhật chủ điểm' : 'Thêm chủ điểm'}
-          </button>
+          </Button>
           {editingId && (
-            <button onClick={resetTopicForm} className="rounded-sm border border-hairline px-4 py-2 text-ink">
+            <Button variant="secondary" onClick={resetTopicForm}>
               Huỷ
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       <ul className="space-y-2">
         {topics.map((topic) => (
-          <li key={topic.id} className="rounded-sm border border-hairline bg-card p-3">
+          <li key={topic.id} className="rounded-karte border border-kartenrand bg-karteikarte p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="min-w-0">
                 <strong>{topic.level}</strong>
-                {topic.groupLabel && <span className="text-muted"> · {topic.groupLabel}</span>} - {topic.titleVi}{' '}
-                <span className="text-muted">({topic.titleDe})</span>
-                <span className="ml-2 text-xs text-muted">
+                {topic.groupLabel && <span className="text-radiert"> · {topic.groupLabel}</span>} - {topic.titleVi}{' '}
+                <span className="text-radiert">({topic.titleDe})</span>
+                <span className="ml-2 text-xs text-radiert">
                   {topic.exercises.filter((e) => e.reviewed).length}/{topic.exercises.length} bài tập đã duyệt
                 </span>
               </span>
               <span className="flex shrink-0 gap-3">
-                <button
-                  onClick={() => setSelectedTopicId(selectedTopicId === topic.id ? null : topic.id)}
-                  className="text-sm text-primary hover:underline"
-                >
+                <Button variant="ghost"
+                  onClick={() => setSelectedTopicId(selectedTopicId === topic.id ? null : topic.id)}>
                   {selectedTopicId === topic.id ? 'Đóng bài tập' : 'Bài tập'}
-                </button>
-                <button onClick={() => startEdit(topic)} className="text-sm text-primary hover:underline">
+                </Button>
+                <Button variant="ghost" onClick={() => startEdit(topic)}>
                   Sửa
-                </button>
-                <button onClick={() => handleDeleteTopic(topic.id)} className="text-sm text-danger hover:underline">
+                </Button>
+                <Button variant="ghost" className="text-rotstift" onClick={() => handleDeleteTopic(topic.id)}>
                   Xoá
-                </button>
+                </Button>
               </span>
             </div>
 
             {selectedTopicId === topic.id && selectedTopic && (
-              <div className="mt-3 border-t border-hairline pt-3">
-                <div className="mb-3 rounded-sm border border-hairline bg-surface p-3">
-                  <p className="mb-2 text-sm font-medium text-ink">Sinh bài tập hàng loạt</p>
+              <div className="mt-3 border-t border-linie pt-3">
+                <div className="mb-3 rounded-karte border border-linie bg-karteikarte-innen p-3">
+                  <p className="mb-2 text-sm font-medium text-bleistift">Sinh bài tập hàng loạt</p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
-                    <select
+                    <NativeSelect
                       value={genKind}
                       onChange={(e) => setGenKind(e.target.value as GrammarGenerateKind)}
-                      className={input}
+                     
                     >
                       <option value="ARTICLE">Mạo từ / biến cách</option>
                       <option value="VERB_CONJUGATION">Chia động từ</option>
-                    </select>
-                    <input
+                    </NativeSelect>
+                    <Input
                       type="number"
                       min={1}
                       max={50}
                       value={genCount}
                       onChange={(e) => setGenCount(Number(e.target.value))}
                       placeholder="Số bài"
-                      className={input}
+                     
                     />
                     {genKind === 'ARTICLE' ? (
                       <>
-                        <select
+                        <NativeSelect
                           value={genKasus}
                           onChange={(e) => setGenKasus(e.target.value as GrammarKasus)}
-                          className={input}
+                         
                         >
                           <option value="NOMINATIV">Nominativ (cách 1)</option>
                           <option value="AKKUSATIV">Akkusativ (cách 4)</option>
                           <option value="DATIV">Dativ (cách 3)</option>
-                        </select>
-                        <select
+                        </NativeSelect>
+                        <NativeSelect
                           value={genArticleKind}
                           onChange={(e) => setGenArticleKind(e.target.value as GrammarArticleKind)}
-                          className={input}
+                         
                         >
                           <option value="DEFINITE">Mạo từ xác định</option>
                           <option value="INDEFINITE">Mạo từ không xác định</option>
-                        </select>
+                        </NativeSelect>
                       </>
                     ) : (
-                      <p className="text-xs text-muted sm:col-span-2 sm:self-center">
+                      <p className="text-xs text-radiert sm:col-span-2 sm:self-center">
                         Chỉ lấy động từ yếu; động từ mạnh và tách được bị bỏ qua để không ra đáp án sai.
                       </p>
                     )}
                   </div>
 
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <button
+                    <Button variant="primary" className="disabled:opacity-50"
                       onClick={() => handleGenerate('data')}
-                      disabled={busy === 'data'}
-                      className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-canvas disabled:opacity-50"
-                    >
+                      disabled={busy === 'data'}>
                       {busy === 'data' ? 'Đang sinh...' : 'Sinh từ dữ liệu (duyệt sẵn)'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="secondary" className="disabled:opacity-50"
                       onClick={() => handleGenerate('ai')}
-                      disabled={busy === 'ai'}
-                      className="rounded-sm border border-hairline bg-canvas px-4 py-2 text-sm font-medium text-primary disabled:opacity-50"
-                    >
-                      {busy === 'ai' ? 'AI đang soạn...' : '✨ AI soạn (chờ duyệt)'}
-                    </button>
+                      disabled={busy === 'ai'}>
+                      {busy === 'ai' ? 'AI đang soạn...' : 'AI soạn (chờ duyệt)'}
+                    </Button>
                   </div>
 
-                  <p className="mt-2 text-xs text-muted">
+                  <p className="mt-2 text-xs text-radiert">
                     Sinh từ dữ liệu dùng bảng tra giống danh từ + quy tắc chia động từ nên đáp án
                     chắc chắn đúng. AI dùng cho dạng cần ngữ cảnh và luôn phải duyệt tay.
                   </p>
-                  {generateNote && <p className="mt-2 text-xs font-medium text-primary">{generateNote}</p>}
+                  {generateNote && <p className="mt-2 text-xs font-medium text-bleistift">{generateNote}</p>}
                 </div>
 
                 <ul className="mb-3 space-y-1">
                   {selectedTopic.exercises.length === 0 && (
-                    <li className="text-sm text-muted">Chưa có bài tập nào.</li>
+                    <li className="text-sm text-radiert">Chưa có bài tập nào.</li>
                   )}
                   {selectedTopic.exercises.map((exercise) => (
                     <li key={exercise.id} className="flex items-start justify-between gap-3 text-sm">
                       <span className="min-w-0">
-                        <span className="text-muted">{exercise.orderIndex + 1}.</span> {exercise.promptDe}{' '}
-                        <span className="text-primary">→ {exercise.correctAnswer}</span>
+                        <span className="text-radiert">{exercise.orderIndex + 1}.</span> {exercise.promptDe}{' '}
+                        <span className="text-bleistift">→ {exercise.correctAnswer}</span>
                         {!exercise.reviewed && (
-                          <span className="ml-2 rounded-full bg-accent/25 px-2 py-0.5 text-xs text-primary">
+                          <span className="ml-2 rounded-rund bg-tinte-soft px-2 py-0.5 text-xs text-tinte">
                             chờ duyệt
                           </span>
                         )}
                       </span>
                       <span className="flex shrink-0 gap-3">
                         {!exercise.reviewed && (
-                          <button
-                            onClick={() => handleReviewExercise(exercise.id)}
-                            className="text-success hover:underline"
-                          >
+                          <Button variant="ghost" className="text-aufstieg"
+                            onClick={() => handleReviewExercise(exercise.id)}>
                             Duyệt
-                          </button>
+                          </Button>
                         )}
-                        <button
-                          onClick={() => handleDeleteExercise(exercise.id)}
-                          className="text-danger hover:underline"
-                        >
+                        <Button variant="ghost" className="text-rotstift"
+                          onClick={() => handleDeleteExercise(exercise.id)}>
                           Xoá
-                        </button>
+                        </Button>
                       </span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="grid grid-cols-1 gap-2 rounded-sm bg-surface p-3 sm:grid-cols-2">
-                  <select
+                <div className="grid grid-cols-1 gap-2 rounded-karte bg-karteikarte-innen p-3 sm:grid-cols-2">
+                  <NativeSelect
                     value={exerciseForm.exerciseType}
                     onChange={(e) =>
                       setExerciseForm({ ...exerciseForm, exerciseType: e.target.value as GrammarExerciseType })
                     }
-                    className={input}
+                   
                   >
                     {EXERCISE_TYPES.map((t) => (
                       <option key={t.value} value={t.value}>{t.label}</option>
                     ))}
-                  </select>
-                  <input
+                  </NativeSelect>
+                  <Input
                     value={exerciseForm.correctAnswer}
                     onChange={(e) => setExerciseForm({ ...exerciseForm, correctAnswer: e.target.value })}
                     placeholder="Đáp án đúng (nhiều đáp án ngăn bằng /)"
-                    className={input}
+                   
                   />
-                  <input
+                  <Input
                     value={exerciseForm.promptDe}
                     onChange={(e) => setExerciseForm({ ...exerciseForm, promptDe: e.target.value })}
-                    placeholder="Đề bài (tiếng Đức)"
-                    className={`sm:col-span-2 ${input}`}
+                    placeholder="Đề bài (tiếng Đức)" className="sm:col-span-2"
                   />
-                  {typeHint && <p className="sm:col-span-2 -mt-1 text-xs text-muted">{typeHint}</p>}
+                  {typeHint && <p className="sm:col-span-2 -mt-1 text-xs text-radiert">{typeHint}</p>}
                   {isMultipleChoice && (
                     <>
-                      <input
+                      <Input
                         value={exerciseForm.optionA ?? ''}
                         onChange={(e) => setExerciseForm({ ...exerciseForm, optionA: e.target.value })}
                         placeholder="Đáp án A"
-                        className={input}
+                       
                       />
-                      <input
+                      <Input
                         value={exerciseForm.optionB ?? ''}
                         onChange={(e) => setExerciseForm({ ...exerciseForm, optionB: e.target.value })}
                         placeholder="Đáp án B"
-                        className={input}
+                       
                       />
-                      <input
+                      <Input
                         value={exerciseForm.optionC ?? ''}
                         onChange={(e) => setExerciseForm({ ...exerciseForm, optionC: e.target.value })}
                         placeholder="Đáp án C"
-                        className={input}
+                       
                       />
-                      <input
+                      <Input
                         value={exerciseForm.optionD ?? ''}
                         onChange={(e) => setExerciseForm({ ...exerciseForm, optionD: e.target.value })}
                         placeholder="Đáp án D (tuỳ chọn)"
-                        className={input}
+                       
                       />
                     </>
                   )}
-                  <input
+                  <Input
                     value={exerciseForm.hintVi ?? ''}
                     onChange={(e) => setExerciseForm({ ...exerciseForm, hintVi: e.target.value })}
                     placeholder="Gợi ý tiếng Việt (tuỳ chọn)"
-                    className={input}
+                   
                   />
-                  <input
+                  <Input
                     value={exerciseForm.explanationVi ?? ''}
                     onChange={(e) => setExerciseForm({ ...exerciseForm, explanationVi: e.target.value })}
                     placeholder="Giải thích tiếng Việt (hiện sau khi chấm)"
-                    className={input}
+                   
                   />
-                  <button
-                    onClick={handleAddExercise}
-                    className="sm:col-span-2 rounded-sm bg-primary px-4 py-2 font-medium text-canvas"
-                  >
+                  <Button variant="primary" className="sm:col-span-2"
+                    onClick={handleAddExercise}>
                     Thêm bài tập
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

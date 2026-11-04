@@ -21,7 +21,6 @@ const YouTubePlayer = forwardRef<YouTubePlayerRef, { videoId: string; onTimeUpda
       return () => {
         cancelled = true
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- re-create the player only when the video changes
     }, [videoId])
 
     useEffect(() => {
@@ -38,7 +37,7 @@ const YouTubePlayer = forwardRef<YouTubePlayerRef, { videoId: string; onTimeUpda
       play: () => playerRef.current?.playVideo(),
     }))
 
-    return <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-md bg-black" />
+    return <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-karte bg-pappe-dunkel" />
   }
 )
 

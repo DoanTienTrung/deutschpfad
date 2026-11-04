@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { PartyPopper } from 'lucide-react'
+import { Button, ButtonLink, EmptyState, PageHeader, Skeleton, cn } from '@kit'
 import { getDueCards, getVocabularyStats } from '../api/vocabularyApi'
 import type { VocabularyItem } from '../api/types'
 import LessonFlashcardExercise from '../components/practice/LessonFlashcardExercise'
@@ -42,39 +43,24 @@ export default function ReviewPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <nav className="mb-6 text-sm text-muted">
-        <Link to="/app" className="text-primary hover:underline">
-          Trang chủ
-        </Link>
-        {' / '}
-        Ôn tập
-      </nav>
+      <PageHeader title="Ôn tập" back={{ to: '/app', label: 'Trang chủ' }} />
 
       {items === null && (
         <div className="space-y-5">
-          <div className="h-6 animate-pulse rounded-full bg-surface" />
-          <div className="h-80 animate-pulse rounded-xl bg-surface" />
+          <Skeleton className="h-6" />
+          <Skeleton className="h-80" />
         </div>
       )}
 
       {items !== null && items.length === 0 && (
-        <div className="rounded-xl bg-surface p-10 text-center">
-          <p className="text-4xl">🎉</p>
-          <p className="mt-3 font-display text-lg font-semibold text-ink">Không có từ nào cần ôn tập lúc này!</p>
-          <p className="mt-1 text-sm text-muted">Quay lại sau hoặc học thêm từ mới nhé.</p>
-          <Link
-            to="/app/vocabulary"
-            className="mt-6 inline-block rounded-md bg-primary px-6 py-3 text-center font-medium text-canvas transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-deep hover:shadow-lifted"
-          >
-            Học từ vựng
-          </Link>
-        </div>
+        <EmptyState icon={<PartyPopper />} title="Không có từ nào cần ôn tập lúc này" description="Quay lại sau hoặc học thêm từ mới nhé."
+          action={<ButtonLink to="/app/vocabulary">Học từ vựng</ButtonLink>} />
       )}
 
       {items !== null && items.length > 0 && (
         <>
           {remainingAfter > 0 && !sessionDone && (
-            <p className="mb-4 text-center text-xs text-muted">
+            <p className="mb-4 text-center text-xs text-radiert">
               Phiên này {items.length} thẻ quá hạn lâu nhất. Còn {remainingAfter} thẻ đến hạn, ôn tiếp sau phiên này.
             </p>
           )}
@@ -86,20 +72,14 @@ export default function ReviewPage() {
           />
 
           {sessionDone && (
-            <div className={`mt-4 grid gap-2 ${remainingAfter > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-              <Link
-                to="/app"
-                className="rounded-md border border-hairline bg-canvas px-4 py-3 text-center font-semibold text-ink transition-colors hover:bg-surface"
-              >
+            <div className={cn('mt-4 grid gap-2', remainingAfter > 0 ? 'grid-cols-2' : 'grid-cols-1')}>
+              <ButtonLink to="/app" variant="secondary">
                 Về trang chủ
-              </Link>
+              </ButtonLink>
               {remainingAfter > 0 && (
-                <button
-                  onClick={startNextSession}
-                  className="rounded-md bg-primary px-4 py-3 font-semibold text-canvas transition-[background,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-primary-deep hover:shadow-lifted"
-                >
+                <Button onClick={startNextSession}>
                   Ôn tiếp {remainingAfter} thẻ
-                </button>
+                </Button>
               )}
             </div>
           )}

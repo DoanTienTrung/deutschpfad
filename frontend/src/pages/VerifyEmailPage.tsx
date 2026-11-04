@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { Field, Input, Note, Spinner, TextLink } from '@kit'
 import { apiFetch, ApiError } from '../api/client'
 import AuthCard from '../components/auth/AuthCard'
 import ResendVerification from '../components/auth/ResendVerification'
-import Field from '../components/ui/Field'
-import Alert from '../components/ui/Alert'
 
 // Thông báo từ server là dành cho lập trình viên ("Token không hợp lệ") — người học tiếng Đức
 // không biết token là gì. Dịch sang thứ họ hiểu và, quan trọng hơn, nói luôn phải làm gì tiếp.
@@ -57,21 +56,18 @@ export default function VerifyEmailPage() {
   return (
     <AuthCard title="Xác thực email">
       {status === 'loading' && (
-        <p className="flex items-center justify-center gap-2 text-sm text-muted">
-          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-          </svg>
+        <p className="flex items-center justify-center gap-2 text-sm text-radiert">
+          <Spinner />
           Đang xác thực...
         </p>
       )}
 
       {status === 'success' && (
         <>
-          <Alert tone="success">{message}</Alert>
-          <Link to="/login" className="block text-center font-medium text-primary hover:text-primary-deep">
-            Đăng nhập ngay
-          </Link>
+          <Note tone="ok" className="mb-4">{message}</Note>
+          <p className="text-center">
+            <TextLink to="/login">Đăng nhập ngay</TextLink>
+          </p>
         </>
       )}
 
@@ -80,25 +76,23 @@ export default function VerifyEmailPage() {
           email. Nên phải có ngay nút gửi lại thư tại chỗ. */}
       {status === 'error' && (
         <>
-          <Alert tone="danger">{message}</Alert>
-          <p className="mb-3 text-sm text-muted">
+          <Note tone="bad" className="mb-4">{message}</Note>
+          <p className="mb-3 text-sm text-radiert">
             Nhập email bạn đã đăng ký, chúng mình gửi lại link xác thực mới:
           </p>
           <div className="mb-3">
-            <Field
-              id="email"
-              label="Email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <Field label="Email">
+              <Input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Field>
           </div>
           <ResendVerification email={email} />
           <p className="mt-6 text-center text-sm">
-            <Link to="/login" className="font-medium text-primary hover:text-primary-deep">
-              Quay lại đăng nhập
-            </Link>
+            <TextLink to="/login">Quay lại đăng nhập</TextLink>
           </p>
         </>
       )}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button, Checkbox, Input, NativeSelect, Note } from '@kit'
 import {
   applyListeningCatalog,
   enqueueListeningVideos,
@@ -141,70 +142,66 @@ export default function ListeningImportPanel({
   }
 
   return (
-    <div className="mb-6 space-y-4 rounded-sm border border-hairline bg-card p-4 text-sm">
+    <div className="mb-6 space-y-4 rounded-karte border border-kartenrand bg-karteikarte p-4 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-ink">Nhập video YouTube hàng loạt</p>
-          <p className="mt-0.5 text-muted">
+          <p className="font-semibold text-bleistift">Nhập video YouTube hàng loạt</p>
+          <p className="mt-0.5 text-radiert">
             Job lấy phụ đề và dịch (chỉ Groq, tối đa {status?.maxVideosPerRun ?? 30} video và{' '}
             {status?.maxSentencesPerRun ?? 1500} câu mỗi lượt, tự chạy 02:00 mỗi đêm). Video dịch xong mới hiện với
             người học.
           </p>
         </div>
-        <button
+        <Button variant="primary" className="shrink-0 disabled:opacity-40"
           onClick={handleRun}
-          disabled={busy || !status || status.running}
-          className="shrink-0 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-40"
-        >
+          disabled={busy || !status || status.running}>
           {status?.running ? 'Đang chạy...' : 'Chạy nhập ngay'}
-        </button>
+        </Button>
       </div>
 
       {status && (
         <div className="space-y-1">
           <div className="flex flex-wrap gap-2">
             {STATUS_LABELS.map(({ key, label }) => (
-              <span key={key} className="rounded-full border border-hairline bg-surface px-2.5 py-0.5 text-xs text-ink">
+              <span key={key} className="rounded-rund border border-linie bg-karteikarte-innen px-2.5 py-0.5 text-xs text-bleistift">
                 {label}: <strong>{status.byStatus[key] ?? 0}</strong>
               </span>
             ))}
-            <span className="rounded-full border border-hairline bg-surface px-2.5 py-0.5 text-xs text-ink">
+            <span className="rounded-rund border border-linie bg-karteikarte-innen px-2.5 py-0.5 text-xs text-bleistift">
               Câu chờ dịch: <strong>{status.sentencesRemaining}</strong>
             </span>
           </div>
           {status.running && (
-            <p className="text-muted">
+            <p className="text-radiert">
               {status.phase}... đã lấy phụ đề {status.videosProcessed} video, dịch {status.sentencesTranslated} câu,{' '}
               {status.videosReady} video đã hiện
             </p>
           )}
-          {!status.running && status.stopReason && <p className="text-danger">{status.stopReason}</p>}
+          {!status.running && status.stopReason && <p className="text-rotstift">{status.stopReason}</p>}
         </div>
       )}
 
-      {error && <div className="rounded-sm bg-danger-bg p-3 text-danger">{error}</div>}
-      {message && <div className="rounded-sm bg-success-bg p-3 text-success">{message}</div>}
+      {error && <Note tone="bad">{error}</Note>}
+      {message && <Note tone="ok">{message}</Note>}
 
-      <div className="border-t border-hairline pt-4">
+      <div className="border-t border-linie pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-ink">
+          <p className="text-bleistift">
             Danh sách đề xuất: <strong>{catalog.length}</strong> video ({catalogNew} chưa có)
-            <button onClick={() => setShowCatalog(!showCatalog)} className="ml-2 text-primary hover:underline">
+            <Button variant="ghost" className="ml-2" onClick={() => setShowCatalog(!showCatalog)}>
               {showCatalog ? 'Ẩn' : 'Xem'}
-            </button>
+            </Button>
           </p>
-          <button
+          <Button variant="secondary" size="sm" className="disabled:opacity-40"
             onClick={handleApplyCatalog}
-            disabled={busy || catalogNew === 0}
-            className="rounded-sm border border-primary px-3 py-1.5 font-medium text-primary disabled:opacity-40"
-          >
+            disabled={busy || catalogNew === 0}>
             Nạp {catalogNew} video vào hàng chờ
-          </button>
+          </Button>
         </div>
         {showCatalog && (
-          <div className="mt-2 max-h-72 overflow-auto rounded-sm border border-hairline">
+          <div className="mt-2 max-h-72 overflow-auto rounded-karte border border-linie">
             <table className="w-full text-left text-xs">
-              <thead className="sticky top-0 bg-surface text-muted">
+              <thead className="sticky top-0 bg-karteikarte-innen text-radiert">
                 <tr>
                   <th className="px-2 py-1.5">Kênh</th>
                   <th className="px-2 py-1.5">Cấp</th>
@@ -214,7 +211,7 @@ export default function ListeningImportPanel({
               </thead>
               <tbody>
                 {catalog.map((v) => (
-                  <tr key={v.videoId} className={`border-t border-hairline ${v.exists ? 'text-muted' : 'text-ink'}`}>
+                  <tr key={v.videoId} className={`border-t border-linie ${v.exists ? 'text-radiert' : 'text-bleistift'}`}>
                     <td className="whitespace-nowrap px-2 py-1">{v.channelName}</td>
                     <td className="whitespace-nowrap px-2 py-1">{v.levelMin === v.levelMax ? v.levelMin : `${v.levelMin}-${v.levelMax}`}</td>
                     <td className="px-2 py-1">
@@ -232,65 +229,60 @@ export default function ListeningImportPanel({
         )}
       </div>
 
-      <div className="space-y-2 border-t border-hairline pt-4">
-        <p className="text-ink">Hoặc chọn từ một playlist / kênh / video YouTube:</p>
+      <div className="space-y-2 border-t border-linie pt-4">
+        <p className="text-bleistift">Hoặc chọn từ một playlist / kênh / video YouTube:</p>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <input
+          <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://www.youtube.com/playlist?list=... hoặc https://www.youtube.com/@kenh/videos"
-            className="min-w-0 flex-1 rounded-sm border border-hairline px-3 py-2"
+            className="min-w-0 flex-1"
           />
-          <input
+          <Input
             type="number"
             min={1}
             max={100}
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
             aria-label="Số video tối đa"
-            className="w-24 rounded-sm border border-hairline px-3 py-2"
+            className="w-24"
           />
-          <button
+          <Button variant="secondary" className="disabled:opacity-40"
             onClick={handlePreview}
-            disabled={busy || !url.trim()}
-            className="rounded-sm border border-hairline px-4 py-2 text-ink disabled:opacity-40"
-          >
+            disabled={busy || !url.trim()}>
             {busy ? 'Đang đọc...' : 'Xem trước'}
-          </button>
+          </Button>
         </div>
 
         {preview && preview.length > 0 && (
           <div className="space-y-2">
-            <div className="max-h-72 overflow-auto rounded-sm border border-hairline">
+            <div className="max-h-72 overflow-auto rounded-karte border border-linie">
               {preview.map((e) => (
-                <label key={e.videoId} className={`flex items-center gap-2 border-b border-hairline px-2 py-1.5 last:border-0 ${e.exists ? 'text-muted' : 'text-ink'}`}>
-                  <input type="checkbox" checked={selected.has(e.videoId)} disabled={e.exists} onChange={() => toggle(e.videoId)} />
-                  <span className="min-w-0 flex-1 truncate">{e.title}</span>
-                  <span className="shrink-0 text-xs text-muted">{e.exists ? 'đã có' : formatDuration(e.durationSeconds)}</span>
-                </label>
+                <Checkbox key={e.videoId} checked={selected.has(e.videoId)} disabled={e.exists} onChange={() => toggle(e.videoId)}
+                  className="border-b border-linie px-2 last:border-0"
+                  label={<span className="flex gap-2"><span className="min-w-0 flex-1 truncate">{e.title}</span>
+                    <span className="shrink-0 text-xs text-radiert">{e.exists ? 'đã có' : formatDuration(e.durationSeconds)}</span></span>} />
               ))}
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
-              <select value={channelId} onChange={(e) => setChannelId(e.target.value)} className="rounded-sm border border-hairline px-3 py-2 sm:col-span-2">
+              <NativeSelect value={channelId} onChange={(e) => setChannelId(e.target.value)} className="sm:col-span-2">
                 <option value="">Kênh: tự nhận từ YouTube</option>
                 {channels.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
-              </select>
-              <select value={levelMin} onChange={(e) => setLevelMin(e.target.value)} className="rounded-sm border border-hairline px-3 py-2">
+              </NativeSelect>
+              <NativeSelect value={levelMin} onChange={(e) => setLevelMin(e.target.value)}>
                 {LEVELS.map((l) => <option key={l} value={l}>Từ {l}</option>)}
-              </select>
-              <select value={levelMax} onChange={(e) => setLevelMax(e.target.value)} className="rounded-sm border border-hairline px-3 py-2">
+              </NativeSelect>
+              <NativeSelect value={levelMax} onChange={(e) => setLevelMax(e.target.value)}>
                 {LEVELS.map((l) => <option key={l} value={l}>Đến {l}</option>)}
-              </select>
+              </NativeSelect>
             </div>
-            <button
+            <Button variant="primary" className="w-full disabled:opacity-40"
               onClick={handleEnqueue}
-              disabled={busy || selected.size === 0}
-              className="w-full rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-40"
-            >
+              disabled={busy || selected.size === 0}>
               Thêm {selected.size} video vào hàng chờ
-            </button>
+            </Button>
           </div>
         )}
       </div>

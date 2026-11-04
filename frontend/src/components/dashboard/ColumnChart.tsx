@@ -20,8 +20,8 @@ export default function ColumnChart({
   columns,
   caption,
   reference,
-  highlightClass = 'bg-accent',
-  baseClass = 'bg-bar-muted',
+  highlightClass = 'bg-reiter',
+  baseClass = 'bg-kante/45',
   formatValue = (v) => String(v),
   height = 128,
 }: {
@@ -41,9 +41,9 @@ export default function ColumnChart({
     <figure>
       <div className="relative" style={{ height }}>
         {reference && (
-          <div className="pointer-events-none absolute inset-x-0 z-10 border-t border-ink/40" style={{ bottom: pct(reference.value) }} />
+          <div className="pointer-events-none absolute inset-x-0 z-10 border-t border-bleistift/40" style={{ bottom: pct(reference.value) }} />
         )}
-        <div className="absolute inset-0 flex items-end gap-0.5 border-b border-hairline">
+        <div className="absolute inset-0 flex items-end gap-0.5 border-b border-linie">
           {columns.map((c) => (
             <div
               key={c.key}
@@ -53,19 +53,19 @@ export default function ColumnChart({
             >
               {c.showValue && c.value > 0 && (
                 <span
-                  className="absolute z-10 text-xs font-semibold text-ink"
+                  className="absolute z-10 text-xs font-semibold text-bleistift"
                   style={{ bottom: `calc(${pct(c.value)} + 4px)` }}
                 >
                   {formatValue(c.value)}
                 </span>
               )}
               <div
-                className={`w-full max-w-6 rounded-t-[4px] transition-opacity group-hover:opacity-80 group-focus-visible:opacity-80 ${
+                className={`w-full max-w-6 rounded-t-karte transition-opacity group-hover:opacity-80 group-focus-visible:opacity-80 ${
                   c.highlight ? highlightClass : baseClass
                 }`}
                 style={{ height: c.value > 0 ? `max(${pct(c.value)}, 3px)` : 0 }}
               />
-              <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-sm bg-primary px-2 py-1 text-xs text-canvas shadow-floating group-hover:block group-focus-visible:block">
+              <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-karte bg-bleistift px-2 py-1 text-xs text-bleistift-invers shadow-pop group-hover:block group-focus-visible:block">
                 {c.tooltip}
               </span>
             </div>
@@ -79,7 +79,7 @@ export default function ColumnChart({
           <span key={c.key} className="relative flex-1">
             {c.label && (
               <span
-                className={`absolute whitespace-nowrap text-xs text-muted ${
+                className={`absolute whitespace-nowrap text-xs text-radiert ${
                   i === 0 ? 'left-0' : i === columns.length - 1 ? 'right-0' : 'left-1/2 -translate-x-1/2'
                 }`}
               >

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { Library } from 'lucide-react'
+import { Breadcrumb, ButtonLink, CardGridSkeleton, Chip, EmptyState, NativeSelect, SearchInput } from '@kit'
 import { listReadingByLevel } from '../api/readingApi'
 import type { ReadingPassageSummary } from '../api/types'
 import ReadingPassageGrid from '../components/reading/ReadingPassageGrid'
-import ListeningBreadcrumb from '../components/listening/ListeningBreadcrumb'
-import { CardGridSkeleton } from '../components/ui/Skeleton'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
@@ -36,69 +36,45 @@ export default function ReadingArticlesPage() {
   }, [level])
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-seite">
       {/* Stacks on phones: the breadcrumb needs the full 390px row to fit on one line; keeping
           the link beside it squeezed the breadcrumb into an awkward mid-item wrap. */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-        <ListeningBreadcrumb
-          items={[{ label: '📖 Đọc', to: '/app/reading' }, { label: '📰 Đọc qua Sách, Báo' }]}
+        <Breadcrumb
+          items={[{ label: 'Đọc', to: '/app/reading' }, { label: 'Đọc qua Sách, Báo' }]}
         />
-        <Link
-          to="/app/reading/mine"
-          className="self-start shrink-0 rounded-full border border-hairline bg-surface px-3 py-1 text-sm font-semibold text-primary transition-colors hover:border-primary/40"
-        >
-          📚 Bài đọc của tôi
-        </Link>
+        <ButtonLink to="/app/reading/mine" variant="secondary" size="sm" className="shrink-0 self-start" icon={<Library className="size-4" aria-hidden="true" />}>
+          Bài đọc của tôi
+        </ButtonLink>
       </div>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm theo tên bài..."
-        className="mb-4 w-full rounded-sm border border-hairline px-3.5 py-2.5 text-sm text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-      />
+      <div className="mb-4">
+        <SearchInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo tên bài..." aria-label="Tìm theo tên bài..." />
+      </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-2">
           {LEVELS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevel(l)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                level === l
-                  ? 'bg-primary/12 text-primary-deep'
-                  : 'border border-hairline bg-surface text-ink hover:border-primary/40 hover:text-primary'
-              }`}
-            >
-              {l}
-            </button>
+            <Chip key={l} selected={level === l} onClick={() => setLevel(l)}>{l}</Chip>
           ))}
         </div>
         {topics.length > 0 && (
-          <select
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            className="rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-sm text-ink focus:border-primary focus:outline-none"
-          >
+          <NativeSelect value={topic} onChange={(e) => setTopic(e.target.value)} aria-label="Chủ đề" className="min-h-10">
             <option value="">Tất cả chủ đề</option>
             {topics.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
-          </select>
+          </NativeSelect>
         )}
       </div>
 
       {loading && <CardGridSkeleton />}
 
       {!loading && articlesOnly.length === 0 && (
-        <div className="rounded-md border border-dashed border-hairline p-8 text-center">
-          <p className="text-3xl">📰</p>
-          <p className="mt-2 font-medium text-ink">Chưa có bài báo/sách nào ở cấp độ này</p>
-          <p className="mt-1 text-sm text-muted">Thử chọn cấp độ khác ở trên nhé.</p>
-        </div>
+        <EmptyState title="Chưa có bài báo/sách nào ở cấp độ này" description="Thử chọn cấp độ khác ở trên nhé." />
       )}
       {!loading && articlesOnly.length > 0 && visiblePassages.length === 0 && (
-        <p className="text-muted">Không tìm thấy bài nào khớp với tên bạn tìm.</p>
+        <p className="text-radiert">Không tìm thấy bài nào khớp với tên bạn tìm.</p>
       )}
 
       {!loading && visiblePassages.length > 0 && <ReadingPassageGrid passages={visiblePassages} />}

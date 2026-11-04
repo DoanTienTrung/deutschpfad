@@ -1,11 +1,8 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Button, ButtonLink, Field, Input, Note, TextLink } from '@kit'
 import { apiFetch, ApiError } from '../api/client'
 import AuthCard from '../components/auth/AuthCard'
 import ResendVerification from '../components/auth/ResendVerification'
-import Field from '../components/ui/Field'
-import Button from '../components/ui/Button'
-import Alert from '../components/ui/Alert'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -52,16 +49,13 @@ export default function RegisterPage() {
   if (registeredEmail && verifiedAlready) {
     return (
       <AuthCard title="Tạo tài khoản thành công">
-        <p className="mb-4 text-sm text-muted">Tài khoản của bạn đã sẵn sàng:</p>
-        <p className="mb-4 rounded-sm bg-canvas px-3 py-2.5 text-center font-medium break-all text-ink">
+        <p className="mb-4 text-sm text-radiert">Tài khoản của bạn đã sẵn sàng:</p>
+        <p className="mb-4 rounded-karte border border-linie bg-karteikarte-innen px-3 py-2.5 text-center font-medium break-all text-bleistift">
           {registeredEmail}
         </p>
-        <Link
-          to="/login"
-          className="block w-full rounded-md bg-primary px-6 py-3 text-center font-semibold text-canvas transition-colors hover:bg-primary-deep"
-        >
+        <ButtonLink to="/login" className="w-full">
           Đăng nhập ngay
-        </Link>
+        </ButtonLink>
       </AuthCard>
     )
   }
@@ -73,23 +67,21 @@ export default function RegisterPage() {
         footer={
           <div>
             Đã xác thực xong?{' '}
-            <Link to="/login" className="font-medium text-primary hover:text-primary-deep">
-              Đăng nhập
-            </Link>
+            <TextLink to="/login">Đăng nhập</TextLink>
           </div>
         }
       >
-        <p className="mb-4 text-sm text-muted">
+        <p className="mb-4 text-sm text-radiert">
           Tạo tài khoản thành công. Chúng mình vừa gửi một email xác thực tới:
         </p>
         {/* Hiện lại đúng địa chỉ vừa nhập: gõ nhầm email là lỗi phổ biến nhất ở bước này, và đây
             là khoảnh khắc duy nhất người dùng còn nhìn thấy nó để phát hiện ra. */}
-        <p className="mb-4 rounded-sm bg-canvas px-3 py-2.5 text-center font-medium break-all text-ink">
+        <p className="mb-4 rounded-karte border border-linie bg-karteikarte-innen px-3 py-2.5 text-center font-medium break-all text-bleistift">
           {registeredEmail}
         </p>
-        <p className="mb-4 text-sm text-muted">
+        <p className="mb-4 text-sm text-radiert">
           Mở thư và bấm vào link trong đó để kích hoạt tài khoản. Link có hiệu lực trong 24 giờ.
-          Không thấy thư thì ngó thêm mục <strong className="text-ink">Spam</strong> nhé.
+          Không thấy thư thì ngó thêm mục <strong className="text-bleistift">Spam</strong> nhé.
         </p>
 
         <ResendVerification
@@ -97,13 +89,9 @@ export default function RegisterPage() {
           successMessage={`Đã gửi lại email xác thực tới ${registeredEmail}.`}
         />
 
-        <button
-          type="button"
-          onClick={() => setRegisteredEmail(null)}
-          className="mt-2 w-full px-4 py-2 text-sm text-muted transition-colors hover:text-ink"
-        >
+        <Button variant="ghost" size="sm" onClick={() => setRegisteredEmail(null)} className="mt-2 w-full font-normal text-radiert">
           Gõ nhầm địa chỉ? Đăng ký lại bằng email khác
-        </button>
+        </Button>
       </AuthCard>
     )
   }
@@ -114,53 +102,51 @@ export default function RegisterPage() {
       footer={
         <div>
           Đã có tài khoản?{' '}
-          <Link to="/login" className="font-medium text-primary hover:text-primary-deep">
-            Đăng nhập
-          </Link>
+          <TextLink to="/login">Đăng nhập</TextLink>
         </div>
       }
     >
-      {error && <Alert tone="danger">{error}</Alert>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field
-          id="fullName"
-          label="Họ tên"
-          autoComplete="name"
-          required
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
-        <Field
-          id="email"
-          label="Email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <Field
-          id="password"
-          label="Mật khẩu"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Field
-          id="confirmPassword"
-          label="Nhập lại mật khẩu"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        <Button type="submit" loading={submitting}>
+        <Field label="Họ tên">
+          <Input
+            autoComplete="name"
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+        </Field>
+        <Field label="Email">
+          <Input
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Field>
+        <Field label="Mật khẩu">
+          <Input
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
+        <Field label="Nhập lại mật khẩu">
+          <Input
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </Field>
+        <Button type="submit" loading={submitting} className="w-full">
           {submitting ? 'Đang đăng ký...' : 'Đăng ký'}
         </Button>
       </form>

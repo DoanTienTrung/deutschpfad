@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { AnswerOption, Card, type AnswerState } from '@kit'
 import type { VocabularyItem } from '../../api/types'
 import type { PracticeResultHandler } from '../../lib/practiceResult'
 import { buildChoices, shuffle } from '../../lib/quiz'
@@ -42,7 +43,7 @@ export default function ListenChooseExercise({
   }, [index, order])
 
   if (items.length < 4) {
-    return <p className="text-muted">Cần ít nhất 4 từ trong bài học để luyện dạng này.</p>
+    return <p className="text-radiert">Cần ít nhất 4 từ trong bài học để luyện dạng này.</p>
   }
 
   const current = order[index]
@@ -72,37 +73,25 @@ export default function ListenChooseExercise({
 
   return (
     <div>
-      <p className="mb-4 text-sm text-muted">
+      <p className="mb-4 text-sm text-radiert">
         Đã luyện {totalAnswered} từ · Đúng {score}
       </p>
 
-      <div className="mb-6 rounded-md border border-hairline bg-card p-6">
+      <Card className="mb-6 p-6">
         <AudioBar text={spokenForm(current.germanWord)} />
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {choiceWords.map((word) => {
           const item = itemByGermanWord.get(word) as VocabularyItem
           const isCorrect = word === current.germanWord
-          const showResult = selected !== null
-          const stateClass = !showResult
-            ? 'border-hairline hover:bg-surface'
-            : isCorrect
-              ? 'border-success bg-success-bg text-success'
-              : word === selected
-                ? 'border-danger bg-danger-bg text-danger'
-                : 'border-hairline opacity-50'
+          const state: AnswerState = selected === null ? 'idle' : isCorrect ? 'correct' : word === selected ? 'wrong' : 'dim'
           return (
-            <button
-              key={word}
-              onClick={() => handleSelect(word)}
-              disabled={selected !== null}
-              className={`rounded-md border p-4 text-center ${stateClass}`}
-            >
+            <AnswerOption key={word} state={state} onClick={() => handleSelect(word)} disabled={selected !== null} className="p-4 font-normal">
               <p className="font-display font-semibold">{item.germanWord}</p>
               <p className="mt-1 text-sm">{item.vietnameseMeaning}</p>
               {item.englishMeaning && <p className="text-xs opacity-80">({item.englishMeaning})</p>}
-            </button>
+            </AnswerOption>
           )
         })}
       </div>

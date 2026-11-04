@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button, Input, NativeSelect, Note, Textarea } from '@kit'
 import {
   listReadingAdmin,
   createReadingPassage,
@@ -193,157 +194,155 @@ export default function AdminReadingPage() {
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Bài đọc</h2>
+      <h2 className="mb-4 font-display text-xl font-bold text-bleistift">Quản lý Bài đọc</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
-        <input
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-karte border border-kartenrand bg-karteikarte p-4 sm:grid-cols-2">
+        <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Tên bài đọc"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <select
+        <NativeSelect
           value={levelMin}
           onChange={(e) => setLevelMin(e.target.value)}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           {LEVELS.map((l) => (
             <option key={l} value={l}>Từ {l}</option>
           ))}
-        </select>
-        <select
+        </NativeSelect>
+        <NativeSelect
           value={levelMax}
           onChange={(e) => setLevelMax(e.target.value)}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           {LEVELS.map((l) => (
             <option key={l} value={l}>Đến {l}</option>
           ))}
-        </select>
-        <input
+        </NativeSelect>
+        <Input
           type="number"
           value={orderIndex}
           onChange={(e) => setOrderIndex(Number(e.target.value))}
           placeholder="Thứ tự"
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         />
-        <select
+        <NativeSelect
           value={category}
           onChange={(e) => setCategory(e.target.value as ReadingCategory)}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           <option value="EXAM">Loại: Đề thi</option>
           <option value="ARTICLE">Loại: Sách, Báo</option>
-        </select>
-        <input
+        </NativeSelect>
+        <Input
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           placeholder="Chủ đề (tuỳ chọn)"
           list="reading-topic-suggestions"
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         />
         <datalist id="reading-topic-suggestions">
           {topicSuggestions.map((t) => (
             <option key={t} value={t} />
           ))}
         </datalist>
-        <input
+        <Input
           value={sourceLabel}
           onChange={(e) => setSourceLabel(e.target.value)}
           placeholder="Tên nguồn hiển thị (tuỳ chọn)"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <input
+        <Input
           value={sourceUrl}
           onChange={(e) => setSourceUrl(e.target.value)}
           placeholder="Link gốc tới nguồn (tuỳ chọn)"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
         {category === 'ARTICLE' && (
-          <div className="sm:col-span-2 flex items-end gap-2 rounded-sm border border-dashed border-hairline bg-surface p-3">
+          <div className="sm:col-span-2 flex items-end gap-2 rounded-karte border border-dashed border-linie bg-karteikarte-innen p-3">
             <div className="flex-1">
-              <p className="mb-1 text-xs font-medium text-ink">AI soạn nháp bài đọc (nội dung gốc, không sao chép báo thật)</p>
-              <input
+              <p className="mb-1 text-xs font-medium text-bleistift">AI soạn nháp bài đọc (nội dung gốc, không sao chép báo thật)</p>
+              <Input
                 value={draftTopic}
                 onChange={(e) => setDraftTopic(e.target.value)}
                 placeholder="Chủ đề, vd. bảo vệ môi trường"
-                className="w-full rounded-sm border border-hairline px-3 py-2 text-sm"
+                className="w-full"
               />
             </div>
-            <button
+            <Button variant="secondary" className="shrink-0 disabled:opacity-50"
               onClick={handleGenerateDraft}
-              disabled={drafting || !draftTopic.trim()}
-              className="shrink-0 rounded-sm border border-hairline bg-card px-3 py-2 text-sm font-medium text-ink hover:bg-accent/10 disabled:opacity-50"
-            >
+              disabled={drafting || !draftTopic.trim()}>
               {drafting ? 'Đang soạn...' : 'AI soạn bài đọc'}
-            </button>
+            </Button>
           </div>
         )}
-        <textarea
+        <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Nội dung đoạn văn (tiếng Đức)"
           rows={8}
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
 
         <div className="sm:col-span-2 mt-2 space-y-3">
-          <p className="text-sm font-semibold text-ink">
+          <p className="text-sm font-semibold text-bleistift">
             Kho lựa chọn (dùng chung cho câu dạng "Nối câu")
           </p>
-          <p className="text-xs text-muted">
+          <p className="text-xs text-radiert">
             Vd. các quảng cáo A-J trong bài "nối tình huống với quảng cáo phù hợp" - mỗi câu hỏi dạng
             Nối câu sẽ chọn 1 chữ cái từ đây, hoặc "0" nếu không có lựa chọn nào phù hợp.
           </p>
           {matchingOptions.map((opt, i) => (
             <div key={i} className="flex items-start gap-2">
-              <input
+              <Input
                 value={opt.letter}
                 onChange={(e) => updateMatchingOption(i, { letter: e.target.value })}
                 placeholder="A"
-                className="w-14 rounded-sm border border-hairline px-2 py-2 text-center"
+                className="w-14 text-center"
               />
-              <input
+              <Input
                 value={opt.text}
                 onChange={(e) => updateMatchingOption(i, { text: e.target.value })}
                 placeholder="Nội dung lựa chọn"
-                className="flex-1 rounded-sm border border-hairline px-3 py-2"
+                className="flex-1"
               />
-              <button onClick={() => removeMatchingOption(i)} className="px-2 py-2 text-xs text-danger hover:underline">
+              <Button variant="ghost" size="sm" className="text-rotstift" onClick={() => removeMatchingOption(i)}>
                 Xoá
-              </button>
+              </Button>
             </div>
           ))}
-          <button onClick={addMatchingOption} className="rounded-sm border border-hairline px-3 py-1.5 text-sm text-ink">
+          <Button variant="secondary" size="sm" onClick={addMatchingOption}>
             + Thêm lựa chọn
-          </button>
+          </Button>
         </div>
 
         <div className="sm:col-span-2 mt-4 space-y-3">
-          <p className="text-sm font-semibold text-ink">Câu hỏi</p>
+          <p className="text-sm font-semibold text-bleistift">Câu hỏi</p>
           {category === 'ARTICLE' && (
-            <p className="text-xs text-muted">
+            <p className="text-xs text-radiert">
               Để trống toàn bộ câu hỏi bên dưới để AI tự soạn 5-7 câu trắc nghiệm sau khi lưu, hoặc
               tự soạn tay nếu muốn kiểm soát chính xác.
             </p>
           )}
           {questions.map((q, i) => (
-            <div key={i} className="rounded-sm border border-hairline p-3">
+            <div key={i} className="rounded-karte border border-linie p-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-muted">Câu {i + 1}</span>
-                <button onClick={() => removeQuestion(i)} className="text-xs text-danger hover:underline">
+                <span className="text-xs font-medium text-radiert">Câu {i + 1}</span>
+                <Button variant="ghost" size="sm" className="text-rotstift" onClick={() => removeQuestion(i)}>
                   Xoá câu này
-                </button>
+                </Button>
               </div>
-              <input
+              <Input
                 value={q.questionText}
                 onChange={(e) => updateQuestion(i, { questionText: e.target.value })}
                 placeholder="Nội dung câu hỏi"
-                className="mb-2 w-full rounded-sm border border-hairline px-3 py-2"
+                className="mb-2 w-full"
               />
-              <select
+              <NativeSelect
                 value={q.questionType}
                 onChange={(e) => {
                   const type = e.target.value as ReadingQuestionAdminInput['questionType']
@@ -351,114 +350,112 @@ export default function AdminReadingPage() {
                     type === 'TRUE_FALSE' ? 'true' : type === 'MATCHING' ? '0' : type === 'MULTIPLE_CHOICE' ? 'A' : ''
                   updateQuestion(i, { questionType: type, correctAnswer: defaultAnswer })
                 }}
-                className="mb-2 rounded-sm border border-hairline px-3 py-2"
+                className="mb-2"
               >
                 <option value="MULTIPLE_CHOICE">Trắc nghiệm</option>
                 <option value="TRUE_FALSE">Đúng / Sai</option>
                 <option value="MATCHING">Nối câu</option>
                 <option value="FILL_BLANK">Điền từ</option>
                 <option value="SHORT_ANSWER">Trả lời ngắn (tự đối chiếu)</option>
-              </select>
+              </NativeSelect>
 
               {q.questionType === 'FILL_BLANK' ? (
-                <input
+                <Input
                   value={q.correctAnswer}
                   onChange={(e) => updateQuestion(i, { correctAnswer: e.target.value })}
                   placeholder="Đáp án đúng (nhiều đáp án cách nhau bởi /, vd: Etiketten/Etikett)"
-                  className="w-full rounded-sm border border-hairline px-3 py-2"
+                  className="w-full"
                 />
               ) : q.questionType === 'SHORT_ANSWER' ? (
-                <textarea
+                <Textarea
                   value={q.correctAnswer}
                   onChange={(e) => updateQuestion(i, { correctAnswer: e.target.value })}
                   placeholder="Đáp án mẫu (hiện cho người học tự đối chiếu, không chấm điểm tự động)"
                   rows={2}
-                  className="w-full rounded-sm border border-hairline px-3 py-2"
+                  className="w-full"
                 />
               ) : q.questionType === 'MATCHING' ? (
-                <select
+                <NativeSelect
                   value={q.correctAnswer}
                   onChange={(e) => updateQuestion(i, { correctAnswer: e.target.value })}
-                  className="rounded-sm border border-hairline px-3 py-2"
+                 
                 >
                   <option value="0">Đáp án đúng: 0 (không có lựa chọn phù hợp)</option>
                   {matchingOptions.filter((o) => o.letter).map((o) => (
                     <option key={o.letter} value={o.letter}>Đáp án đúng: {o.letter}</option>
                   ))}
-                </select>
+                </NativeSelect>
               ) : q.questionType === 'MULTIPLE_CHOICE' ? (
                 <div className="space-y-2">
-                  <input
+                  <Input
                     value={q.optionA ?? ''}
                     onChange={(e) => updateQuestion(i, { optionA: e.target.value })}
                     placeholder="Đáp án A"
-                    className="w-full rounded-sm border border-hairline px-3 py-2"
+                    className="w-full"
                   />
-                  <input
+                  <Input
                     value={q.optionB ?? ''}
                     onChange={(e) => updateQuestion(i, { optionB: e.target.value })}
                     placeholder="Đáp án B"
-                    className="w-full rounded-sm border border-hairline px-3 py-2"
+                    className="w-full"
                   />
-                  <input
+                  <Input
                     value={q.optionC ?? ''}
                     onChange={(e) => updateQuestion(i, { optionC: e.target.value })}
                     placeholder="Đáp án C (tuỳ chọn)"
-                    className="w-full rounded-sm border border-hairline px-3 py-2"
+                    className="w-full"
                   />
-                  <input
+                  <Input
                     value={q.optionD ?? ''}
                     onChange={(e) => updateQuestion(i, { optionD: e.target.value })}
                     placeholder="Đáp án D (tuỳ chọn)"
-                    className="w-full rounded-sm border border-hairline px-3 py-2"
+                    className="w-full"
                   />
-                  <select
+                  <NativeSelect
                     value={q.correctAnswer}
                     onChange={(e) => updateQuestion(i, { correctAnswer: e.target.value })}
-                    className="rounded-sm border border-hairline px-3 py-2"
+                   
                   >
                     <option value="A">Đáp án đúng: A</option>
                     <option value="B">Đáp án đúng: B</option>
                     <option value="C">Đáp án đúng: C</option>
                     <option value="D">Đáp án đúng: D</option>
-                  </select>
+                  </NativeSelect>
                 </div>
               ) : (
-                <select
+                <NativeSelect
                   value={q.correctAnswer}
                   onChange={(e) => updateQuestion(i, { correctAnswer: e.target.value })}
-                  className="rounded-sm border border-hairline px-3 py-2"
+                 
                 >
                   <option value="true">Đáp án đúng: Đúng</option>
                   <option value="false">Đáp án đúng: Sai</option>
-                </select>
+                </NativeSelect>
               )}
 
-              <input
+              <Input
                 value={q.explanation ?? ''}
                 onChange={(e) => updateQuestion(i, { explanation: e.target.value })}
                 placeholder="Giải thích (tuỳ chọn, hiện sau khi nộp bài)"
-                className="mt-2 w-full rounded-sm border border-hairline px-3 py-2"
+                className="mt-2 w-full"
               />
             </div>
           ))}
-          <button onClick={addQuestion} className="rounded-sm border border-hairline px-3 py-1.5 text-sm text-ink">
+          <Button variant="secondary" size="sm" onClick={addQuestion}>
             + Thêm câu hỏi
-          </button>
+          </Button>
         </div>
 
         <div className="sm:col-span-2 mt-2 flex gap-2">
-          <button
+          <Button variant="primary" className="flex-1 disabled:opacity-50"
             onClick={handleSave}
-            disabled={saving}
-            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
-          >
+            disabled={saving}>
             {saving ? 'Đang lưu...' : editingId ? 'Cập nhật bài đọc' : 'Thêm bài đọc'}
-          </button>
+          </Button>
           {editingId && (
-            <button onClick={resetForm} className="rounded-sm border border-hairline px-4 py-2 text-ink">
+            <Button variant="secondary" onClick={resetForm}>
               Huỷ
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -467,21 +464,21 @@ export default function AdminReadingPage() {
         {passages.map((passage) => (
           <li
             key={passage.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
+            className="flex items-center justify-between rounded-karte border border-kartenrand bg-karteikarte p-3"
           >
             <span>
               <strong>{passage.levelMin === passage.levelMax ? passage.levelMin : `${passage.levelMin}-${passage.levelMax}`}</strong> - Bài {passage.orderIndex}: {passage.title}
-              <span className="ml-2 text-xs text-muted">[{passage.category === 'EXAM' ? 'Đề thi' : 'Sách, Báo'}]</span>
-              {passage.topic && <span className="ml-2 text-xs text-muted">#{passage.topic}</span>}
-              <span className="ml-2 text-xs text-muted">[{passage.questions.length} câu hỏi]</span>
+              <span className="ml-2 text-xs text-radiert">[{passage.category === 'EXAM' ? 'Đề thi' : 'Sách, Báo'}]</span>
+              {passage.topic && <span className="ml-2 text-xs text-radiert">#{passage.topic}</span>}
+              <span className="ml-2 text-xs text-radiert">[{passage.questions.length} câu hỏi]</span>
             </span>
             <span className="flex gap-3">
-              <button onClick={() => startEdit(passage)} className="text-sm text-primary hover:underline">
+              <Button variant="ghost" onClick={() => startEdit(passage)}>
                 Sửa
-              </button>
-              <button onClick={() => handleDelete(passage.id)} className="text-sm text-danger hover:underline">
+              </Button>
+              <Button variant="ghost" className="text-rotstift" onClick={() => handleDelete(passage.id)}>
                 Xoá
-              </button>
+              </Button>
             </span>
           </li>
         ))}

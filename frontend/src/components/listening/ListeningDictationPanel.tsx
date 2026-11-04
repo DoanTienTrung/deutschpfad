@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
+import { Eye, Play, RotateCcw, SkipBack } from 'lucide-react'
+import { Button, Switch } from '@kit'
 import type { ListeningSentence } from '../../api/types'
 import type { YouTubePlayerRef } from './YouTubePlayer'
 
@@ -46,6 +48,7 @@ export default function ListeningDictationPanel({
     if (!current) return
     playerRef.current?.seekTo(current.startSeconds)
     playerRef.current?.play()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- đổi câu thì xoá phần đã gõ
     setTyped([])
     setRevealed(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only auto-play when the sentence changes
@@ -69,6 +72,7 @@ export default function ListeningDictationPanel({
 
   useEffect(() => {
     if (allCorrect) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- đánh dấu câu xong ngay khi mọi ô đều đúng
       setAnsweredIndexes((prev) => new Set(prev).add(index))
       onSentenceComplete(index)
     }
@@ -131,7 +135,7 @@ export default function ListeningDictationPanel({
     }
     if (!isLetter(ch)) {
       return (
-        <span key={i} className="inline-block px-0.5 text-ink">
+        <span key={i} className="inline-block px-0.5 text-bleistift">
           {ch}
         </span>
       )
@@ -142,14 +146,14 @@ export default function ListeningDictationPanel({
     const isFilled = typedChar !== undefined
     const isCorrect = isFilled && typedChar.toLowerCase() === ch.toLowerCase()
     const boxClass = !isFilled
-      ? 'border-hairline bg-surface text-transparent'
+      ? 'border-linie bg-karteikarte-innen text-transparent'
       : isCorrect
-        ? 'border-success bg-success-bg text-success'
-        : 'border-danger bg-danger-bg text-danger'
+        ? 'border-aufstieg bg-aufstieg-soft text-aufstieg'
+        : 'border-rotstift bg-rotstift-soft text-rotstift'
     return (
       <span
         key={i}
-        className={`mx-0.5 mb-1 inline-flex h-9 w-7 items-center justify-center rounded-sm border text-base font-medium ${boxClass}`}
+        className={`mx-0.5 mb-1 inline-flex h-9 w-7 items-center justify-center rounded-karte border text-base font-medium ${boxClass}`}
       >
         {isFilled ? (isCorrect ? ch : typedChar) : '•'}
       </span>
@@ -158,62 +162,49 @@ export default function ListeningDictationPanel({
 
   return (
     <div className="mt-4">
-      <div className="rounded-md border border-hairline bg-card p-6">
-        <div className="mb-3 flex items-center justify-between text-sm text-muted">
+      <div className="rounded-karte border border-kartenrand bg-karteikarte p-6">
+        <div className="mb-3 flex items-center justify-between text-sm text-radiert">
           <span>⌨️ Gõ lại từng chữ nghe được - chữ đúng sẽ tự hiện ra</span>
-          <span className="rounded-full border border-hairline px-3 py-1 text-xs font-medium text-ink">
+          <span className="rounded-rund border border-linie px-3 py-1 text-xs font-medium text-bleistift">
             {typed.length}/{letters.length} chữ
           </span>
         </div>
 
-        <p className={`mb-4 select-none text-lg ${revealed ? 'text-ink' : 'text-muted blur-[3px]'}`}>
+        <p className={`mb-4 select-none text-lg ${revealed ? 'text-bleistift' : 'text-radiert blur-[3px]'}`}>
           {current.text}
         </p>
 
         <div className="flex flex-wrap items-center leading-relaxed">{renderedChars}</div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-xs text-muted">Không gõ được dấu?</span>
+          <span className="mr-1 text-xs text-radiert">Không gõ được dấu?</span>
           {UMLAUT_KEYS.map((key) => (
-            <button
+            <Button variant="secondary" size="sm"
               key={key}
-              onClick={() => pushChar(key)}
-              className="rounded-sm border border-hairline px-2.5 py-1 text-sm font-medium text-ink hover:bg-surface"
-            >
+              onClick={() => pushChar(key)}>
               {key}
-            </button>
+            </Button>
           ))}
-          <button
-            onClick={() => setTyped((prev) => prev.slice(0, -1))}
-            className="rounded-sm border border-hairline px-2.5 py-1 text-sm font-medium text-ink hover:bg-surface"
-          >
+          <Button variant="secondary" size="sm"
+            onClick={() => setTyped((prev) => prev.slice(0, -1))}>
             ⌫ Xoá
-          </button>
+          </Button>
         </div>
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={handleReveal}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-          >
-            👀 Hiện đáp án
-          </button>
-          <button
-            onClick={handleRetry}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-          >
-            ↻ Làm lại
-          </button>
-          <button
-            onClick={playSegment}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surface"
-          >
-            ▶ Nghe lại
-          </button>
+          <Button variant="secondary" icon={<Eye className="size-4" aria-hidden="true" />}
+            onClick={handleReveal}>
+            Hiện đáp án
+          </Button>
+          <Button variant="secondary" icon={<RotateCcw className="size-4" aria-hidden="true" />} onClick={handleRetry}>Làm lại</Button>
+          <Button variant="secondary" icon={<Play className="size-4" aria-hidden="true" />}
+            onClick={playSegment}>
+            Nghe lại
+          </Button>
         </div>
 
         {isComplete && (
-          <p className={`mt-3 text-center text-sm font-medium ${allCorrect ? 'text-success' : 'text-danger'}`}>
+          <p className={`mt-3 text-center text-sm font-medium ${allCorrect ? 'text-aufstieg' : 'text-rotstift'}`}>
             {revealed
               ? `Đáp án: "${current.text}"`
               : allCorrect
@@ -228,42 +219,23 @@ export default function ListeningDictationPanel({
           putting "Câu sau" back after the toggle -- same 3-column layout as before. */}
       <div className="mt-3 flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:items-center sm:gap-2">
         <div className="flex items-center justify-between gap-2 sm:contents">
-          <button
+          <Button variant="secondary" icon={<SkipBack className="size-4" aria-hidden="true" />} className="disabled:opacity-40"
             onClick={() => goTo(Math.max(0, index - 1))}
-            disabled={index === 0}
-            className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40"
-          >
-            ⏮ Câu trước
-          </button>
+            disabled={index === 0}>
+            Câu trước
+          </Button>
 
-          <button
+          <Button variant="secondary" className="disabled:opacity-40 sm:order-3"
             onClick={() => goTo(Math.min(sentences.length - 1, index + 1))}
-            disabled={index === sentences.length - 1}
-            className="rounded-sm border border-hairline px-3 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-40 sm:order-3"
-          >
+            disabled={index === sentences.length - 1}>
             Câu sau ⏭
-          </button>
+          </Button>
         </div>
 
-        <label className="flex cursor-pointer items-center justify-center gap-2 text-sm font-medium text-ink">
-          <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${autoAdvance ? 'bg-primary' : 'bg-hairline'}`}>
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${
-                autoAdvance ? 'translate-x-4' : 'translate-x-1'
-              }`}
-            />
-          </span>
-          <input
-            type="checkbox"
-            checked={autoAdvance}
-            onChange={(e) => setAutoAdvance(e.target.checked)}
-            className="sr-only"
-          />
-          Tự động chuyển câu
-        </label>
+        <Switch checked={autoAdvance} onChange={setAutoAdvance} label="Tự động chuyển câu" className="mx-auto max-w-64" />
       </div>
 
-      <p className="mt-2 text-center text-xs text-muted">
+      <p className="mt-2 text-center text-xs text-radiert">
         Đã hoàn thành {answeredIndexes.size}/{sentences.length} câu
       </p>
     </div>

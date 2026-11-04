@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { ButtonLink } from '@kit'
 import { useAuth } from '../context/AuthContext'
 
 /**
@@ -17,19 +17,16 @@ export default function NotFoundPage() {
   const homeTo = user ? (user.role === 'ADMIN' ? '/admin/vocabulary' : '/app') : '/'
 
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center px-4">
-      <div className="w-full rounded-lg border border-dashed border-hairline p-12 text-center">
-        <p className="font-display text-4xl font-bold text-accent-deep">404</p>
-        <h1 className="mt-3 font-display text-xl font-bold text-ink">Không tìm thấy trang này</h1>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
+    <div className="mx-auto flex min-h-screen max-w-lesen items-center justify-center px-4">
+      <div className="w-full rounded-karte border border-dashed border-kante p-12 text-center">
+        <p className="font-display text-4xl font-bold text-hauch">404</p>
+        <h1 className="mt-3 font-display text-xl font-bold text-bleistift">Không tìm thấy trang này</h1>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-radiert">
           Đường dẫn bạn vừa mở không tồn tại. Có thể link bị gõ thiếu, hoặc trang đã được đổi chỗ.
         </p>
-        <Link
-          to={homeTo}
-          className="mt-6 inline-block rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-canvas transition-colors hover:bg-primary-deep"
-        >
+        <ButtonLink to={homeTo} className="mt-6">
           Về trang chủ
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   )

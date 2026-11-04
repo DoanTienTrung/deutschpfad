@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button, Input, NativeSelect, Note, Textarea } from '@kit'
 import {
   listSpeakingAdmin,
   createSpeakingPrompt,
@@ -78,52 +79,50 @@ export default function AdminSpeakingPage() {
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-xl font-bold text-ink">Quản lý Đề bài Nói</h2>
+      <h2 className="mb-4 font-display text-xl font-bold text-bleistift">Quản lý Đề bài Nói</h2>
 
-      {error && <div className="mb-4 rounded-sm bg-danger-bg p-3 text-sm text-danger">{error}</div>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-sm border border-hairline bg-card p-4 sm:grid-cols-2">
-        <select
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-karte border border-kartenrand bg-karteikarte p-4 sm:grid-cols-2">
+        <NativeSelect
           value={level}
           onChange={(e) => setLevel(e.target.value)}
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         >
           {LEVELS.map((l) => (
             <option key={l} value={l}>{l}</option>
           ))}
-        </select>
-        <input
+        </NativeSelect>
+        <Input
           type="number"
           value={orderIndex}
           onChange={(e) => setOrderIndex(Number(e.target.value))}
           placeholder="Thứ tự"
-          className="rounded-sm border border-hairline px-3 py-2"
+         
         />
-        <textarea
+        <Textarea
           value={promptText}
           onChange={(e) => setPromptText(e.target.value)}
           placeholder="Đề bài (câu hỏi/yêu cầu học viên trả lời bằng giọng nói)"
           rows={3}
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
-        <input
+        <Input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Ghi chú thêm (tuỳ chọn)"
-          className="sm:col-span-2 rounded-sm border border-hairline px-3 py-2"
+          className="sm:col-span-2"
         />
         <div className="sm:col-span-2 flex gap-2">
-          <button
+          <Button variant="primary" className="flex-1 disabled:opacity-50"
             onClick={handleSave}
-            disabled={saving}
-            className="flex-1 rounded-sm bg-primary px-4 py-2 font-medium text-canvas disabled:opacity-50"
-          >
+            disabled={saving}>
             {saving ? 'Đang lưu...' : editingId ? 'Cập nhật đề bài' : 'Thêm đề bài'}
-          </button>
+          </Button>
           {editingId && (
-            <button onClick={resetForm} className="rounded-sm border border-hairline px-4 py-2 text-ink">
+            <Button variant="secondary" onClick={resetForm}>
               Huỷ
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -132,18 +131,18 @@ export default function AdminSpeakingPage() {
         {prompts.map((prompt) => (
           <li
             key={prompt.id}
-            className="flex items-center justify-between rounded-sm border border-hairline bg-card p-3"
+            className="flex items-center justify-between rounded-karte border border-kartenrand bg-karteikarte p-3"
           >
             <span>
               <strong>{prompt.level}</strong> - Bài {prompt.orderIndex}: {prompt.promptText}
             </span>
             <span className="flex shrink-0 gap-3">
-              <button onClick={() => startEdit(prompt)} className="text-sm text-primary hover:underline">
+              <Button variant="ghost" onClick={() => startEdit(prompt)}>
                 Sửa
-              </button>
-              <button onClick={() => handleDelete(prompt.id)} className="text-sm text-danger hover:underline">
+              </Button>
+              <Button variant="ghost" className="text-rotstift" onClick={() => handleDelete(prompt.id)}>
                 Xoá
-              </button>
+              </Button>
             </span>
           </li>
         ))}

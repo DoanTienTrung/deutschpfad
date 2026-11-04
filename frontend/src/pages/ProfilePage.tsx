@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ArrowRight, BookOpen, Check, Ruler } from 'lucide-react'
+import { ButtonLink, Card, CardButton, LeitnerBox, Skeleton, StreakTab, TextLink, cn } from '@kit'
 import { useAuth } from '../context/AuthContext'
 import { useStudyTime } from '../context/StudyTimeContext'
 import { getDashboard, setDailyGoal, type Dashboard, type DayCount } from '../api/dashboardApi'
@@ -12,12 +13,19 @@ import ContributionHeatmap from '../components/progress/ContributionHeatmap'
 import ProgressBars from '../components/progress/ProgressBars'
 import ColumnChart from '../components/dashboard/ColumnChart'
 import GoalRing from '../components/dashboard/GoalRing'
-import MasteryBar from '../components/dashboard/MasteryBar'
 
 // Một phiên ôn tối đa 30 thẻ (backend: app.vocabulary.review-session-size); mỗi thẻ ~8 giây.
 const REVIEW_SESSION_SIZE = 30
 const SECONDS_PER_CARD = 8
 const WEEKDAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+
+// Bốn mức nhớ thật của app = bốn ngăn hộp Leitner.
+const MASTERY_STAGES = [
+  { key: 'notYet', label: 'Chưa nhớ', hint: 'mới gặp hoặc vừa quên' },
+  { key: 'learning', label: 'Đang học', hint: 'nhớ được 1 lần' },
+  { key: 'known', label: 'Đã thuộc', hint: 'nhớ đúng từ 2 lần' },
+  { key: 'longTerm', label: 'Nhớ lâu', hint: 'lịch ôn cách từ 3 tuần' },
+] as const
 
 function parseDay(iso: string) {
   const [y, m, d] = iso.split('-').map(Number)
@@ -28,16 +36,15 @@ function reviewMinutes(due: number) {
   return Math.max(1, Math.ceil((Math.min(due, REVIEW_SESSION_SIZE) * SECONDS_PER_CARD) / 60))
 }
 
-const card = 'rounded-lg border border-hairline bg-card p-5'
-const cardHeading = 'text-xs font-semibold uppercase tracking-wider text-muted'
+const cardHeading = 'text-xs font-semibold uppercase tracking-wider text-radiert'
 
-function Kpi({ label, value, sub, subTone = 'muted' }: { label: string; value: string; sub: string; subTone?: 'muted' | 'good' }) {
+function Kpi({ label, value, sub, subTone = 'muted' }: { label: string; value: string; sub: ReactNode; subTone?: 'muted' | 'good' }) {
   return (
-    <div className={card}>
+    <Card>
       <p className={cardHeading}>{label}</p>
-      <p className="mt-2 font-display text-3xl font-bold text-ink">{value}</p>
-      <p className={`mt-1 text-sm ${subTone === 'good' ? 'text-success' : 'text-muted'}`}>{sub}</p>
-    </div>
+      <p className="mt-2 font-display text-3xl font-bold text-bleistift">{value}</p>
+      <p className={cn('mt-1 text-sm', subTone === 'good' ? 'text-aufstieg' : 'text-radiert')}>{sub}</p>
+    </Card>
   )
 }
 
@@ -68,33 +75,30 @@ function Hero({ dashboard, todaySeconds, onChangeGoal }: { dashboard: Dashboard;
   }
 
   return (
-    <section className="rounded-lg bg-primary p-6 text-canvas shadow-lifted sm:p-8">
+    <Card className="p-6 sm:p-8">
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 text-center sm:text-left">
-          <p className="text-sm capitalize opacity-70">{todayLabel}</p>
-          <h2 className="mt-1 font-display text-3xl font-bold text-balance">Chào {name}!</h2>
-          <p className="mt-2 opacity-85">{message}</p>
-          <Link
-            to={action.to}
-            className="mt-5 inline-flex max-w-full items-center gap-2 rounded-md bg-canvas px-5 py-3 font-display font-semibold text-ink transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
-          >
+          <p className="text-sm text-radiert capitalize">{todayLabel}</p>
+          <h1 className="mt-1 font-display text-3xl font-bold text-balance">Chào {name}!</h1>
+          <p className="mt-2 text-radiert">{message}</p>
+          <ButtonLink to={action.to} className="mt-5 max-w-full">
             <span className="truncate">{action.label}</span>
-            <span aria-hidden="true">→</span>
-          </Link>
-          <p className="mt-4 text-sm">
+            <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+          </ButtonLink>
+          <div className="mt-4 text-sm">
             {streak.current > 0 ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 font-semibold text-ink">
-                🔥 {streak.current} ngày liên tiếp
-                <span className="font-normal opacity-75">· kỷ lục {streak.longest}</span>
+              <span className="inline-flex flex-wrap items-center gap-2">
+                <StreakTab days={streak.current} />
+                <span className="text-radiert">Kỷ lục {streak.longest} ngày</span>
               </span>
             ) : (
-              <span className="opacity-70">Học hôm nay để bắt đầu chuỗi ngày 🔥</span>
+              <span className="text-radiert">Học hôm nay để bắt đầu chuỗi ngày.</span>
             )}
-          </p>
+          </div>
         </div>
         <GoalRing todaySeconds={todaySeconds} goalMinutes={dashboard.dailyGoalMinutes} onChangeGoal={onChangeGoal} />
       </div>
-    </section>
+    </Card>
   )
 }
 
@@ -124,36 +128,24 @@ function Onboarding({ dashboard }: { dashboard: Dashboard }) {
   if (doneCount === steps.length) return null
 
   return (
-    <section className={card}>
-      <div className="flex items-baseline justify-between">
-        <p className="font-display text-lg font-semibold text-ink">Ba bước làm quen</p>
-        <p className="text-sm text-muted">
-          {doneCount}/{steps.length}
-        </p>
-      </div>
-      <ol className="mt-4 space-y-2">
+    <Card title="Ba bước làm quen" action={<span className="text-sm text-radiert">{doneCount}/{steps.length}</span>}>
+      <ol className="space-y-2">
         {steps.map((s, i) => (
           <li key={s.title}>
-            <Link
-              to={s.to}
-              className={`flex items-start gap-3 rounded-md p-3 transition-colors ${s.done ? 'opacity-60' : 'hover:bg-surface'}`}
-            >
-              <span
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-                  s.done ? 'bg-success-bg text-success' : 'border border-hairline text-ink'
-                }`}
-              >
-                {s.done ? '✓' : i + 1}
+            <CardButton to={s.to} className={cn('flex items-start gap-3 p-3', s.done && 'opacity-60')}>
+              <span className={cn('flex size-7 shrink-0 items-center justify-center rounded-rund text-sm font-semibold',
+                s.done ? 'bg-aufstieg-soft text-aufstieg' : 'border border-kante text-bleistift')}>
+                {s.done ? <Check className="size-4" strokeWidth={3} aria-label="Đã xong" /> : i + 1}
               </span>
               <span className="min-w-0">
-                <span className={`block font-medium text-ink ${s.done ? 'line-through' : ''}`}>{s.title}</span>
-                <span className="block text-sm text-muted">{s.hint}</span>
+                <span className={cn('block font-medium text-bleistift', s.done && 'line-through')}>{s.title}</span>
+                <span className="block text-sm text-radiert">{s.hint}</span>
               </span>
-            </Link>
+            </CardButton>
           </li>
         ))}
       </ol>
-    </section>
+    </Card>
   )
 }
 
@@ -173,7 +165,7 @@ function StudyChart({ days, goalMinutes }: { days: DayCount[]; goalMinutes: numb
     }
   })
   return (
-    <section className={card}>
+    <Card>
       <p className={cardHeading}>Thời gian học 14 ngày qua</p>
       <div className="mt-8">
         <ColumnChart
@@ -183,18 +175,18 @@ function StudyChart({ days, goalMinutes }: { days: DayCount[]; goalMinutes: numb
           formatValue={(v) => `${v}'`}
         />
       </div>
-      <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+      <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-radiert">
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-accent" aria-hidden="true" /> Ngày đạt mục tiêu
+          <span className="size-2.5 rounded-karte bg-reiter" aria-hidden="true" /> Ngày đạt mục tiêu
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-bar-muted" aria-hidden="true" /> Chưa đạt
+          <span className="size-2.5 rounded-karte bg-kante/45" aria-hidden="true" /> Chưa đạt
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-4 border-t border-ink/40" aria-hidden="true" /> Mục tiêu {goalMinutes} phút
+          <span className="w-4 border-t border-bleistift/40" aria-hidden="true" /> Mục tiêu {goalMinutes} phút
         </span>
       </p>
-    </section>
+    </Card>
   )
 }
 
@@ -214,20 +206,20 @@ function ForecastChart({ days }: { days: DayCount[] }) {
     }
   })
   return (
-    <section className={card}>
+    <Card>
       <div className="flex items-baseline justify-between gap-2">
         <p className={cardHeading}>Thẻ đến hạn 7 ngày tới</p>
-        <p className="text-xs text-muted">Tổng {total} thẻ</p>
+        <p className="text-xs text-radiert">Tổng {total} thẻ</p>
       </div>
       {total === 0 ? (
-        <p className="mt-8 text-sm text-muted">Chưa có thẻ nào đến hạn trong 7 ngày tới.</p>
+        <p className="mt-8 text-sm text-radiert">Chưa có thẻ nào đến hạn trong 7 ngày tới.</p>
       ) : (
         <div className="mt-8">
-          <ColumnChart columns={columns} caption="Số thẻ đến hạn ôn mỗi ngày trong 7 ngày tới" baseClass="bg-primary" />
+          <ColumnChart columns={columns} caption="Số thẻ đến hạn ôn mỗi ngày trong 7 ngày tới" baseClass="bg-bleistift" />
         </div>
       )}
-      <p className="mt-3 text-xs text-muted">Biết trước ngày nào nhiều thẻ để sắp xếp thời gian ôn.</p>
-    </section>
+      <p className="mt-3 text-xs text-radiert">Biết trước ngày nào nhiều thẻ để sắp xếp thời gian ôn.</p>
+    </Card>
   )
 }
 
@@ -235,38 +227,32 @@ function ContinueLearning({ items }: { items: Dashboard['continueLearning'] }) {
   if (items.length === 0) return null
   return (
     <section>
-      <p className="mb-3 font-display text-lg font-semibold text-ink">Học tiếp</p>
+      <h2 className="mb-3 font-display text-lg font-semibold text-bleistift">Học tiếp</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         {items.map((item) => {
           const lesson = item.type === 'LESSON'
           const percent = item.progressTotal === 0 ? 0 : Math.round((item.progress / item.progressTotal) * 100)
           return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="group flex items-center gap-4 rounded-lg border border-hairline bg-card p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-xl" aria-hidden="true">
-                {lesson ? '📖' : '✏️'}
+            <CardButton key={item.href} to={item.href} className="group flex items-center gap-4 p-4">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-rund bg-karteikarte-innen text-radiert" aria-hidden="true">
+                {lesson ? <BookOpen className="size-5" /> : <Ruler className="size-5" />}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-xs text-muted">
+                <span className="block text-xs text-radiert">
                   {lesson ? 'Từ vựng' : 'Ngữ pháp'} · {item.subtitle}
                 </span>
-                <span className="block truncate font-display font-semibold text-ink">{item.title}</span>
+                <span className="block truncate font-display font-semibold text-bleistift">{item.title}</span>
                 <span className="mt-2 flex items-center gap-2">
-                  <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface">
-                    <span className="block h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+                  <span className="h-1.5 flex-1 overflow-hidden rounded-rund bg-linie">
+                    <span className="block h-full rounded-rund bg-bleistift" style={{ width: `${percent}%` }} />
                   </span>
-                  <span className="shrink-0 text-xs text-muted">
+                  <span className="shrink-0 text-xs text-radiert">
                     {lesson ? `${item.progress}/${item.progressTotal} chế độ` : `đúng ${item.progress}/${item.progressTotal} câu`}
                   </span>
                 </span>
               </span>
-              <span className="text-lg text-muted transition-transform group-hover:translate-x-1" aria-hidden="true">
-                →
-              </span>
-            </Link>
+              <ArrowRight className="size-4 shrink-0 text-radiert transition-transform group-hover:translate-x-1" aria-hidden="true" />
+            </CardButton>
           )
         })}
       </div>
@@ -299,11 +285,11 @@ export default function ProfilePage() {
 
   if (!dashboard) {
     return (
-      <div className="mx-auto max-w-5xl space-y-4">
-        <div className="h-56 animate-pulse rounded-lg bg-surface" />
+      <div className="mx-auto max-w-seite space-y-4">
+        <Skeleton className="h-56" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-lg bg-surface" />
+            <Skeleton key={i} className="h-28" />
           ))}
         </div>
       </div>
@@ -317,7 +303,7 @@ export default function ProfilePage() {
   let weekTone: 'muted' | 'good' = 'muted'
   if (lastWeekMin > 0) {
     const change = Math.round(((thisWeekMin - lastWeekMin) / lastWeekMin) * 100)
-    weekSub = change >= 0 ? `↑ ${change}% so với tuần trước` : `↓ ${Math.abs(change)}% so với tuần trước`
+    weekSub = change >= 0 ? `Tăng ${change}% so với tuần trước` : `Giảm ${Math.abs(change)}% so với tuần trước`
     weekTone = change >= 0 ? 'good' : 'muted'
   } else if (thisWeekMin > 0) {
     weekSub = 'Tuần trước chưa học'
@@ -325,7 +311,7 @@ export default function ProfilePage() {
   const isNew = vocabulary.total === 0
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4">
+    <div className="mx-auto max-w-seite space-y-4">
       <Hero dashboard={dashboard} todaySeconds={todaySeconds} onChangeGoal={changeGoal} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -342,7 +328,7 @@ export default function ProfilePage() {
             vocabulary.dueToday > 0
               ? `khoảng ${reviewMinutes(vocabulary.dueToday)} phút`
               : vocabulary.total > 0
-                ? 'Đã ôn xong 🎉'
+                ? 'Đã ôn xong hôm nay'
                 : 'Học từ đầu tiên để có thẻ ôn'
           }
         />
@@ -363,43 +349,30 @@ export default function ProfilePage() {
             <ForecastChart days={dashboard.reviewForecast} />
           </div>
 
-          <section className={card}>
-            <div className="mb-4 flex items-baseline justify-between gap-2">
-              <p className={cardHeading}>Mức độ thuộc từ</p>
-              <p className="text-xs text-muted">{vocabulary.total} từ đã gặp</p>
-            </div>
-            <MasteryBar
-              counts={{
-                notYet: vocabulary.notYet,
-                learning: vocabulary.learning,
-                known: vocabulary.known,
-                longTerm: vocabulary.longTerm,
-              }}
-            />
-          </section>
+          <Card title="Hộp thẻ của bạn" action={<span className="text-xs text-radiert">{vocabulary.total} từ đã gặp</span>}>
+            <LeitnerBox stages={MASTERY_STAGES.map((stage) => ({ label: stage.label, hint: stage.hint, count: vocabulary[stage.key] }))} />
+          </Card>
         </>
       )}
 
       <ContinueLearning items={dashboard.continueLearning} />
 
-      <section className={card}>
-        <p className={`${cardHeading} mb-3`}>Hoạt động cả năm</p>
+      <Card>
+        <p className={cn(cardHeading, 'mb-3')}>Hoạt động cả năm</p>
         <ContributionHeatmap data={heatmap} />
-      </section>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className={card}>
-          <p className={`${cardHeading} mb-3`}>Tiến độ bài từ vựng</p>
+        <Card>
+          <p className={cn(cardHeading, 'mb-3')}>Tiến độ bài từ vựng</p>
           <ProgressBars summary={summary} />
-        </section>
+        </Card>
 
         {grammar && grammar.levels.length > 0 && (
-          <section className={card}>
+          <Card>
             <div className="mb-3 flex items-baseline justify-between">
               <p className={cardHeading}>Tiến độ ngữ pháp</p>
-              <Link to="/app/grammar" className="text-sm font-medium text-primary hover:underline">
-                Học tiếp →
-              </Link>
+              <TextLink to="/app/grammar" className="text-sm">Học tiếp</TextLink>
             </div>
             <ul className="space-y-3">
               {grammar.levels.map((lv) => {
@@ -407,41 +380,35 @@ export default function ProfilePage() {
                 return (
                   <li key={lv.level}>
                     <div className="mb-1 flex items-baseline justify-between text-sm">
-                      <span className="font-medium text-ink">{lv.level}</span>
-                      <span className="text-muted">
+                      <span className="font-medium text-bleistift">{lv.level}</span>
+                      <span className="text-radiert">
                         Thành thạo {lv.mastered}/{lv.totalTopics}
                         {lv.learning > 0 && ` · đang học ${lv.learning}`}
                       </span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-surface">
-                      <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${percent}%` }} />
+                    <div className="h-2 overflow-hidden rounded-rund bg-linie">
+                      <div className="h-full rounded-rund bg-reiter transition-[width] duration-500" style={{ width: `${percent}%` }} />
                     </div>
                   </li>
                 )
               })}
             </ul>
-          </section>
+          </Card>
         )}
       </div>
 
       {decks.length > 0 && (
         <section>
           <div className="mb-3 flex items-baseline justify-between">
-            <p className="font-display text-lg font-semibold text-ink">Bộ từ của tôi</p>
-            <Link to="/app/decks" className="text-sm font-medium text-primary hover:underline">
-              Xem tất cả →
-            </Link>
+            <h2 className="font-display text-lg font-semibold text-bleistift">Bộ từ của tôi</h2>
+            <TextLink to="/app/decks" className="text-sm">Xem tất cả</TextLink>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {decks.slice(0, 4).map((deck) => (
-              <Link
-                key={deck.id}
-                to={`/app/decks/${deck.id}`}
-                className="rounded-lg border border-hairline bg-card p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lifted"
-              >
-                <p className="font-display font-semibold text-ink">{deck.name}</p>
-                <p className="mt-1 text-sm text-muted">{deck.itemCount} từ</p>
-              </Link>
+              <CardButton key={deck.id} to={`/app/decks/${deck.id}`} className="p-4">
+                <p className="font-display font-semibold text-bleistift">{deck.name}</p>
+                <p className="mt-1 text-sm text-radiert">{deck.itemCount} từ</p>
+              </CardButton>
             ))}
           </div>
         </section>

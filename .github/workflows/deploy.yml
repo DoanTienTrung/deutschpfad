@@ -34,9 +34,8 @@ jobs:
         working-directory: backend
         run: ./mvnw -B test
 
-  # Test frontend (vitest). Hiện kiểm phần chấm đáp án từ vựng — Umlaut, định dạng từ điển của dữ
-  # liệu giáo trình, gợi ý mạo từ. Chưa chạy `lint` ở đây: còn 11 lỗi eslint có sẵn ở module
-  # nghe/đọc/nói, thêm vào là chặn mọi lần deploy (xem docs/phase-1-auth.md, mục "Còn nợ").
+  # Test frontend (vitest) + lint. Lint gồm eslint và cổng giao diện tools/ui-gate.mjs: chặn màu viết
+  # thẳng, giá trị tự chọn, token cũ, ô nhập/nút/hộp thoại tự dựng ngoài bộ component @kit.
   test-frontend:
     runs-on: ubuntu-latest
     permissions:
@@ -51,6 +50,9 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
+      - name: Lint (eslint + ui-gate)
+        working-directory: frontend
+        run: npm run lint
       - name: Run frontend tests
         working-directory: frontend
         run: npm test

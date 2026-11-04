@@ -23,11 +23,11 @@ function toIsoDate(date: Date) {
 }
 
 function tierClass(count: number) {
-  if (count <= 0) return 'bg-hairline'
-  if (count === 1) return 'bg-accent/35'
-  if (count <= 3) return 'bg-accent/60'
-  if (count <= 5) return 'bg-accent/85'
-  return 'bg-accent'
+  if (count <= 0) return 'bg-linie'
+  if (count === 1) return 'bg-reiter/35'
+  if (count <= 3) return 'bg-reiter/60'
+  if (count <= 5) return 'bg-reiter/85'
+  return 'bg-reiter'
 }
 
 type Cell = { date: string; count: number; isFuture: boolean }
@@ -53,7 +53,6 @@ export default function ContributionHeatmap({
       const fit = Math.floor((available + CELL_GAP) / (CELL_SIZE + CELL_GAP))
       setFitWeeks(Math.max(MIN_WEEKS, Math.min(MAX_WEEKS, fit)))
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial measure before first paint
     compute()
     const observer = new ResizeObserver(compute)
     observer.observe(el)
@@ -122,7 +121,7 @@ export default function ContributionHeatmap({
     <div ref={containerRef}>
       <div className="flex gap-2 overflow-x-auto">
         <div
-          className="flex shrink-0 flex-col justify-between text-xs text-muted"
+          className="flex shrink-0 flex-col justify-between text-xs text-radiert"
           style={{ marginTop: 18, paddingBottom: 2 }}
         >
           {WEEKDAY_LABELS.map((label, i) => (
@@ -133,7 +132,7 @@ export default function ContributionHeatmap({
         </div>
 
         <div className="shrink-0" style={{ width: gridWidth }}>
-          <div className="relative mb-1 grid h-4 text-xs text-muted" style={gridStyle}>
+          <div className="relative mb-1 grid h-4 text-xs text-radiert" style={gridStyle}>
             {weekColumns.map((_, i) => (
               <span key={i} className="relative overflow-visible whitespace-nowrap leading-none">
                 {monthMarkers.find((m) => m.weekIndex === i)?.label ?? ''}
@@ -152,7 +151,7 @@ export default function ContributionHeatmap({
                     <div
                       key={cell.date}
                       title={`${cell.date}: ${cell.count} bài học hoàn thành`}
-                      className={`aspect-square rounded-[2px] ${tierClass(cell.count)}`}
+                      className={`aspect-square rounded-karte ${tierClass(cell.count)}`}
                     />
                   )
                 })}
@@ -162,13 +161,13 @@ export default function ContributionHeatmap({
         </div>
       </div>
 
-      <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted">
+      <div className="mt-2 flex items-center justify-end gap-1 text-xs text-radiert">
         <span>Ít hơn</span>
-        <div className="h-3 w-3 rounded-[2px] bg-hairline" />
-        <div className="h-3 w-3 rounded-[2px] bg-accent/35" />
-        <div className="h-3 w-3 rounded-[2px] bg-accent/60" />
-        <div className="h-3 w-3 rounded-[2px] bg-accent/85" />
-        <div className="h-3 w-3 rounded-[2px] bg-accent" />
+        <div className="h-3 w-3 rounded-karte bg-linie" />
+        <div className="h-3 w-3 rounded-karte bg-reiter/35" />
+        <div className="h-3 w-3 rounded-karte bg-reiter/60" />
+        <div className="h-3 w-3 rounded-karte bg-reiter/85" />
+        <div className="h-3 w-3 rounded-karte bg-reiter" />
         <span>Nhiều hơn</span>
       </div>
     </div>

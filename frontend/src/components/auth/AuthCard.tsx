@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Card, focusRing, cn } from '@kit'
 
 /**
  * Khung dùng chung cho các trang đăng nhập / đăng ký / đặt lại mật khẩu.
@@ -24,26 +25,23 @@ export default function AuthCard({
   footer?: ReactNode
 }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-canvas px-4 py-12">
-      <div className="w-full max-w-sm rounded-lg bg-surface p-8 shadow-lifted">
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
-          <Link
-            to="/"
-            className="font-display text-xl font-bold text-ink transition-opacity hover:opacity-80"
-          >
-            Deutsch<span className="text-accent-deep">Pfad</span>
+          <Link to="/" className={cn('rounded-karte font-display text-xl font-bold text-bleistift hover:opacity-80', focusRing)}>
+            Deutsch<span className="text-reiter-tief">Pfad</span>
           </Link>
-          <p className="mt-1 text-xs text-muted">Học tiếng Đức &amp; luyện thi chứng chỉ</p>
+          <p className="mt-1 text-xs text-radiert">Học tiếng Đức &amp; luyện thi chứng chỉ</p>
         </div>
 
-        <h1 className="mb-6 text-center font-display text-2xl font-semibold text-ink text-balance">
+        <h1 className="mb-6 text-center font-display text-2xl font-semibold text-balance text-bleistift">
           {title}
         </h1>
         {children}
         {footer && <div className="mt-6 space-y-1 text-center text-sm">{footer}</div>}
-      </div>
+      </Card>
 
-      <p className="mt-6 max-w-sm text-center text-xs text-muted">
+      <p className="mt-6 max-w-sm text-center text-xs text-radiert">
         Tài khoản DeutschPfad chỉ dùng cho trang này. Chúng mình không bao giờ hỏi mật khẩu của bạn
         qua email hay tin nhắn.
       </p>

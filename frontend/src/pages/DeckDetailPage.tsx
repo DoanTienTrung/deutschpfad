@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Sparkles } from 'lucide-react'
+import { Button, Card, ConfirmDialog, Field, Input, NativeSelect, Note, PageHeader } from '@kit'
 import { listDeckItems, addDeckItem, updateDeckItem, deleteDeckItem, lookupVocabWord, type DeckItemInput } from '../api/deckApi'
 import type { DeckItem } from '../api/types'
-import Button from '../components/ui/Button'
-import Alert from '../components/ui/Alert'
-import Field from '../components/ui/Field'
 
 // Same list the backend AI prompt uses (GroqAiService.buildVocabLookupPrompt) -- picking one here
 // before hitting "Tự động điền AI" pins the word type so the AI can't mis-guess it (eg. turning
@@ -32,6 +31,7 @@ export default function DeckDetailPage() {
   const [form, setForm] = useState<DeckItemInput>(EMPTY_FORM)
   const [editingItemId, setEditingItemId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupError, setLookupError] = useState<string | null>(null)
 
@@ -114,100 +114,61 @@ export default function DeckDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <Link to="/app/decks" className="mb-4 inline-block text-sm text-primary hover:underline">
-        ← Quay lại danh sách bộ từ
-      </Link>
-      <h2 className="mb-4 font-display text-2xl font-bold text-ink">Chi tiết bộ từ</h2>
+    <div className="mx-auto max-w-lesen">
+      <PageHeader title="Chi tiết bộ từ" back={{ to: '/app/decks', label: 'Danh sách bộ từ' }} />
 
-      {error && <Alert tone="danger">{error}</Alert>}
+      {error && <Note tone="bad" className="mb-4">{error}</Note>}
 
-      <div className="mb-8 space-y-3 rounded-lg border border-hairline bg-card p-5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-          {editingItemId !== null ? 'Sửa từ' : 'Thêm từ mới'}
-        </p>
+      <Card title={editingItemId !== null ? 'Sửa từ' : 'Thêm từ mới'} className="mb-8">
+        <div className="space-y-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="min-w-0 flex-1">
-            <Field
-              id="deck-item-german-word"
-              label="Từ tiếng Đức"
-              value={form.germanWord}
-              onChange={(e) => setForm({ ...form, germanWord: e.target.value })}
-              placeholder="Nhập hoặc dán từ tiếng Đức"
-            />
+            <Field label="Từ tiếng Đức">
+              <Input value={form.germanWord} onChange={(e) => setForm({ ...form, germanWord: e.target.value })} placeholder="Nhập hoặc dán từ tiếng Đức" />
+            </Field>
           </div>
-          <div className="sm:w-40">
-            <label htmlFor="deck-item-word-type" className="mb-1 block text-sm font-medium text-ink">
-              Loại từ
-            </label>
-            <select
-              id="deck-item-word-type"
-              value={form.wordType}
-              onChange={(e) => setForm({ ...form, wordType: e.target.value })}
-              className="w-full rounded-sm border border-hairline bg-canvas px-3.5 py-2.5 text-ink transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/20"
-            >
+          <Field label="Loại từ" className="sm:w-40">
+            <NativeSelect value={form.wordType} onChange={(e) => setForm({ ...form, wordType: e.target.value })}>
               <option value="">Để AI tự đoán</option>
               {WORD_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
-            </select>
-          </div>
-          <button
-            type="button"
-            onClick={handleLookup}
-            disabled={lookupLoading || !form.germanWord.trim()}
-            className="shrink-0 self-start rounded-md border border-primary px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-40 sm:self-auto"
-          >
-            {lookupLoading ? 'Đang điền...' : '✨ Tự động điền AI'}
-          </button>
+            </NativeSelect>
+          </Field>
+          <Button variant="secondary" onClick={handleLookup} disabled={!form.germanWord.trim()} loading={lookupLoading}
+            icon={<Sparkles className="size-4" aria-hidden="true" />} className="shrink-0 self-start sm:self-auto">
+            {lookupLoading ? 'Đang điền...' : 'Tự động điền AI'}
+          </Button>
         </div>
-        <p className="text-xs text-muted">
+        <p className="text-xs text-radiert">
           Chọn loại từ trước khi bấm "Tự động điền AI" để AI không đoán nhầm (vd. tính từ bị biến thành danh từ).
         </p>
 
-        {lookupError && <p className="text-sm text-danger">{lookupError}</p>}
+        {lookupError && <Note tone="bad">{lookupError}</Note>}
 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <Field
-            id="deck-item-vi-meaning"
-            label="Nghĩa tiếng Việt"
-            value={form.vietnameseMeaning}
-            onChange={(e) => setForm({ ...form, vietnameseMeaning: e.target.value })}
-          />
-          <Field
-            id="deck-item-en-meaning"
-            label="Nghĩa tiếng Anh (tuỳ chọn)"
-            value={form.englishMeaning}
-            onChange={(e) => setForm({ ...form, englishMeaning: e.target.value })}
-          />
-          <Field
-            id="deck-item-phonetic"
-            label="Phiên âm IPA (tuỳ chọn)"
-            value={form.phonetic}
-            onChange={(e) => setForm({ ...form, phonetic: e.target.value })}
-          />
+          <Field label="Nghĩa tiếng Việt">
+            <Input value={form.vietnameseMeaning} onChange={(e) => setForm({ ...form, vietnameseMeaning: e.target.value })} />
+          </Field>
+          <Field label="Nghĩa tiếng Anh (tuỳ chọn)">
+            <Input value={form.englishMeaning} onChange={(e) => setForm({ ...form, englishMeaning: e.target.value })} />
+          </Field>
+          <Field label="Phiên âm IPA (tuỳ chọn)">
+            <Input value={form.phonetic} onChange={(e) => setForm({ ...form, phonetic: e.target.value })} />
+          </Field>
           {/* sm: prefix matters -- a bare col-span-2 inside the phone's 1-column grid forces an
               implicit second column and breaks the whole form layout on mobile. */}
           <div className="sm:col-span-2">
-            <Field
-              id="deck-item-example"
-              label="Câu ví dụ (tuỳ chọn)"
-              value={form.exampleSentence}
-              onChange={(e) => setForm({ ...form, exampleSentence: e.target.value })}
-            />
+            <Field label="Câu ví dụ (tuỳ chọn)">
+              <Input value={form.exampleSentence} onChange={(e) => setForm({ ...form, exampleSentence: e.target.value })} />
+            </Field>
           </div>
-          <Field
-            id="deck-item-synonyms"
-            label="Từ đồng nghĩa (tuỳ chọn)"
-            value={form.synonyms}
-            onChange={(e) => setForm({ ...form, synonyms: e.target.value })}
-          />
-          <Field
-            id="deck-item-antonyms"
-            label="Từ trái nghĩa (tuỳ chọn)"
-            value={form.antonyms}
-            onChange={(e) => setForm({ ...form, antonyms: e.target.value })}
-          />
+          <Field label="Từ đồng nghĩa (tuỳ chọn)">
+            <Input value={form.synonyms} onChange={(e) => setForm({ ...form, synonyms: e.target.value })} />
+          </Field>
+          <Field label="Từ trái nghĩa (tuỳ chọn)">
+            <Input value={form.antonyms} onChange={(e) => setForm({ ...form, antonyms: e.target.value })} />
+          </Field>
         </div>
 
         <div className="flex gap-2">
@@ -218,39 +179,42 @@ export default function DeckDetailPage() {
             </Button>
           )}
         </div>
-      </div>
+        </div>
+      </Card>
 
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.id} className="rounded-lg border border-hairline bg-card p-4">
+          <li key={item.id}>
+            <Card className="p-4">
             <div className="flex items-center justify-between gap-3">
               <span className="min-w-0">
                 <strong className="font-display">{item.germanWord}</strong>
-                {item.phonetic && <span className="ml-1 text-sm text-muted">/{item.phonetic}/</span>}
+                {item.phonetic && <span className="ml-1 text-sm text-radiert">/{item.phonetic}/</span>}
                 {' - '}
                 {item.vietnameseMeaning}
-                {item.englishMeaning && <span className="text-muted"> ({item.englishMeaning})</span>}
+                {item.englishMeaning && <span className="text-radiert"> ({item.englishMeaning})</span>}
               </span>
-              <span className="flex shrink-0 gap-3">
-                <button onClick={() => startEditItem(item)} className="text-sm text-primary hover:underline">
-                  Sửa
-                </button>
-                <button onClick={() => handleDelete(item.id)} className="text-sm text-danger hover:underline">
-                  Xoá
-                </button>
+              <span className="flex shrink-0 gap-1">
+                <Button variant="ghost" size="sm" onClick={() => startEditItem(item)}>Sửa</Button>
+                <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(item.id)} className="text-rotstift">Xoá</Button>
               </span>
             </div>
-            {item.exampleSentence && <p className="mt-1 text-sm italic text-muted">{item.exampleSentence}</p>}
+            {item.exampleSentence && <p className="mt-1 text-sm italic text-radiert">{item.exampleSentence}</p>}
             {(item.synonyms || item.antonyms) && (
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-xs text-radiert">
                 {item.synonyms && <>Đồng nghĩa: {item.synonyms}</>}
                 {item.synonyms && item.antonyms && ' · '}
                 {item.antonyms && <>Trái nghĩa: {item.antonyms}</>}
               </p>
             )}
+            </Card>
           </li>
         ))}
       </ul>
+
+      <ConfirmDialog open={confirmDeleteId !== null} onClose={() => setConfirmDeleteId(null)} danger confirmLabel="Xoá từ"
+        title="Xoá từ này khỏi bộ?" description="Không hoàn tác được."
+        onConfirm={() => { if (confirmDeleteId !== null) handleDelete(confirmDeleteId); setConfirmDeleteId(null) }} />
     </div>
   )
 }

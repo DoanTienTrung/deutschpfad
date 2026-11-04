@@ -1,33 +1,29 @@
 ---
 name: DeutschPfad
-description: A warm, disciplined study companion for Vietnamese learners on the path to German certification.
+description: A warm, disciplined study companion for Vietnamese learners on the path to German certification, built as a Leitner card box.
 colors:
-  primary: "oklch(0.22 0.014 70)"
-  primary-deep: "oklch(0.15 0.014 70)"
-  accent: "oklch(0.75 0.15 70)"
-  accent-deep: "oklch(0.62 0.16 68)"
-  bg: "oklch(0.995 0.004 70)"
-  surface: "oklch(0.97 0.012 70)"
-  ink: "oklch(0.22 0.018 70)"
-  muted: "oklch(0.55 0.014 70)"
-  border: "oklch(0.88 0.014 70)"
-  danger: "oklch(0.55 0.19 25)"
-  danger-bg: "oklch(0.96 0.03 25)"
+  pappe: "oklch(0.83 0.04 72)"
+  karteikarte: "oklch(0.99 0.006 85)"
+  karteikarte-innen: "oklch(0.965 0.01 80)"
+  bleistift: "oklch(0.22 0.018 70)"
+  bleistift-tief: "oklch(0.15 0.014 70)"
+  radiert: "oklch(0.43 0.014 70)"
+  hauch: "oklch(0.53 0.014 70)"
+  linie: "oklch(0.88 0.028 245)"
+  kante: "oklch(0.6 0.03 70)"
+  kopfzeile: "oklch(0.7 0.11 25)"
+  reiter: "oklch(0.75 0.15 70)"
+  aufstieg: "oklch(0.49 0.13 188)"
+  rotstift: "oklch(0.55 0.19 25)"
+  tinte: "oklch(0.47 0.11 275)"
 typography:
   display:
     fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "clamp(1.75rem, 3vw, 2.75rem)"
     fontWeight: 600
     lineHeight: 1.1
-    letterSpacing: "-0.01em"
-  headline:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.375rem"
-    fontWeight: 600
-    lineHeight: 1.25
-    letterSpacing: "-0.005em"
   title:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: 1.4
@@ -36,187 +32,140 @@ typography:
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.6
-  label:
-    fontFamily: "Inter, system-ui, sans-serif"
-    fontSize: "0.8125rem"
-    fontWeight: 500
-    lineHeight: 1.3
-    letterSpacing: "0.01em"
+  hand:
+    fontFamily: "Patrick Hand, cursive"
+    fontSize: "1.0625rem"
+    fontWeight: 400
 rounded:
-  sm: "6px"
-  md: "8px"
-  lg: "12px"
-  pill: "999px"
-spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "40px"
+  karte: "3px"
+  reiter: "8px"
+  rund: "9999px"
 components:
   button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.bg}"
-    rounded: "{rounded.md}"
-    padding: "12px 24px"
-  button-primary-hover:
-    backgroundColor: "{colors.primary-deep}"
-    rounded: "{rounded.md}"
+    backgroundColor: "{colors.bleistift}"
+    textColor: "{colors.karteikarte}"
+    rounded: "{rounded.karte}"
   button-secondary:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-    padding: "12px 24px"
-  input-field:
-    backgroundColor: "{colors.bg}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.sm}"
-    padding: "10px 14px"
-  streak-badge:
-    backgroundColor: "{colors.accent}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.pill}"
-    padding: "4px 12px"
+    backgroundColor: "{colors.karteikarte}"
+    textColor: "{colors.bleistift}"
+    rounded: "{rounded.karte}"
+  streak-tab:
+    backgroundColor: "{colors.reiter}"
+    textColor: "{colors.bleistift}"
+    rounded: "{rounded.reiter}"
 ---
 
 # Design System: DeutschPfad
 
 ## 1. Overview
 
-**Creative North Star: "The Study Companion"**
+**Creative North Star: "The Leitner Card Box"**
 
-DeutschPfad should feel like sitting at a good tutor's desk: warm lamp light, an open notebook, someone who keeps you moving without ever making you feel behind. The system exists to serve daily, often rushed study sessions — a commute, a lunch break, ten minutes before bed — so it stays out of the way of the actual German. Where the work is disciplined (SRS review, exam simulation, grading), the interface should soften that discipline with encouragement rather than add to its weight.
+Spaced repetition was born as Sebastian Leitner's index-card box, and DeutschPfad is built as one. The page is the cardboard desk the box sits on; every panel is a German *Karteikarte* (ivory card, faint blue rules, a red header line); text is graphite pencil; the amber divider tab marks what the learner has earned. A correct answer moves a card up a compartment, a wrong one sends it back to compartment 1: nothing more dramatic than that. The interface stays calm and out of the way of the German, and softens the discipline of daily review with encouragement.
 
-This explicitly rejects the cold, bureaucratic test-portal look (grey forms, harsh red errors, no personality) and the opposite failure mode — Duolingo-style mascot gamification that trivializes exam-stakes prep. A near-black Graphite primary stays quiet and out of the way — it reads as calm and confident rather than competing with content; the warm amber accent, used sparingly for streaks and milestones, is the one place the system allows itself to celebrate. This pairing (a neutral, almost-monochrome primary against a single warm accent) was chosen after two rounds of trying a blue primary (a teal-leaning hue, then a Prussian-Blue-leaning hue) both read as visually loud against the amber — a near-black primary sidesteps that clash entirely by not competing with amber's warmth at all.
+The dark scene is the same box at night: **black lacquer**. The desk is near-black, cards are lacquered one step lighter with a soft lamp reflection across their top edge, ivory text, and amber as the only warm light. Dark is a different scene, never "light mode inverted".
 
-The system does carry one mascot — **Chậm** (see "Mascot — Chậm the Sloth" under Components) — but its brief is the opposite of the Duolingo failure mode above: a sloth reframed not as "lazy" but as "unhurried and steady," a quiet visual echo of the app's own spaced-repetition philosophy (little and often beats cramming) and of "Pfad" itself — a path walked one deliberate step at a time. Chậm appears rarely and never nags; it illustrates a moment, it doesn't perform one.
+It still rejects both failure modes from before: the cold grey test portal, and Duolingo-style gamification. The mascot **Chậm** (see Components) stays rare and calm.
 
-**Key Characteristics:**
-- Warm-tinted white product surface (all neutrals share the accent's hue at low chroma) — the brand's warmth lives in the accent color and this shared undertone, not a separate palette.
-- One confident near-black primary carrying navigation, primary actions, and links — quiet by design, not a second competing color.
-- Amber accent reserved for earned moments: streaks, completed reviews, level-ups.
-- Rounded, tactile components — soft corners and a satisfying hover lift, never sharp or clinical.
-- Generous line-height and body sizing: this is a text- and audio-heavy app, legibility is non-negotiable.
+**Key characteristics**
+- One token file is the single source of truth: `frontend/src/styles/tokens.css`. Token names come from the metaphor, never from colours.
+- Cards sit on a darker desk so they lift without heavy shadows; nested cards lighten themselves automatically.
+- Graphite carries actions; amber is spent only on earned moments; red pencil marks mistakes; blue ink is for notes.
+- One import gate for UI: `import { Button, Card } from '@kit'`. A lint gate blocks anything that bypasses it.
 
 ## 2. Colors
 
-A restrained palette: one primary carries identity, one accent is spent deliberately on motivation moments, everything else is a quiet warm-neutral scale sharing the accent's own hue.
+All values live in `tokens.css` (`:root` for the day scene, `:root[data-theme="dark"]` for the night scene, same names). Tailwind classes are generated from them in `src/index.css` (`bg-karteikarte`, `text-radiert`, `border-kante`...). The default Tailwind palette is removed, so `bg-blue-500` produces no CSS.
 
-### Primary
-- **Graphite** (oklch(0.22 0.014 70)): primary buttons, active nav state, links, focus rings, progress bars. Carries the brand on every screen. Near-black rather than a second brand color, so it never competes with Ember Amber for attention.
-- **Graphite Deep** (oklch(0.15 0.014 70)): hover/active state for primary elements.
-
-### Secondary
-- **Ember Amber** (oklch(0.75 0.15 70)): streak counters, "reviewed today" badges, level-up moments, correct-answer flourish in flashcards. Never used for standard UI chrome — its rarity is what makes it feel earned.
-- **Ember Amber Deep** (oklch(0.62 0.16 68)): hover/active state for amber elements, and the color for amber-on-light text pairings where a filled amber pill would read too shouty.
-
-### Neutral
-- **Paper** (oklch(0.995 0.004 70)): app background. Carries the faintest warmth from the accent's own hue rather than staying perfectly achromatic — enough to feel chosen, not enough to read as tinted/cream.
-- **Whisper Surface** (oklch(0.97 0.012 70)): card and panel backgrounds, pulled toward the same warm hue as the background and accent.
-- **Ink** (oklch(0.22 0.018 70)): body text and headings. Nearly the same value as Graphite (primary) — text and primary UI intentionally sit in the same quiet near-black register.
-- **Quiet Ink** (oklch(0.55 0.014 70)): secondary/muted text — timestamps, helper copy, placeholder text.
-- **Hairline** (oklch(0.88 0.014 70)): borders, dividers, input strokes.
-- **Signal Red** (oklch(0.55 0.19 25)) / **Signal Red Bg** (oklch(0.96 0.03 25)): errors only — form validation, failed submissions. Never decorative.
-
-### Dark Mode ("đèn bàn học ban đêm")
-Same warm hue 70 throughout, only lightness inverted: Paper → oklch(0.17), Whisper Surface → oklch(0.215), cards one step lighter (oklch(0.235)) instead of shadows, Ink → oklch(0.93). Graphite primary inverts to a light ivory (oklch(0.9)) so the primary action stays the highest-contrast element and every `bg-primary text-canvas` pairing stays correct with no per-component overrides. Ember Amber keeps its role unchanged. Status and gender colors are lifted in lightness for contrast. Users pick Sáng / Tối / Theo máy (default: follow the OS); `public/theme-init.js` applies the class before first paint. **Never hard-code `bg-white`/`text-white`** — use `bg-card` / `text-canvas` so both themes stay correct.
+| Role | Token | Notes |
+|---|---|---|
+| Desk (page background) | `pappe`, `pappe-dunkel` | Darker than cards so cards stand out. `pappe-dunkel` is the hard offset shadow of buttons. |
+| Card / nested card | `karteikarte`, `karteikarte-innen` | Nested cards and sunken trays use `-innen`. |
+| Text: main / secondary / faint | `bleistift`, `radiert`, `hauch` | All reach 4.5:1 on cards in both scenes. `hauch` only on cards. |
+| Text on graphite | `bleistift-invers` | Primary button label. |
+| Rules: light / strong / card edge | `linie`, `kante`, `kartenrand` | `kante` reaches 3:1 (input borders). `kartenrand` is crisp by day, sinks into shadow at night. |
+| Card header line | `kopfzeile` | Decorative red rule under card titles, lighter than error red. |
+| Emphasis (earned only) | `reiter`, `reiter-soft`, `reiter-tief`, `reiter-beschriftung` | Streaks, mastered topics, reached goals. Label text on amber is always dark. |
+| Correct / wrong / info | `aufstieg`, `rotstift`, `tinte` + `-soft` | Solid text on its own `-soft` background reaches 4.5:1. |
+| Noun gender | `reiter-der/die/das` + `-soft` | Blue / pink / green tabs, as German pupils colour their cards. |
+| Mastery compartments | `fach-1` ... `fach-4` | Four real mastery stages, one teal family, light to dark (reversed at night). |
+| Overlays | `schleier`, `foto-etikett`, `foto-etikett-schrift` | Dialog scrim; labels on top of photos and video. |
 
 ### Named Rules
-**The One Warm Color Rule.** Ember Amber appears only where the user has *earned* something (a streak, a completed review, a level milestone). If it shows up on a static piece of chrome, it's being used wrong.
+**The One Warm Color Rule.** Amber (`reiter`) appears only where the learner has earned something. On static chrome it is wrong. Info is blue ink (`tinte`), never amber.
 
-**The Shared-Hue Neutral Rule.** Background, surface, and ink neutrals all carry the same low-chroma warm hue as Ember Amber, instead of staying perfectly achromatic — that shared undertone is what makes the whole palette read as one considered system rather than grey UI plus one accent color bolted on.
+**The Metaphor Naming Rule.** No token is named after a colour (`--gray-100`, `--red-500`). Missing a value? Add a token, never a one-off value at the call site.
+
+**Night is a different scene.** Dark mode is black lacquer under a desk lamp: near-neutral black desk, cards one step lighter with a top sheen (`--lampenlicht`), stacked-card edges hidden, amber kept vivid as the only warm light.
 
 ## 3. Typography
 
-**Display Font:** Fira Sans (with ui-sans-serif, system-ui fallback)
-**Body Font:** Inter (with system-ui fallback)
+- **Display / titles:** Fira Sans (`font-display`), 600.
+- **UI and reading:** Inter (`font-sans`), body 1rem / 1.6, prose capped near 70ch.
+- **Handwritten notes:** Patrick Hand (`font-hand`), only for margin notes.
+- Sizes only from the Tailwind scale `text-xs` ... `text-5xl`; weights only normal / medium / semibold / bold.
+- Inputs are always 16px on phones so iOS Safari does not zoom.
 
-**Character:** Fira Sans's slightly condensed, structured forms carry headlines and streak numbers with quiet confidence; Inter underneath keeps dense study content — vocabulary lists, exam instructions, form fields — crisp and highly legible at small sizes, with full Vietnamese and German diacritic support.
+**The No-Shout Rule.** Display size never exceeds `clamp(1.75rem, 3vw, 2.75rem)`.
 
-### Hierarchy
-- **Display** (600, `clamp(1.75rem, 3vw, 2.75rem)`, 1.1): dashboard greeting, page-level headers ("Chào mừng trở lại"), streak count hero number.
-- **Headline** (600, 1.375rem, 1.25): section headers within a page (deck titles, exam section names).
-- **Title** (600, 1.125rem, 1.4): card titles, flashcard front text, form section labels.
-- **Body** (400, 1rem, 1.6, max 70ch): reading passages, exam instructions, form helper text. Line height stays generous — this app is read on the go.
-- **Label** (500, 0.8125rem, 1.3, +0.01em): form field labels, tag/topic chips, timestamps.
+## 4. Elevation, shape, texture
 
-### Named Rules
-**The No-Shout Rule.** Display size never exceeds `clamp(1.75rem, 3vw, 2.75rem)` — this is a study tool, not a landing page; nothing needs hero-scale type.
+- **Shadows (3 roles):** `shadow-lift` (by day a second card peeking out behind, by night a soft drop plus a top highlight), `shadow-pop` (dialogs, menus, toasts), `shadow-offset` (hard offset under buttons; pressing a button flattens it).
+- **Radius (3 steps):** `rounded-karte` 3px for cards, inputs, buttons; `rounded-reiter` 8px for tabs and chips; `rounded-rund` for dots and avatars.
+- **Textures:** `textur-pappe` (cardboard fibres by day; lamp reflection plus fine grain at night), `textur-linien` (ruled lines on cards), `lampenlicht` (card sheen at night).
+- **Page widths:** `max-w-seite` (64rem, hubs and lists), `max-w-lesen` (48rem, reading and exercises).
+- **Layers:** `z-nav < z-panel < z-sheet < z-modal < z-popover < z-toast`.
 
-## 4. Elevation
-
-Flat by default, elevation used only to signal interactivity or temporary layering. Cards rest on the Whisper Surface tone rather than a shadow; shadows are reserved for elements that float above the page flow (dropdowns, modals, the flashcard mid-flip state).
-
-### Shadow Vocabulary
-- **Resting** (none): cards, list items, static content use tonal contrast (Whisper Surface on Paper), not shadow.
-- **Lifted** (`box-shadow: 0 2px 8px oklch(0.22 0.018 70 / 0.08)`): hover state on interactive cards and buttons — a soft, close lift, not a dramatic drop.
-- **Floating** (`box-shadow: 0 12px 32px oklch(0.22 0.018 70 / 0.14)`): modals, dropdown menus, the popover for OAuth/account actions.
-
-### Named Rules
-**The Tonal-First Rule.** Reach for a Whisper Surface background before reaching for a shadow. Shadow is for things that temporarily float above the page, not for everyday cards.
+**Nested cards lighten themselves.** A `Card` inside a `Card` automatically drops its shadow, switches to `karteikarte-innen` and a light rule (CSS rule on `[data-card] [data-card]`).
 
 ## 5. Components
 
-Tactile and encouraging: soft corners, a gentle lift on hover, focus states that feel like a nudge rather than an alarm.
+Everything is in `frontend/src/components/kit` and imported only through `@kit`. The live catalogue is the dev-only route `/design` (every component, variant and state, light/dark switch, texture switch).
 
-### Buttons
-- **Shape:** rounded-md (8px)
-- **Primary:** Graphite background, Paper text, 12px/24px padding, font-weight 600. Used for the one primary action per screen (submit, start review, continue).
-- **Hover / Focus:** background shifts to Graphite Deep, 2px lift (`translateY(-1px)`) with the Lifted shadow, 160ms ease-out-quart transition. Focus-visible adds a 2px Graphite ring offset 2px from the element.
-- **Secondary:** Whisper Surface background, Ink text, same radius/padding — used for cancel, secondary navigation.
-- **Ghost:** transparent background, Graphite text, underline on hover — used for tertiary/inline actions ("Quên mật khẩu?").
+- **Basics:** Button (primary, secondary, ghost, danger; sm; icon; loading), IconButton (label required), ButtonLink, TextLink, Spinner.
+- **Forms:** Field (label, hint, error wired to aria), Input (password toggle built in), SearchInput, Textarea, NativeSelect, Select, Checkbox, Radio, Switch, Slider, FileInput.
+- **Layout and display:** PageHeader, SectionHeader, Card (default, sunken, highlight, dashed; optional title with header line), Tag, Badge, Stat, ProgressBar, Table, Divider, Avatar, Tooltip.
+- **Feedback:** Note (info, ok, emph, bad), EmptyState, Skeleton family, Toast (`useToast`).
+- **Clickable surfaces:** CardButton, RowButton, SettingRow, Disclosure, Chip, Fab.
+- **Overlays:** Dialog, ConfirmDialog, BottomSheet, Drawer (native `<dialog>`), DropdownMenu, Popover.
+- **Navigation:** Tabs (divider-tab shape), Segmented, Stepper, NavItem, Pagination, Breadcrumb.
+- **DeutschPfad domain:** ReviewCard (flip card), GenderTag and Article, StreakTab, AnswerOption, AnswerFeedback ("card moves up / back to compartment 1"), QuestionNav, BlankInput (cloze gap), LeitnerBox (four compartments).
 
-### Chips
-- **Topic chips** (Studium, Bewerbung, Gesundheit, Behörden): Whisper Surface background, Ink text, Hairline border, rounded-pill. Selected state fills with Graphite at low opacity (12%) and Graphite Deep text.
-- **Streak / earned badges:** Ember Amber background, Ink text (not white — Amber at this lightness reads better with dark text per its L/chroma), rounded-pill, small flame/star icon inline.
+Every component: forwardRef where it wraps an element, `className` merged with `cn()`, one focus ring (`outline-fokus`), 44px touch targets on phones, complete disabled/loading/error states.
 
-### Cards / Containers
-- **Corner Style:** rounded-lg (12px) for deck/flashcard cards, rounded-md (8px) for smaller list items.
-- **Background:** Whisper Surface on Paper page background.
-- **Shadow Strategy:** flat at rest; Lifted shadow on hover for anything clickable (deck cards, dashboard tiles).
-- **Border:** none at rest; a 1px Graphite border appears only on the active/focused flashcard.
-- **Internal Padding:** 24px (lg) for deck cards, 16px (md) for list rows.
+### Mascot: Chậm the Sloth
+A sloth reframed as "unhurried and steady", the visual echo of spaced repetition. Drawn in the system's own language (flat shapes, graphite lines, one amber detail). Appears only in empty states, error pages and big streak milestones; never a floating helper, never nagging. Voice: "Từng bước một, không cần vội."
 
-### Inputs / Fields
-- **Style:** Paper background, 1px Hairline border, rounded-sm (6px), 10px/14px padding.
-- **Focus:** border shifts to Graphite, 2px Graphite ring at 20% opacity outside the border (no harsh browser default outline).
-- **Error / Disabled:** border and helper text shift to Signal Red on a Signal Red Bg helper banner beneath the field; disabled state drops to Quiet Ink text at 60% opacity with no hover affordance.
+## 6. Guardrails
 
-### Navigation
-- **Full-height left sidebar** on Whisper Surface with a Hairline right border (no top bar on desktop): logo at the top, nav grouped under "Học" / "Cá nhân", and a footer holding the streak pill, today's study time, the account link, the Sáng/Tối/Theo máy switcher and the collapse toggle. Active route uses Graphite/12% fill with Graphite Deep text.
-- **"Ôn tập" carries the due-card count** as a Signal Red Bg pill (a dot when collapsed) — the one daily action worth surfacing in the chrome.
-- **Collapses to a 64px icon rail** (labels become tooltips), remembered per browser. Practice screens that already have their own side column (lesson practice, listening/reading players, deck practice) start collapsed so the content never gets squeezed into three columns.
-- **Mobile (< md):** a slim top bar (hamburger, logo, streak) opens the same sidebar as a drawer — the primary use context is short mobile sessions.
+`npm run lint` runs ESLint and `tools/ui-gate.mjs` (also in CI). The gate blocks, with `file:line` and the reason: hex/rgb colours, arbitrary `bg-[`/`text-[`/`border-[`/`rounded-[`/`shadow-[` values, off-scale font weights, default Tailwind palette, deprecated token names, raw `<input>/<select>/<textarea>/<button>`, hand-made dialogs (`role="dialog"`, `fixed inset-0`), UI imports outside `@kit`, emoji used as icons. A whole file can be exempted only with `// ui-gate-ignore-file: <reason>` (used once: the Google logo keeps Google's brand colours).
 
-### Streak Indicator (signature component)
-A small pill in the dashboard header: Ember Amber fill, Ink text, flame icon, current streak count in Label type. This is the one place in the whole system where the amber accent is allowed to be the loudest thing on screen — reinforcing "The One Warm Color Rule."
+Accessibility switches on the profile page: reduced motion (`data-motion="reduce"`, also follows the OS) and high contrast (`data-contrast="high"`: secondary text and all rules become as strong as main text).
 
-### Mascot — Chậm the Sloth
-**Concept:** a sloth, reframed. "Chậm" (Vietnamese: *slow*) is worn as a badge, not an apology — the mascot's entire point is that deliberate, unhurried, daily steps are how you actually reach a certification, not sprinting and burning out. It's the same argument the SRS algorithm makes with data; Chậm just makes it visible and warm.
+### Renamed tokens (old name, now blocked by the gate)
+| Old | New |
+|---|---|
+| canvas (page) / text-canvas | page uses `pappe` on body; `text-bleistift-invers` |
+| surface / card | `karteikarte-innen` / `karteikarte` |
+| ink / muted | `bleistift` / `radiert` (placeholder: `hauch`) |
+| hairline | `linie` (dividers), `kante` (inputs), `kartenrand` (card edges) |
+| primary / primary-deep | `bleistift` / `bleistift-tief` (focus: `fokus`) |
+| accent / accent-deep | `reiter` / `reiter-tief` |
+| danger(-bg) / success(-bg) | `rotstift(-soft)` / `aufstieg(-soft)` |
+| der / die / das, m1-m4, bar-muted | `reiter-der/die/das`, `fach-1`...`fach-4`, `kante/45` |
+| shadow-lifted / shadow-floating | `shadow-lift` / `shadow-pop` |
+| rounded-sm/md/lg/xl, rounded-full | `rounded-karte`, `rounded-rund` |
 
-**Visual treatment:** drawn in the system's own language, not a separate cartoon universe grafted on — flat shapes with rounded-lg corners (echoing card/button geometry), Graphite linework, a single Ember Amber detail (vd. the belly patch, or a small item it's holding) as its one permitted warm accent, never full-color illustration. Calm pose by default: mid-step on a path, or resting with eyes closed — never wide-eyed, bouncing, or winking. No speech bubbles as a default state; when Chậm does speak, one short line, present tense, no exclamation-mark hype.
+## 7. Do's and Don'ts
 
-**Where it appears (tasteful and rare — this is the constraint that keeps it from becoming the Duolingo failure mode):**
-- Empty states (vd. "Chưa có bộ từ nào" — Chậm sitting beside an empty shelf)
-- 404 / error pages
-- Big streak milestones only (7/30/100 ngày) — not every day, so it stays an event, not chrome
-- **Never**: a persistent floating helper, a click-triggered animation on every interaction, or copy that nags/hurries the user — that would undo the entire reframe.
+**Do**
+- Reach for a token or a kit component first; add a token when one is missing.
+- Keep amber for earned moments only.
+- Let correct/wrong read as a card moving between compartments, not as an alarm.
+- Keep Chậm rare and calm.
 
-**Copy voice when Chậm speaks:** steady, first-person-plural, no urgency. "Từng bước một, không cần vội." / "Hôm nay bạn đã đi thêm một đoạn." Never "Đừng bỏ lỡ!" or countdown-timer pressure — that's a different mascot's job, not Chậm's.
-
-## 6. Do's and Don'ts
-
-### Do:
-- **Do** let the near-black Graphite primary stay quiet — it should never compete visually with Ember Amber.
-- **Do** reserve Ember Amber for earned moments only: streaks, completed reviews, level milestones.
-- **Do** use generous body line-height (1.6) and cap prose at ~70ch — this is a reading- and instruction-heavy app used on the go.
-- **Do** give every interactive element a soft hover lift and a visible, non-alarming focus ring.
-- **Do** keep Chậm the sloth rare and calm when used (empty states, error pages, big streak milestones) — its whole reframe ("unhurried, not lazy") only holds up if it stays an occasional illustration, not a recurring character.
-
-### Don't:
-- **Don't** introduce a second saturated brand color (a blue primary was tried twice and rejected both times for clashing with amber) — the near-black + amber pairing is the deliberate, settled choice.
-- **Don't** use Ember Amber as decoration on static chrome (nav bars, default card borders) — if it's not marking something earned, it's misused.
-- **Don't** turn Chậm into a Duolingo-style omnipresent/chatty mascot (persistent floating helper, nagging streak-loss guilt copy, animated on every click) — this product is exam-stakes serious, softened by warmth, not trivialized by playfulness. One calm illustration in a handful of moments is the entire budget.
-- **Don't** use border-left/border-right color stripes as an accent on cards or list items.
-- **Don't** use gradient text or glassmorphism as decoration.
-- **Don't** let display type exceed the `clamp(1.75rem, 3vw, 2.75rem)` ceiling — there is no landing-page hero here.
+**Don't**
+- Don't introduce a second saturated brand colour (blue primaries were rejected twice).
+- Don't use side-stripe borders, gradient text or glassmorphism as decoration.
+- Don't use emoji as icons; use lucide-react.
+- Don't hand-style a `<button>` or build a modal with `fixed inset-0`.
