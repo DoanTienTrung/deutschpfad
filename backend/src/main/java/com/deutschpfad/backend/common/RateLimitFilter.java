@@ -65,8 +65,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String extractClientIp(HttpServletRequest request) {
-        String realIp = request.getHeader("X-Real-IP");
-        return realIp != null ? realIp : request.getRemoteAddr();
+    /**
+     * IP của người gửi. Trước đây đọc X-Real-IP do nginx đặt; trên Render không còn nginx nên header đó
+     * do chính client gửi, đổi mỗi request một giá trị là lách được giới hạn.
+     *
+     * <p>CF-Connecting-IP: Cloudflare (đứng trước Render) ghi đè header này bằng IP thật. Không có thì
+     * dùng getRemoteAddr(), mà ForwardedHeaderFilter (server.forward-headers-strategy=framework) đã thay
+     * bằng IP đầu tiên trong X-Forwarded-For, vị trí Render cho biết là IP thật. Cả hai vẫn chỉ đáng tin
+     * khi request thật sự đi qua proxy đó, nên đăng nhập còn bị giới hạn theo email ở LoginAttemptLimiter,
+     * thứ client không giả được.
+     */
+    static String extractClientIp(HttpServletRequest request) {
+        String cloudflareIp = request.getHeader("CF-Connecting-IP");
+        if (cloudflareIp != null && !cloudflareIp.isBlank()) {
+            return cloudflareIp.trim();
+        }
+        return request.getRemoteAddr();
     }
 }

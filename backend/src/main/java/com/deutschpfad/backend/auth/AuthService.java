@@ -5,9 +5,11 @@ import com.deutschpfad.backend.common.EmailTemplates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +25,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final RefreshTokenService refreshTokenService;
+    private final LoginAttemptLimiter loginAttemptLimiter;
     private final String frontendUrl;
     // Đọc thẳng cấu hình chứ không hỏi EmailService.isEnabled(): test thay EmailService bằng mock,
     // mock trả false cho mọi boolean và sẽ âm thầm bật chế độ "không email" trong toàn bộ test auth.
@@ -36,6 +39,7 @@ public class AuthService {
         JwtService jwtService,
         EmailService emailService,
         RefreshTokenService refreshTokenService,
+        LoginAttemptLimiter loginAttemptLimiter,
         @Value("${app.frontend-url}") String frontendUrl,
         @Value("${app.mail-enabled:true}") boolean mailEnabled
     ) {
@@ -46,6 +50,7 @@ public class AuthService {
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.refreshTokenService = refreshTokenService;
+        this.loginAttemptLimiter = loginAttemptLimiter;
         this.frontendUrl = frontendUrl;
         this.mailEnabled = mailEnabled;
     }
@@ -247,12 +252,21 @@ public class AuthService {
     }
 
     public LoginResult login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
-            .orElseThrow(() -> new InvalidCredentialsException("Email hoặc mật khẩu không đúng"));
+        if (loginAttemptLimiter.isBlocked(request.email())) {
+            throw new ResponseStatusException(
+                HttpStatus.TOO_MANY_REQUESTS,
+                "Đăng nhập sai quá nhiều lần với email này, vui lòng thử lại sau 15 phút"
+            );
+        }
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        // Email không tồn tại cũng tính một lần sai: nếu không, chỉ cần thấy email nào không bao giờ bị
+        // chặn là biết email đó chưa đăng ký.
+        User user = userRepository.findByEmail(request.email()).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            loginAttemptLimiter.recordFailure(request.email());
             throw new InvalidCredentialsException("Email hoặc mật khẩu không đúng");
         }
+        loginAttemptLimiter.reset(request.email());
 
         if (!user.isEmailVerified()) {
             throw new InvalidCredentialsException("Vui lòng xác thực email trước khi đăng nhập");

@@ -64,7 +64,6 @@ services:
       context: ./frontend
       args:
         VITE_API_ORIGIN: ${VITE_API_ORIGIN}
-        NGINX_CONF: nginx.dev.conf
     container_name: deutschpfad-frontend
     ports:
       - "8081:80"

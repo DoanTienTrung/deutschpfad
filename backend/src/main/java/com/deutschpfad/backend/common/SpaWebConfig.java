@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
  * đứng trước). Chỉ bật khi đặt {@code app.frontend-dir} (FRONTEND_DIR); local và docker compose để
  * trống, frontend vẫn do Vite/nginx lo.
  *
- * <p>Làm đúng những gì {@code frontend/nginx.conf} + {@code nginx-notfound.conf} đang làm: file có thật
- * thì trả file, đường dẫn của React Router thì trả index.html, còn lại 404 thật. Không được trả
+ * <p>Làm đúng những gì nginx từng làm ở production ({@code try_files} + {@code frontend/nginx-notfound.conf}):
+ * file có thật thì trả file, đường dẫn của React Router thì trả index.html, còn lại 404 thật. Không được trả
  * index.html cho MỌI đường dẫn: host mà {@code /wp-login.php} hay {@code /.env} cũng "tồn tại" và cũng
  * hiện form đăng nhập là đặc điểm Safe Browsing dùng để xếp trang vào nhóm lừa đảo (tên miền DuckDNS
  * cũ đã dính, xem chú thích trong nginx-notfound.conf).

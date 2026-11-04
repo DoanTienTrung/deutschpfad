@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>Mỗi lượt có ba bước:
  * <ol>
  *   <li><b>Lấy phụ đề</b> cho bài PENDING (tối đa {@code max-videos-per-run}, nghỉ giữa các video để
- *       YouTube không chặn bot trên EC2): lưu câu + IPA, chưa dịch, chuyển TRANSLATING. Không lấy được phụ đề
+ *       YouTube khỏi coi là bot): lưu câu + IPA, chưa dịch, chuyển TRANSLATING. Không lấy được phụ đề
  *       thì thử lại lượt sau, quá 3 lần mới FAILED; 3 video liền nhau không lấy được thì dừng bước này.</li>
  *   <li><b>Bổ sung kênh/thời lượng</b> cho video đã hiện mà còn thiếu (bài nhập tay trước khi có kênh).</li>
  *   <li><b>Dịch</b> câu còn thiếu, lô 40 câu, tối đa {@code max-sentences-per-run}. Bài dịch xong mới READY

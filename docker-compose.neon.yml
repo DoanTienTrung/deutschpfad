@@ -3,7 +3,7 @@
 #   - nhập video YouTube: IP datacenter của Render bị YouTube chặn, IP nhà thì không;
 #   - tải PDF lên kiến thức gia sư: đọc PDF tốn RAM, máy Render chỉ có 512MB.
 #
-# Cần thêm 3 dòng NEON_* vào .env (xem ops/render-neon-setup.md, Bước 8), rồi:
+# Cần thêm 3 dòng NEON_* vào .env (xem ops/render-neon-setup.md, phần "Nạp lại nội dung"), rồi:
 #   docker compose -f docker-compose.yml -f docker-compose.neon.yml up -d --build backend frontend
 # Mở http://localhost:8081/admin. Xong việc thì tắt để Neon được ngủ:
 #   docker compose -f docker-compose.yml -f docker-compose.neon.yml stop backend frontend
@@ -11,6 +11,8 @@
 # Chỉ chạy khi code ở máy giống code đã deploy (đã push): backend này chạy Flyway lên chính database Neon.
 services:
   backend:
+    # Không cần Postgres và MailDev ở máy: database là Neon, email tắt.
+    depends_on: !reset {}
     environment:
       SPRING_DATASOURCE_URL: ${NEON_JDBC_URL:?Thiếu NEON_JDBC_URL trong .env}
       DB_USERNAME: ${NEON_USER:?Thiếu NEON_USER trong .env}
@@ -21,5 +23,8 @@ services:
       SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "0"
       SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: "60000"
       SPRING_JPA_SHOW_SQL: "false"
+      MAIL_ENABLED: "false"
+      # Sau khi đăng nhập Google, quay về giao diện ở máy (nginx cổng 8081).
+      FRONTEND_URL: http://localhost:8081
       # Job nhập video tự chạy 02:00 nếu máy còn bật; bấm "Chạy ngay" trong admin là đủ.
       LISTENING_IMPORT_NIGHTLY: "false"

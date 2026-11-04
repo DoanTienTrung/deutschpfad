@@ -113,40 +113,135 @@ thật). Không dùng `/api/health` cho việc này: nó mở kết nối DB.
 
 ## Bước 7. Kiểm tra
 
-- Mở `WEB_URL`, đăng nhập admin bằng mật khẩu cũ (hoặc bấm **Đăng nhập bằng Google** với
-  `trungtiendoan22@gmail.com`: cùng email nên vào đúng tài khoản admin).
+- Mở `WEB_URL`, bấm **Đăng nhập bằng Google** với `trungtiendoan22@gmail.com`.
+- Bản sao lưu tháng 7 không có tài khoản admin nào (quyền admin được cấp trên AWS sau đó, mất theo
+  database AWS). Cấp lại bằng lệnh dưới, rồi đăng xuất và đăng nhập lại:
+
+  ```powershell
+  docker run --rm pgvector/pgvector:pg16 psql "NEON_URL" -c "update users set role = 'ADMIN' where email = 'trungtiendoan22@gmail.com'"
+  ```
+
 - Xem từ vựng, ngữ pháp, đọc, nghe đề thi, luyện dịch.
 - Đăng ký một tài khoản mới bằng email: phải hiện "Tạo tài khoản thành công" và đăng nhập được ngay.
 
-## Bước 8. Việc admin nặng: chạy ở máy nhà, chung database Neon
+## Bước 8. Nạp lại nội dung còn thiếu
 
-Thêm 3 dòng vào cuối `C:\DeutschPfad\.env` (giá trị ở Bước 1):
+Đo trên dữ liệu đã nạp (03/11/2026):
 
-```
-NEON_JDBC_URL=jdbc:postgresql://ep-ten-gi-do-123456.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-NEON_USER=neondb_owner
-NEON_PASSWORD=MATKHAU
-```
+| Việc | Hiện có | Làm ở đâu | Thời gian |
+|---|---|---|---|
+| 1. Nghĩa tiếng Việt câu ví dụ | 7.928/8.128 câu chưa có | Web trên Render | 4 ngày, mỗi ngày 1 lượt |
+| 2. Video YouTube | 27 video, 0 kênh | Máy nhà (YouTube chặn IP Render) | vài buổi |
+| 3. Kiến thức gia sư | 0 đoạn | Máy nhà (đọc PDF tốn RAM) | 1 buổi |
+| 4. Bài tập ngữ pháp | 3 chủ điểm A1 chưa có bài | Web trên Render | 15 phút |
 
-Bật (PowerShell, ở `C:\DeutschPfad`):
+Việc 1, 2 và 4 (nếu dùng AI) cùng ăn quota Groq 200 nghìn token/ngày: hôm nào bấm dịch câu ví dụ thì
+đừng chạy nhập video cùng hôm. Thứ tự gợi ý: ngày 1-4 việc 1 (và việc 4), ngày 5 trở đi việc 2, cuối
+cùng việc 3 (bước "Đồng bộ từ vựng" cần câu ví dụ đã dịch xong).
+
+Mỗi việc có lệnh kiểm tra (PowerShell, thay `NEON_URL` như ở Bước 2).
+
+### Việc 1. Dịch câu ví dụ từ vựng (trên web)
+
+1. `WEB_URL/admin` → **Từ vựng** → bấm **Dịch các câu còn thiếu**. Mỗi lượt dịch tối đa 2.000 câu (Groq),
+   chạy nền (có thể mất vài chục phút), nút hiện "Đang dịch…" cho tới khi xong. Hết quota Groq thì tự dừng.
+2. Mỗi ngày bấm một lượt, khoảng 4 ngày. Kiểm tra số câu còn thiếu (về 0 là xong):
+
+   ```powershell
+   docker run --rm pgvector/pgvector:pg16 psql "NEON_URL" -c "select count(*) as con_thieu from vocabulary_items where coalesce(example_sentence, '') <> '' and coalesce(example_sentence_vi, '') = ''"
+   ```
+
+### Việc 4. Bài tập cho 3 chủ điểm ngữ pháp A1 (trên web)
+
+`WEB_URL/admin` → **Ngữ pháp** → bấm vào chủ điểm → khung **Sinh bài tập hàng loạt**:
+
+| Chủ điểm | Loại | Cách | Mạo từ | Số bài |
+|---|---|---|---|---|
+| Danh từ và mạo từ ở cách 1 | Mạo từ / biến cách | Nominativ (cách 1) | Mạo từ xác định | 30 |
+| Danh từ và mạo từ ở cách 3 | Mạo từ / biến cách | Dativ (cách 3) | Mạo từ xác định | 30 |
+| Quy tắc đoán giống danh từ | Mạo từ / biến cách | Nominativ (cách 1) | Mạo từ xác định | 30 |
+
+Bấm **Sinh từ dữ liệu (duyệt sẵn)**: lấy từ bảng giống danh từ có sẵn, không tốn quota AI, bài tập hiện
+ngay cho người học. Muốn thêm bài đa dạng hơn thì **✨ AI soạn (chờ duyệt)**, rồi duyệt từng bài.
+Kiểm tra (mỗi chủ điểm phải lớn hơn 0):
 
 ```powershell
-docker compose -f docker-compose.yml -f docker-compose.neon.yml up -d --build backend frontend
+docker run --rm pgvector/pgvector:pg16 psql "NEON_URL" -c "select t.slug, count(e.id) from grammar_topics t left join grammar_exercises e on e.topic_id = t.id where t.slug in ('a1-nomen-artikel-nominativ', 'a1-nomen-artikel-dativ', 'a1-nomen-genusregeln') group by t.slug"
 ```
 
-Mở http://localhost:8081, đăng nhập admin, rồi làm theo thứ tự (chung quota Groq 200 nghìn token/ngày):
-1. **Từ vựng → Dịch các câu còn thiếu**: mỗi ngày một lượt, khoảng 3 ngày.
-2. **Bài nghe → Nạp 89 video vào hàng chờ**, rồi **Chạy ngay** (mỗi lượt 30 video, cần bật máy tới khi
-   xong).
-3. **Kiến thức gia sư**: tải lên `A1.pdf`, `A2.pdf`, `B1.pdf`, `B2.pdf`, rồi **Đồng bộ từ vựng**.
+### Chuẩn bị chạy ở máy nhà (một lần, cho việc 2 và 3)
 
-Kết quả ghi thẳng vào Neon nên web trên Render thấy ngay. Xong việc thì tắt để Neon được ngủ:
+1. Thêm 3 dòng vào cuối `C:\DeutschPfad\.env` (lấy từ Bước 1):
+
+   ```
+   NEON_JDBC_URL=jdbc:postgresql://ep-ten-gi-do-123456.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+   NEON_USER=neondb_owner
+   NEON_PASSWORD=MATKHAU
+   ```
+
+2. Google Cloud Console → OAuth client: trong **Authorized redirect URIs** phải có
+   `http://localhost:8080/login/oauth2/code/google`, trong **Authorized JavaScript origins** có
+   `http://localhost:8081` (thường đã có từ hồi chạy local; thiếu thì thêm, **Save**).
+3. Cổng 8080 và 8081 phải trống. Project khác đang chiếm thì tắt tạm, ví dụ `docker stop gscores-web`.
+
+### Bật / tắt ở máy nhà
+
+Bật (lần đầu build mất vài phút):
+
+```powershell
+cd C:\DeutschPfad
+docker compose -f docker-compose.yml -f docker-compose.neon.yml up -d --build backend frontend
+docker logs -f deutschpfad-backend
+```
+
+Thấy `Started BackendApplication` thì bấm `Ctrl+C` để thoát xem log (backend vẫn chạy). Mở
+http://localhost:8081 → **Đăng nhập bằng Google** (cùng tài khoản admin) → http://localhost:8081/admin.
+Mọi thứ bấm ở đây ghi thẳng vào Neon, web trên Render thấy ngay.
+
+Tắt khi xong việc (để Neon được ngủ, không tốn giờ compute):
 
 ```powershell
 docker compose -f docker-compose.yml -f docker-compose.neon.yml stop backend frontend
 ```
 
-Chỉ bật khi code ở máy giống code đã push (backend này chạy Flyway lên chính database Neon).
+Chỉ bật khi code ở máy giống code đã push (backend này chạy Flyway lên chính database Neon): trước khi
+bật, chạy `git pull` nếu vừa sửa code ở chỗ khác.
+
+### Việc 2. Nhập video YouTube (máy nhà)
+
+1. http://localhost:8081/admin → **Bài nghe** → khung nhập video: bấm **Nạp … video vào hàng chờ** (số trên
+   nút là số video trong danh sách 89 video chưa có trong database). Việc này cũng tạo danh sách kênh.
+2. Bấm **Chạy nhập ngay**. Mỗi lượt lấy phụ đề tối đa 30 video (nghỉ 10 giây giữa các video) và dịch tối
+   đa 1.500 câu. Để máy bật tới khi nút hết "Đang chạy...".
+3. Còn video chưa xong thì hôm sau (quota Groq mới) bấm **Chạy nhập ngay** tiếp. Video nào báo lỗi có nút
+   thử lại.
+
+Kiểm tra (xong khi gần như tất cả là `READY`):
+
+```powershell
+docker run --rm pgvector/pgvector:pg16 psql "NEON_URL" -c "select status, count(*) from listening_exercises where kind = 'YOUTUBE' group by status"
+```
+
+### Việc 3. Kiến thức gia sư (máy nhà, sau khi việc 1 xong)
+
+1. http://localhost:8081/admin → **Kiến thức Gia sư** → chế độ tải file: chọn `C:\DeutschPfad\A1.pdf`, chọn
+   trình độ **A1**, để trống tiêu đề → **Lưu & tạo embedding**. Chờ báo xong rồi làm tiếp `A2.pdf` (A2),
+   `B1.pdf` (B1), `B2.pdf` (B2).
+2. Bấm **Đồng bộ từ vựng** (đưa 8.128 từ kèm câu ví dụ đã dịch vào kiến thức gia sư; chạy khá lâu vì
+   Cohere giới hạn 100 lần gọi/phút).
+3. Thử hỏi gia sư trên web Render một câu về ngữ pháp A1.
+
+Kiểm tra (phải lớn hơn 0, sau khi đồng bộ từ vựng thì lên vài nghìn):
+
+```powershell
+docker run --rm pgvector/pgvector:pg16 psql "NEON_URL" -c "select count(*) as doan_kien_thuc from tutor_knowledge_chunk"
+```
+
+### Không cần nạp lại
+
+IPA từ vựng (đủ), ảnh bìa 45 bài đọc (còn), audio 33 đề nghe Goethe (file nằm ở `bfu.goethe.de`, vẫn tải
+được), bộ đệm tra từ (tự sinh lại khi dùng). Mất hẳn, làm lại khi cần: đề nghe Goethe B1 Teil 3-4, B2, C1
+và 2 phim Nicos Weg.
 
 ## Bước 9 (tuỳ chọn). Bật lại email bằng Brevo
 

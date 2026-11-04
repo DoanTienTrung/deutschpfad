@@ -2,7 +2,8 @@
 # backend + bản build frontend do chính backend phục vụ (SpaWebConfig). Render free chỉ cho 1 web
 # service luôn thức trong 750 giờ/tháng, 512MB RAM, 0.1 CPU, và không có nginx đứng trước.
 #
-# backend/Dockerfile + frontend/Dockerfile vẫn dùng cho docker compose (local và máy chủ tự quản).
+# backend/Dockerfile + frontend/Dockerfile chỉ còn dùng cho docker compose ở máy nhà (docker-compose.yml,
+# docker-compose.neon.yml).
 
 # ---- 1. Frontend ----
 FROM node:22-alpine AS frontend

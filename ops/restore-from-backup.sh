@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Khôi phục nội dung học từ backup.sql vào một database MỚI, RỖNG (máy chủ mới sau khi tài khoản AWS
-# bị đóng, xem ops/server-setup.md).
+# Khôi phục nội dung học từ backup.sql vào một database MỚI, RỖNG. Chỉ được gọi từ ops/build-neon-seed.sh
+# (Postgres tạm ở máy nhà), không chạy riêng.
 #
 # backup.sql là bản dump CHỈ CÓ DỮ LIỆU (không có lệnh tạo bảng) ngày 19/07/2026, lúc schema ở V37:
 #   1. Flyway CLI tạo bảng theo V1-V37 (đều là file SQL, chỉ tạo bảng/cột, không chèn dữ liệu).
@@ -10,15 +10,13 @@
 # Sau đó bật backend: Flyway trong ứng dụng tự chạy tiếp V38 trở đi (ngữ pháp, giống và số nhiều danh
 # từ, gộp từ trùng, từ vựng "Sống ở Đức", luyện dịch...).
 #
-# Cách dùng, ở thư mục repo trên server:
-#   bash ops/restore-from-backup.sh [đường-dẫn-tới-backup.sql]
-# Biến tuỳ chọn: COMPOSE (lệnh docker compose, mặc định dùng docker-compose.prod.yml), ENV_FILE (mặc định .env).
+# Biến bắt buộc: COMPOSE (lệnh docker compose trỏ tới Postgres tạm), ENV_FILE (file có POSTGRES_*).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 BACKUP="${1:-backup.sql}"
-ENV_FILE="${ENV_FILE:-.env}"
-COMPOSE="${COMPOSE:-docker compose -f docker-compose.prod.yml}"
+ENV_FILE="${ENV_FILE:?Thiếu ENV_FILE, chạy qua ops/build-neon-seed.sh}"
+COMPOSE="${COMPOSE:?Thiếu COMPOSE, chạy qua ops/build-neon-seed.sh}"
 # Đường dẫn repo dạng Docker hiểu được (Git Bash trên Windows cần C:/..., Linux dùng nguyên pwd).
 REPO_DIR="$(pwd -W 2>/dev/null || pwd)"
 
@@ -96,5 +94,4 @@ UNION ALL SELECT 'flyway mới nhất', max(version::int) FROM flyway_schema_his
 SQL
 
 echo
-echo "Xong phần dữ liệu tháng 7. Bước tiếp theo: bật cả hệ thống để backend chạy nốt các migration:"
-echo "  $COMPOSE up -d"
+echo "Xong phần dữ liệu tháng 7 (schema V37). Backend chạy nốt các migration ở bước sau."

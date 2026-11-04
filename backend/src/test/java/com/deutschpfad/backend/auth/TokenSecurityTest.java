@@ -255,6 +255,32 @@ class TokenSecurityTest {
     }
 
     // ------------------------------------------------------------------------------------------
+    // Lỗi 5: giới hạn đăng nhập theo IP bị lách bằng header IP giả
+    // ------------------------------------------------------------------------------------------
+
+    @Test
+    void dangNhapSai_doiIpGiaMoiLan_vanBiChanTheoEmail() {
+        User user = createVerifiedUser();
+        Map<String, String> wrong = Map.of("email", user.getEmail(), "password", "sai-mat-khau");
+
+        // Mỗi lần một IP khác: giới hạn 5 lần/phút theo IP không bao giờ chạm tới.
+        for (int i = 0; i < LoginAttemptLimiter.MAX_FAILURES; i++) {
+            ResponseEntity<Map> attempt = restTemplate.postForEntity(
+                url("/api/auth/login"), new HttpEntity<>(wrong, uniqueClientHeaders()), Map.class
+            );
+            assertThat(attempt.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+
+        // Tới đây có đúng mật khẩu cũng bị chặn: kẻ đoán không biết lần nào mới là lần trúng.
+        ResponseEntity<Map> blocked = restTemplate.postForEntity(
+            url("/api/auth/login"),
+            new HttpEntity<>(Map.of("email", user.getEmail(), "password", "mat-khau-cu-123"), uniqueClientHeaders()),
+            Map.class
+        );
+        assertThat(blocked.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    // ------------------------------------------------------------------------------------------
 
     private String url(String path) {
         return "http://localhost:" + port + path;
@@ -274,12 +300,13 @@ class TokenSecurityTest {
     }
 
     /**
-     * RateLimitFilter phân biệt client theo header X-Real-IP. Mỗi request một địa chỉ riêng để các
-     * test không ăn chung hạn mức của register/forgot-password và dính 429 ngẫu nhiên.
+     * RateLimitFilter phân biệt client theo IP đầu tiên trong X-Forwarded-For (qua ForwardedHeaderFilter).
+     * Mỗi request một địa chỉ riêng để các test không ăn chung hạn mức của register/forgot-password và
+     * dính 429 ngẫu nhiên.
      */
     private HttpHeaders uniqueClientHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-Real-IP", "10.0." + (int) (Math.random() * 250) + "." + (int) (Math.random() * 250));
+        headers.add("X-Forwarded-For", "10.0." + (int) (Math.random() * 250) + "." + (int) (Math.random() * 250));
         return headers;
     }
 

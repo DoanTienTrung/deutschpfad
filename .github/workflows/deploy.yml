@@ -2,8 +2,8 @@ name: Test
 
 # Production chạy trên Render (render.yaml): Render tự build Dockerfile.render và deploy khi các job dưới
 # đây xanh (autoDeployTrigger: checksPass), nên workflow này chỉ còn chạy test. Không còn build image lên
-# GHCR hay SSH vào máy chủ; muốn quay lại máy chủ tự quản (docker-compose.prod.yml, ops/server-setup.md)
-# thì lấy lại các job build/deploy từ lịch sử git của file này.
+# GHCR hay SSH vào máy chủ. Cách chạy trên máy chủ tự quản (docker-compose.prod.yml, nginx HTTPS, deploy qua
+# SSH, hướng dẫn ops/server-setup.md) đã xoá; cần lại thì lấy từ lịch sử git (commit f9ea675).
 
 on:
   push:

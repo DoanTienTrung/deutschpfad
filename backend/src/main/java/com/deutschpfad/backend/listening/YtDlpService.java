@@ -2,7 +2,6 @@ package com.deutschpfad.backend.listening;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,68 +32,9 @@ public class YtDlpService {
     private static final Logger log = LoggerFactory.getLogger(YtDlpService.class);
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
-    private final String potBaseUrl;
-    private final String cookiesFile;
-    private final String browserProfileDir;
-
-    public YtDlpService(
-        @Value("${app.ytdlp-pot-base-url:}") String potBaseUrl,
-        @Value("${app.ytdlp-cookies-file:}") String cookiesFile,
-        @Value("${app.ytdlp-browser-profile-dir:}") String browserProfileDir
-    ) {
-        this.potBaseUrl = potBaseUrl;
-        this.cookiesFile = cookiesFile;
-        this.browserProfileDir = browserProfileDir;
-    }
-
-    /**
-     * Datacenter IPs (e.g. our EC2 host) get blocked by YouTube's "Sign in to confirm you're
-     * not a bot" check; a bgutil-ytdlp-pot-provider HTTP server (see docker-compose.prod.yml)
-     * generates a proof-of-origin token that works around it. Omitted entirely when
-     * app.ytdlp-pot-base-url is unset (local dev — home IPs aren't flagged).
-     */
-    private List<String> potExtractorArgs() {
-        if (potBaseUrl == null || potBaseUrl.isBlank()) return List.of();
-        return List.of("--extractor-args", "youtubepot-bgutilhttp:base_url=" + potBaseUrl);
-    }
-
-    /**
-     * As of 2026 a PO token alone no longer satisfies YouTube's bot check for datacenter IPs —
-     * real session cookies are required too. Two sources, tried in order:
-     *
-     * 1. A persistent Chromium profile kept logged in by the browser-session service (see
-     *    docker-compose.prod.yml), read live via --cookies-from-browser. Preferred: its cookies
-     *    rotate the same way a real browser's would, because that service actually is one.
-     * 2. A static cookies.txt export, as a fallback. Proved too fragile as the primary
-     *    mechanism on its own — Google rotates session cookies within hours of export, and a
-     *    frozen file can't follow that — but harmless to keep as a second attempt.
-     *
-     * YtDlpHealthCheckService alerts by email when neither works.
-     */
-    private List<String> authArgs() {
-        if (browserProfileDir != null && !browserProfileDir.isBlank() && Files.isDirectory(Path.of(browserProfileDir))) {
-            return List.of("--cookies-from-browser", "chromium:" + browserProfileDir);
-        }
-        if (cookiesFile != null && !cookiesFile.isBlank() && Files.isReadable(Path.of(cookiesFile))) {
-            return List.of("--cookies", cookiesFile);
-        }
-        return List.of();
-    }
-
-    /**
-     * By default yt-dlp presents itself as an Android app client, a different identity than the
-     * real browser that actually holds the session cookies passed in authArgs() above. Google
-     * appears to treat that mismatch — the same cookies suddenly used by what looks like a
-     * different device — as a compromised-session signal and invalidates them within minutes,
-     * even though the real browser keeping the session alive is left untouched. Matching yt-dlp's
-     * presented client to "web" keeps the identity consistent with the cookie source. Only
-     * applied when real auth is actually in play — no reason to change local-dev behavior, which
-     * already works fine with the default client on an unflagged home IP.
-     */
-    private List<String> playerClientArgs() {
-        if (authArgs().isEmpty()) return List.of();
-        return List.of("--extractor-args", "youtube:player_client=web");
-    }
+    // Không còn tham số PO token (bgutil) hay cookie phiên Google: chúng chỉ để lách chặn bot của YouTube
+    // trên IP datacenter (EC2/Oracle). Nay việc nhập video chạy từ máy nhà (docker-compose.neon.yml), IP
+    // nhà không bị chặn nên yt-dlp chạy trơn. Cần lại thì lấy từ lịch sử git (commit f9ea675).
 
     public List<TranscriptParser.SentenceData> fetchAutoTranscript(String videoId) {
         Path tempDir = null;
@@ -122,9 +62,6 @@ public class YtDlpService {
                 "--sub-format", "vtt",
                 "-o", outputTemplate
             ));
-            command.addAll(potExtractorArgs());
-            command.addAll(playerClientArgs());
-            command.addAll(authArgs());
             command.add(url);
 
             ProcessBuilder pb = new ProcessBuilder(command);
@@ -173,9 +110,6 @@ public class YtDlpService {
             List<String> command = new ArrayList<>(List.of(
                 "yt-dlp", "--skip-download", "--ignore-no-formats-error", "--print", "duration"
             ));
-            command.addAll(potExtractorArgs());
-            command.addAll(playerClientArgs());
-            command.addAll(authArgs());
             command.add(url);
 
             ProcessBuilder pb = new ProcessBuilder(command);
@@ -227,9 +161,6 @@ public class YtDlpService {
             "yt-dlp", "--flat-playlist", "--playlist-end", String.valueOf(limit),
             "--print", "%(id)s\t%(duration)s\t%(title)s"
         ));
-        command.addAll(potExtractorArgs());
-        command.addAll(playerClientArgs());
-        command.addAll(authArgs());
         command.add(url);
         String output = runForOutput(command, PLAYLIST_TIMEOUT, "listing " + url);
         return output == null ? List.of() : parsePlaylistLines(output);
@@ -252,9 +183,6 @@ public class YtDlpService {
             "yt-dlp", "--skip-download", "--ignore-no-formats-error",
             "--print", "%(channel_id)s\t%(channel)s\t%(uploader_id)s\t%(duration)s\t%(title)s"
         ));
-        command.addAll(potExtractorArgs());
-        command.addAll(playerClientArgs());
-        command.addAll(authArgs());
         command.add("https://www.youtube.com/watch?v=" + videoId);
         String output = runForOutput(command, TIMEOUT, "metadata of " + videoId);
         return output == null ? null : parseVideoMeta(output);
