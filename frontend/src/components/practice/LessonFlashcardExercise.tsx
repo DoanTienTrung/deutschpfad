@@ -135,6 +135,11 @@ export default function LessonFlashcardExercise({
         return
       }
       if (revealed) {
+        // Chỉ còn một nút (trả lời sai thì chỉ có "Tiếp tục"): Enter cũng sang thẻ tiếp.
+        if (e.key === 'Enter' && availableRatings.length === 1 && !onButton) {
+          handleAnswer(availableRatings[0].quality)
+          return
+        }
         const rating = availableRatings.find((r) => r.key === e.key)
         if (rating) handleAnswer(rating.quality)
       }
@@ -376,13 +381,16 @@ export default function LessonFlashcardExercise({
             {availableRatings.map((r, i) => {
               const primary = i === availableRatings.length - 1
               const label = objectiveOutcome === 'failed' ? 'Tiếp tục' : r.label
+              // Phím tắt hiện cạnh nhãn (chỉ trên máy tính). Nút "Tiếp tục" duy nhất thì gợi ý Enter cho dễ hiểu.
+              const shortcut = objectiveOutcome === 'failed' ? 'Enter' : r.key
               return (
                 <Button key={r.quality} ref={primary ? nextButtonRef : undefined} onClick={() => handleAnswer(r.quality)} disabled={submitting}
                   variant={primary ? 'primary' : 'secondary'} className="h-auto flex-col gap-0 px-3 py-3">
                   <span className={cn('text-base font-semibold', r.quality === 'FORGOT' && !primary && 'text-rotstift')}>
                     {label}
                     <span className="hidden sm:inline">
-                      <Kbd className={`ml-2 ${primary ? 'border-karteikarte/30 text-bleistift-invers/70' : ''}`}>{r.key}</Kbd>
+                      <Kbd className={cn('ml-2', primary && 'border-bleistift-invers/50 text-bleistift-invers')}
+                        title={`Phím tắt: bấm ${shortcut} trên bàn phím`}>{shortcut}</Kbd>
                     </span>
                   </span>
                   {objectiveOutcome !== 'failed' && (
@@ -417,9 +425,9 @@ function SpeakButton({ word, className }: { word: string; className?: string }) 
   )
 }
 
-function Kbd({ children, className = '' }: { children: ReactNode; className?: string }) {
+function Kbd({ children, className, title }: { children: ReactNode; className?: string; title?: string }) {
   return (
-    <kbd className={`inline-flex h-5 min-w-5 items-center justify-center rounded-karte border border-linie px-1 font-sans text-xs font-medium leading-none text-radiert ${className}`}>
+    <kbd title={title} className={cn('inline-flex h-5 min-w-5 items-center justify-center rounded-karte border border-kante px-1 font-sans text-xs leading-none font-medium text-radiert', className)}>
       {children}
     </kbd>
   )
