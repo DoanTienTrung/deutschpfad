@@ -22,11 +22,16 @@ import java.util.List;
  */
 public class V77__Seed_grammar_translation extends BaseJavaMigration {
 
+    /** File dữ liệu của đợt này. Các đợt sau kế thừa lớp này và chỉ đổi file, xem V79. */
+    protected String dataResource() {
+        return "/db/migration/data/translation_grammar.json";
+    }
+
     @Override
     public void migrate(Context context) throws Exception {
         Connection connection = context.getConnection();
         JsonNode topics;
-        try (InputStream is = getClass().getResourceAsStream("/db/migration/data/translation_grammar.json")) {
+        try (InputStream is = V77__Seed_grammar_translation.class.getResourceAsStream(dataResource())) {
             topics = new ObjectMapper().readTree(is);
         }
 

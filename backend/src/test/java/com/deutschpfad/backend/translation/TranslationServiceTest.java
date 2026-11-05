@@ -40,11 +40,12 @@ class TranslationServiceTest {
         {"verdict":"ALMOST","corrected":"Gestern habe ich Reis gekocht.","errors":[{"wrong":"hat","right":"habe","explain":"ich đi với habe."}],"note":"Gần đúng."}""";
 
     @Test
-    void duLieuSeed_37ChuDiemA1A2_moiChuDiem10Cau_coCongThuc() {
+    void duLieuSeed_A1A2DuChuDiem_moiChuDiem10Cau_coCongThuc() {
         List<TranslationService.SetSummary> a1 = service.listSets(user(User.Role.USER), TranslationSet.Type.GRAMMAR, VocabularyItem.Level.A1);
         List<TranslationService.SetSummary> a2 = service.listSets(user(User.Role.USER), TranslationSet.Type.GRAMMAR, VocabularyItem.Level.A2);
 
-        assertThat(a1).filteredOn(s -> s.grammarSlug() != null).hasSize(20);
+        // V77 nạp 20 + 17, V79 bù 4 chủ điểm A1 còn thiếu.
+        assertThat(a1).filteredOn(s -> s.grammarSlug() != null).hasSize(24);
         assertThat(a2).filteredOn(s -> s.grammarSlug() != null).hasSize(17);
         assertThat(a1).filteredOn(s -> s.grammarSlug() != null).allSatisfy(s -> assertThat(s.itemCount()).isEqualTo(10));
         TranslationService.SetSummary perfekt = a1.stream().filter(s -> "a1-perfekt".equals(s.grammarSlug())).findFirst().orElseThrow();
