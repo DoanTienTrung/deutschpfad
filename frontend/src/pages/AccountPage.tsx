@@ -145,7 +145,7 @@ export default function AccountPage() {
           </div>
           <div className="flex items-center justify-between border-b border-linie pb-4">
             <dt className="text-sm text-radiert">Email</dt>
-            <dd className="font-medium text-bleistift">{user.email}</dd>
+            <dd className="font-medium text-bleistift">{user.guest ? 'Tài khoản dùng thử (tự xoá sau 24 giờ)' : user.email}</dd>
           </div>
           <div className="flex items-center justify-between border-b border-linie pb-4">
             <dt className="text-sm text-radiert">Mục tiêu</dt>
@@ -214,7 +214,7 @@ export default function AccountPage() {
           )}
         </div>
 
-        <div className="mt-6 border-t border-linie pt-6">
+        {!user.guest && <div className="mt-6 border-t border-linie pt-6">
           <Button variant="secondary" size="sm" onClick={() => { setShowPasswordForm((v) => !v); setPasswordError(null); setPasswordSuccess(false) }}>
             {showPasswordForm ? 'Đóng' : 'Đổi mật khẩu'}
           </Button>
@@ -234,7 +234,7 @@ export default function AccountPage() {
               </Button>
             </form>
           )}
-        </div>
+        </div>}
 
         <Button
           variant="secondary"

@@ -63,6 +63,7 @@ public class StreakReminderService {
 
         List<User> verifiedUsers = userRepository.findAll().stream()
             .filter(User::isEmailVerified)
+            .filter(user -> !user.isGuest())
             .toList();
 
         int sentCount = 0;

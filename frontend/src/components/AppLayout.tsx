@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   BookOpen, BookOpenText, ChevronLeft, ChevronRight, Flame, Headphones, House, Layers, Menu, Mic, Monitor, Moon, PencilLine,
   Repeat2, Ruler, Sun, Timer, User, X,
 } from 'lucide-react'
 import { Button, Drawer, IconButton, NavItem, Segmented, StreakTab, cn, focusRing } from '@kit'
+import { apiFetch } from '../api/client'
 import { getStreak } from '../api/streakApi'
 import { getVocabularyStats } from '../api/vocabularyApi'
 import type { Streak } from '../api/types'
@@ -31,6 +32,32 @@ function BreakReminderBanner() {
         </p>
       </div>
       <IconButton label="Đóng nhắc nhở" icon={<X className="size-4" aria-hidden="true" />} onClick={dismissBreakReminder} className="ml-2" />
+    </div>
+  )
+}
+
+/** Nhắc người đang dùng thử rằng tài khoản là tạm thời, kèm lối đăng ký tài khoản thật. */
+function GuestBanner() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [leaving, setLeaving] = useState(false)
+
+  if (!user?.guest) return null
+
+  async function goRegister() {
+    setLeaving(true)
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' })
+    } finally {
+      logout()
+      navigate('/register')
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-tinte/40 bg-tinte-soft px-4 py-2 text-sm text-bleistift">
+      <p>Bạn đang dùng thử bằng tài khoản tạm. Tiến độ sẽ tự xoá sau 24 giờ.</p>
+      <Button variant="ghost" size="sm" loading={leaving} onClick={goRegister}>Đăng ký để lưu tiến độ</Button>
     </div>
   )
 }
@@ -311,6 +338,7 @@ export default function AppLayout() {
         </Drawer>
 
         <div className="min-w-0 flex-1">
+          <GuestBanner />
           <BreakReminderBanner />
           <main className="p-4 sm:p-6">
             <Outlet />

@@ -26,19 +26,22 @@ public class AuthController {
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
+    private final GuestAccountService guestAccountService;
 
     public AuthController(
         AuthService authService,
         CookieUtil cookieUtil,
         UserRepository userRepository,
         RefreshTokenService refreshTokenService,
-        JwtService jwtService
+        JwtService jwtService,
+        GuestAccountService guestAccountService
     ) {
         this.authService = authService;
         this.cookieUtil = cookieUtil;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
         this.jwtService = jwtService;
+        this.guestAccountService = guestAccountService;
     }
 
     @PostMapping("/register")
@@ -65,6 +68,15 @@ public class AuthController {
         cookieUtil.setRefreshCookie(response, refreshTokenService.startSession(result.user()));
 
         return ResponseEntity.ok(UserProfileResponse.from(result.user()));
+    }
+
+    /** Nút "Dùng thử không cần đăng ký": tạo tài khoản khách và đăng nhập luôn, xem GuestAccountService. */
+    @PostMapping("/guest")
+    public ResponseEntity<UserProfileResponse> guest(HttpServletResponse response) {
+        User user = guestAccountService.createGuest();
+        cookieUtil.setAuthCookie(response, jwtService.generateToken(user));
+        cookieUtil.setRefreshCookie(response, refreshTokenService.startSession(user));
+        return ResponseEntity.ok(UserProfileResponse.from(user));
     }
 
     @PostMapping("/refresh")

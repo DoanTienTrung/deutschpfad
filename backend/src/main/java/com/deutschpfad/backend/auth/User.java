@@ -51,6 +51,10 @@ public class User {
     @Column(name = "daily_goal_minutes", nullable = false)
     private int dailyGoalMinutes = 15;
 
+    /** Tài khoản khách của nút "Dùng thử": bị giới hạn AI và tự xoá sau 24 giờ, xem GuestAccountService. */
+    @Column(nullable = false)
+    private boolean guest = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

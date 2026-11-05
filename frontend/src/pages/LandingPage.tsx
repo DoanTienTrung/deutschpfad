@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Flame, GraduationCap, Layers, PencilLine } from 'lucide-react'
 import { Article, Badge, ButtonLink, Card, TextLink, cn, type Gender } from '@kit'
+import GuestTryButton from '../components/auth/GuestTryButton'
 
 const FEATURES: { icon: ReactNode; title: string; description: string; comingSoon?: boolean }[] = [
   {
@@ -119,8 +120,11 @@ export default function LandingPage() {
             </p>
             <div className="mx-auto mt-8 flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row md:mx-0 sm:justify-center md:justify-start">
               <ButtonLink to="/register">Bắt đầu học miễn phí</ButtonLink>
-              <ButtonLink to="/login" variant="secondary">Đăng nhập</ButtonLink>
+              <GuestTryButton />
             </div>
+            <p className="mt-3 text-sm text-radiert">
+              Dùng thử vào thẳng bằng tài khoản tạm, tự xoá sau 24 giờ.
+            </p>
           </div>
           <CardStack />
         </div>

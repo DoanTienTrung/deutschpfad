@@ -1,5 +1,6 @@
 package com.deutschpfad.backend.common;
 
+import com.deutschpfad.backend.auth.GuestAccessFilter;
 import com.deutschpfad.backend.auth.JwtAuthenticationFilter;
 import com.deutschpfad.backend.auth.OAuth2SuccessHandler;
 import org.springframework.context.annotation.Bean;
@@ -21,15 +22,18 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final RateLimitFilter rateLimitFilter;
+    private final GuestAccessFilter guestAccessFilter;
 
     public SecurityConfig(
         JwtAuthenticationFilter jwtAuthenticationFilter,
         OAuth2SuccessHandler oAuth2SuccessHandler,
-        RateLimitFilter rateLimitFilter
+        RateLimitFilter rateLimitFilter,
+        GuestAccessFilter guestAccessFilter
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
         this.rateLimitFilter = rateLimitFilter;
+        this.guestAccessFilter = guestAccessFilter;
     }
 
     @Bean
@@ -68,7 +72,9 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler))
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // Sau JWT: phải biết người gọi là khách hay không mới chặn được.
+            .addFilterAfter(guestAccessFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 

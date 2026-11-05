@@ -49,7 +49,7 @@ function tryRefresh(): Promise<boolean> {
   return refreshPromise
 }
 
-const NO_REFRESH_PATHS = ['/auth/login', '/auth/register', '/auth/refresh']
+const NO_REFRESH_PATHS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/guest']
 
 export async function apiFetch<T>(
   path: string,

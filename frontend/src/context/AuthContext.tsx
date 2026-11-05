@@ -6,6 +6,7 @@ type AuthContextValue = {
   user: User | null
   loading: boolean
   login: (email: string, password: string) => Promise<User>
+  loginAsGuest: () => Promise<User>
   logout: () => void
   refetchUser: () => Promise<User | null>
 }
@@ -56,12 +57,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loggedInUser
   }
 
+  async function loginAsGuest() {
+    const guest = await apiFetch<User>('/auth/guest', { method: 'POST' })
+    setUser(guest)
+    return guest
+  }
+
   function logout() {
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, loginAsGuest, logout, refetchUser }}>
       {children}
     </AuthContext.Provider>
   )

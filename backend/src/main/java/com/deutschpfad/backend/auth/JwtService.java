@@ -30,6 +30,7 @@ public class JwtService {
             .subject(user.getEmail())
             .claim("userId", user.getId())
             .claim("role", user.getRole().name())
+            .claim("guest", user.isGuest())
             .issuedAt(java.util.Date.from(now))
             .expiration(java.util.Date.from(now.plus(expirationMinutes, ChronoUnit.MINUTES)))
             .signWith(secretKey)
@@ -63,6 +64,11 @@ public class JwtService {
 
     public String extractRole(String token) {
         return parseClaims(token).get("role", String.class);
+    }
+
+    /** Token cấp trước khi có tài khoản khách không có claim này: coi là tài khoản thường. */
+    public boolean extractGuest(String token) {
+        return Boolean.TRUE.equals(parseClaims(token).get("guest", Boolean.class));
     }
 
 }

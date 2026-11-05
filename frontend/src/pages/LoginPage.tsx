@@ -6,6 +6,7 @@ import { ApiError } from '../api/client'
 import AuthCard from '../components/auth/AuthCard'
 import ResendVerification from '../components/auth/ResendVerification'
 import GoogleLogo from '../components/auth/GoogleLogo'
+import GuestTryButton from '../components/auth/GuestTryButton'
 
 // Rỗng/không đặt = backend cùng tên miền với giao diện (production): link tương đối /oauth2/...
 const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN as string | undefined) ?? ''
@@ -94,6 +95,8 @@ export default function LoginPage() {
         <GoogleLogo />
         Đăng nhập bằng Google
       </a>
+
+      <GuestTryButton variant="ghost" className="mt-2 w-full" />
     </AuthCard>
   )
 }

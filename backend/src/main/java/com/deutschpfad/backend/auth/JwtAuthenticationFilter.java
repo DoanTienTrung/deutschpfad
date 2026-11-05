@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -37,7 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = jwtService.extractEmail(token);
             String role = jwtService.extractRole(token);
 
-            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            var authorities = new ArrayList<SimpleGrantedAuthority>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+            // Khách vẫn là USER (vào được mọi trang học), thêm GUEST để GuestAccessFilter giới hạn.
+            if (jwtService.extractGuest(token)) {
+                authorities.add(new SimpleGrantedAuthority(GuestAccessFilter.GUEST_AUTHORITY));
+            }
             var authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);

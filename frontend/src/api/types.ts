@@ -6,6 +6,8 @@ export type User = {
   goal: string | null
   targetCertificate: string | null
   currentLevel: string | null
+  /** Tài khoản khách của nút "Dùng thử": tự xoá sau 24 giờ, giới hạn lượt dùng AI. */
+  guest: boolean
 }
 
 export type Topic = {

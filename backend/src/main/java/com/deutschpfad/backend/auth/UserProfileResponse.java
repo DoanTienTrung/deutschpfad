@@ -7,7 +7,8 @@ public record UserProfileResponse(
     String role,
     String goal,
     String targetCertificate,
-    String currentLevel
+    String currentLevel,
+    boolean guest
 ) {
     public static UserProfileResponse from(User user) {
         return new UserProfileResponse(
@@ -17,7 +18,8 @@ public record UserProfileResponse(
             user.getRole().name(),
             user.getGoal(),
             user.getTargetCertificate(),
-            user.getCurrentLevel()
+            user.getCurrentLevel(),
+            user.isGuest()
         );
     }
 }
