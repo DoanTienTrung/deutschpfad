@@ -55,9 +55,10 @@ public class TranslationService {
         String grammarSlug, int itemCount, int passedCount
     ) {}
 
+    /** {@code gap}: từ bị khoét cho chế độ "Điền từ" (đáp án đầu tiên, có trong câu tham khảo), null nếu không có. */
     public record ItemView(
         Long id, int orderIndex, String partLabel, String viText, String deReference, List<String> alternatives,
-        List<String> keywords, TranslationAttempt.Verdict lastVerdict
+        List<String> keywords, String focus, String gap, TranslationAttempt.Verdict lastVerdict
     ) {}
 
     public record SetDetail(
@@ -88,7 +89,8 @@ public class TranslationService {
         Map<Long, TranslationAttempt.Verdict> latest = attemptRepository.latestVerdictMap(user.getId(), id);
         List<ItemView> items = itemRepository.findBySetIdOrderByOrderIndexAscIdAsc(id).stream()
             .map(i -> new ItemView(i.getId(), i.getOrderIndex(), i.getPartLabel(), i.getViText(), i.getDeReference(),
-                alternatives(i), keywords(i), latest.get(i.getId())))
+                alternatives(i), keywords(i), i.getFocus(), i.gapAnswers().isEmpty() ? null : i.gapAnswers().get(0),
+                latest.get(i.getId())))
             .toList();
         return new SetDetail(set.getId(), set.getType(), set.getLevel(), set.getTitle(), subtitle(set), grammarSlug(set),
             set.getStructureNote(), items);
@@ -117,6 +119,12 @@ public class TranslationService {
         String answer = request.answer() == null ? "" : request.answer().strip();
         if (answer.isEmpty()) throw new IllegalArgumentException("Chưa có bản dịch");
 
+        if (mode == TranslationAttempt.Mode.CLOZE) {
+            if (item.gapAnswers().isEmpty()) throw new IllegalArgumentException("Câu này không có chỗ trống để điền");
+            TranslationChecker.Result gap = TranslationChecker.checkGap(answer, item.gapAnswers());
+            return respond(user, item, answer, mode, gap.verdict(), TranslationAttempt.JudgedBy.LOCAL, gap.feedback(), alternatives);
+        }
+
         TranslationChecker.Result local = TranslationChecker.check(answer, accepted);
         if (local != null) {
             return respond(user, item, answer, mode, local.verdict(), TranslationAttempt.JudgedBy.LOCAL, local.feedback(), alternatives);
@@ -137,9 +145,8 @@ public class TranslationService {
                     + " lượt chấm bằng AI. Tự so bản dịch với câu mẫu bên dưới nhé, mai lại có lượt mới."), alternatives);
         }
 
-        String focus = item.getSet().getGrammarTopic() != null ? item.getSet().getGrammarTopic().getTitleDe() : null;
         String raw = aiService.completeValidated(
-            TranslationAiPrompts.judge(item.getViText(), item.getDeReference(), focus, answer),
+            TranslationAiPrompts.judge(item.getViText(), item.getDeReference(), guidance(item), answer),
             text -> TranslationAiPrompts.parseJudgment(text) != null);
         TranslationAiPrompts.Judgment judgment = TranslationAiPrompts.parseJudgment(raw);
         if (judgment == null) {
@@ -152,6 +159,22 @@ public class TranslationService {
     }
 
     // ------------------------------------------------------------------------------------------
+
+    /** Hướng dẫn chấm riêng của từng dạng bài: chủ điểm ngữ pháp, cụm cố định, hay ngữ cảnh đoạn văn. */
+    private String guidance(TranslationItem item) {
+        TranslationSet set = item.getSet();
+        return switch (set.getType()) {
+            case GRAMMAR -> TranslationAiPrompts.grammarGuidance(
+                set.getGrammarTopic() != null ? set.getGrammarTopic().getTitleDe() : null);
+            case COLLOCATION -> TranslationAiPrompts.collocationGuidance(item.getFocus());
+            case PARAGRAPH, ESSAY -> TranslationAiPrompts.passageGuidance(
+                itemRepository.findBySetIdOrderByOrderIndexAscIdAsc(set.getId()).stream()
+                    .filter(i -> i.getOrderIndex() < item.getOrderIndex())
+                    .map(TranslationItem::getDeReference)
+                    .toList(),
+                item.getFocus());
+        };
+    }
 
     private TranslationSet findVisibleSet(User user, Long id) {
         TranslationSet set = setRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài"));

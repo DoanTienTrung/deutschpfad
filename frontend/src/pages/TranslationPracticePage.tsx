@@ -1,38 +1,77 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Breadcrumb, Button, ButtonLink, Input, Note, ProgressBar, Segmented } from '@kit'
+import { BlankInput, Breadcrumb, Button, ButtonLink, IconButton, Input, Note, ProgressBar, Segmented, cn } from '@kit'
 import {
   checkTranslation,
   getTranslationSet,
   type TranslationCheckResult,
   type TranslationItem,
   type TranslationSetDetail,
+  type TranslationType,
   type TranslationVerdict,
 } from '../api/translationApi'
 import { Volume2 as SpeakerIcon } from 'lucide-react'
 import { speak } from '../lib/speech'
 import { diffWords, firstLetterHint, wordBankTokens } from '../lib/wordDiff'
 
-type InputMode = 'WORD_BANK' | 'TYPING'
+type InputMode = 'WORD_BANK' | 'TYPING' | 'CLOZE'
 
+// Collocation có thêm chế độ "Điền từ", nên nhớ lựa chọn riêng để không đè lựa chọn của các dạng khác.
 const MODE_STORAGE_KEY = 'deutschpfad.translateMode'
+const COLLOCATION_MODE_KEY = 'deutschpfad.translateMode.collocation'
 const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü']
 
 const passed = (v: TranslationVerdict | null | undefined) => v === 'CORRECT' || v === 'ALMOST'
+const isPassage = (t: TranslationType) => t === 'PARAGRAPH' || t === 'ESSAY'
 
-function readStoredMode(): InputMode | null {
+const MODE_LABELS: Record<InputMode, string> = { CLOZE: 'Điền từ', WORD_BANK: 'Xếp từ', TYPING: 'Gõ câu' }
+const modesFor = (t: TranslationType): InputMode[] => (t === 'COLLOCATION' ? ['CLOZE', 'WORD_BANK', 'TYPING'] : ['WORD_BANK', 'TYPING'])
+const storageKeyFor = (t: TranslationType) => (t === 'COLLOCATION' ? COLLOCATION_MODE_KEY : MODE_STORAGE_KEY)
+
+const NOTE_TITLE: Record<TranslationType, string> = {
+  GRAMMAR: 'Công thức',
+  COLLOCATION: 'Về nhóm cụm từ này',
+  PARAGRAPH: 'Từ nối trong đoạn',
+  ESSAY: 'Redemittel của bài',
+}
+
+const PART_LABEL: Record<string, string> = { Einleitung: 'Mở bài', Hauptteil: 'Thân bài', Schluss: 'Kết bài' }
+
+function readStoredMode(t: TranslationType): InputMode | null {
   try {
-    const v = localStorage.getItem(MODE_STORAGE_KEY)
-    return v === 'WORD_BANK' || v === 'TYPING' ? v : null
+    const v = localStorage.getItem(storageKeyFor(t)) as InputMode | null
+    return v && modesFor(t).includes(v) ? v : null
   } catch {
     return null
   }
 }
 
-/** Lượt luyện: các câu chưa từng làm đúng trước; làm đúng hết rồi thì ôn lại cả bài. */
+/**
+ * Lượt luyện: các câu chưa từng làm đúng trước; làm đúng hết rồi thì ôn lại cả bài. Đoạn văn và essay luôn đi đủ
+ * từ đầu đến cuối, vì mỗi câu cần ngữ cảnh của các câu trước.
+ */
 function buildQueue(set: TranslationSetDetail): number[] {
+  if (isPassage(set.type)) return set.items.map((_, i) => i)
   const open = set.items.map((it, i) => (passed(it.lastVerdict) ? -1 : i)).filter((i) => i >= 0)
   return open.length > 0 ? open : set.items.map((_, i) => i)
+}
+
+/** Tách câu tại từ bị khoét (khớp nguyên từ), null nếu không tìm thấy. */
+function splitAtGap(sentence: string, gap: string | null): [string, string] | null {
+  if (!gap) return null
+  const escaped = gap.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const m = new RegExp(`(^|[^\\p{L}])(${escaped})(?=[^\\p{L}]|$)`, 'u').exec(sentence)
+  if (!m) return null
+  const start = m.index + m[1].length
+  return [sentence.slice(0, start), sentence.slice(start + gap.length)]
+}
+
+/** Câu tiếng Đức ghép vào "bản của bạn": câu đúng giữ nguyên lời người học, còn lại lấy bản đã sửa hoặc câu mẫu. */
+function writtenSentence(result: TranslationCheckResult, answer: string, mode: InputMode): string {
+  if (mode === 'CLOZE') return result.reference
+  const text = result.verdict === 'CORRECT' ? answer.trim() : result.verdict === 'ALMOST' ? result.corrected ?? result.reference : result.reference
+  const end = /[.!?]$/.exec(result.reference)?.[0]
+  return end && !/[.!?]$/.test(text) ? text + end : text
 }
 
 const normalize = (s: string) => s.trim().replace(/\s+/g, ' ').replace(/[.!?…]+$/, '')
@@ -52,6 +91,7 @@ export default function TranslationPracticePage() {
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [outcomes, setOutcomes] = useState<Record<number, TranslationVerdict>>({})
+  const [written, setWritten] = useState<Record<number, string>>({})
   const [showNote, setShowNote] = useState(true)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const nextRef = useRef<HTMLButtonElement | null>(null)
@@ -61,7 +101,7 @@ export default function TranslationPracticePage() {
       .then((s) => {
         setSet(s)
         setQueue(buildQueue(s))
-        setMode(readStoredMode() ?? (s.level === 'A1' || s.level === 'A2' ? 'WORD_BANK' : 'TYPING'))
+        setMode(readStoredMode(s.type) ?? (s.type === 'COLLOCATION' ? 'CLOZE' : s.level === 'A1' || s.level === 'A2' ? 'WORD_BANK' : 'TYPING'))
       })
       .catch(() => setLoadError(true))
   }, [setId])
@@ -69,17 +109,20 @@ export default function TranslationPracticePage() {
   const finished = set !== null && queue.length > 0 && pos >= queue.length
   const item: TranslationItem | null = set && !finished && queue.length > 0 ? set.items[queue[pos]] : null
   const tokens = useMemo(() => (item ? wordBankTokens(item.deReference, item.id) : []), [item])
-  const answer = mode === 'WORD_BANK' ? picked.map((i) => tokens[i]).join(' ') : typed
+  const clozeParts = item ? splitAtGap(item.deReference, item.gap) : null
+  // Câu không có chỗ trống (hiếm) thì chế độ "Điền từ" lùi về gõ cả câu.
+  const itemMode: InputMode = mode === 'CLOZE' && !clozeParts ? 'TYPING' : mode
+  const answer = itemMode === 'WORD_BANK' ? picked.map((i) => tokens[i]).join(' ') : typed
 
   useEffect(() => {
     if (result) nextRef.current?.focus()
-    else if (mode === 'TYPING') inputRef.current?.focus()
-  }, [result, mode, pos])
+    else if (itemMode !== 'WORD_BANK') inputRef.current?.focus()
+  }, [result, itemMode, pos])
 
   // Xếp từ: Backspace bỏ từ vừa chọn, Enter để kiểm tra (không cần chuột).
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (mode !== 'WORD_BANK' || result || checking) return
+      if (itemMode !== 'WORD_BANK' || result || checking) return
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
       if (e.key === 'Backspace' && picked.length > 0) {
         e.preventDefault()
@@ -96,7 +139,7 @@ export default function TranslationPracticePage() {
   function changeMode(next: InputMode) {
     setMode(next)
     try {
-      localStorage.setItem(MODE_STORAGE_KEY, next)
+      if (set) localStorage.setItem(storageKeyFor(set.type), next)
     } catch {
       // không lưu được lựa chọn thì thôi, lần sau dùng mặc định theo cấp độ
     }
@@ -108,10 +151,11 @@ export default function TranslationPracticePage() {
     setChecking(true)
     setError(null)
     try {
-      const r = await checkTranslation(item.id, reveal ? null : answer, reveal ? 'REVEAL' : mode)
+      const r = await checkTranslation(item.id, reveal ? null : answer, reveal ? 'REVEAL' : itemMode)
       setSubmitted(reveal ? '' : answer)
       setResult(r)
       setOutcomes((o) => ({ ...o, [item.id]: r.verdict }))
+      setWritten((w) => ({ ...w, [item.id]: writtenSentence(r, reveal ? '' : answer, itemMode) }))
     } catch {
       setError('Không gửi được bản dịch, thử lại nhé.')
     } finally {
@@ -130,9 +174,10 @@ export default function TranslationPracticePage() {
 
   function retryWrong() {
     if (!set) return
-    const wrong = queue.filter((i) => !passed(outcomes[set.items[i].id]))
+    const wrong = isPassage(set.type) ? [] : queue.filter((i) => !passed(outcomes[set.items[i].id]))
     setQueue(wrong.length > 0 ? wrong : set.items.map((_, i) => i))
     setOutcomes({})
+    setWritten({})
     setPos(0)
   }
 
@@ -163,7 +208,9 @@ export default function TranslationPracticePage() {
     )
   }
 
-  const listLink = `/app/writing/translate?level=${set.level}`
+  const listLink = set.type === 'GRAMMAR'
+    ? `/app/writing/translate?level=${set.level}`
+    : `/app/writing/translate?type=${set.type}&level=${set.level}`
 
   return (
     // pb-24 trên điện thoại: nút gia sư nổi ở góc dưới không che mất nút "Kiểm tra".
@@ -193,7 +240,7 @@ export default function TranslationPracticePage() {
           <Button variant="ghost" className="w-full justify-between text-left"
             onClick={() => setShowNote((v) => !v)}
             aria-expanded={showNote}>
-            Công thức
+            {NOTE_TITLE[set.type]}
             <span className="text-xs font-medium text-radiert">{showNote ? 'Ẩn' : 'Hiện'}</span>
           </Button>
           {showNote && <p className="mt-1 leading-relaxed text-bleistift">{set.structureNote}</p>}
@@ -202,8 +249,10 @@ export default function TranslationPracticePage() {
 
       {finished ? (
         <Summary
+          set={set}
           queue={queue.map((i) => set.items[i])}
           outcomes={outcomes}
+          written={written}
           listLink={listLink}
           onRetryWrong={retryWrong}
         />
@@ -215,8 +264,8 @@ export default function TranslationPracticePage() {
                 <span className="text-sm font-medium text-bleistift">
                   Câu {pos + 1} <span className="font-normal text-radiert">/ {queue.length}</span>
                 </span>
-                <Segmented label="Cách làm" value={mode} onChange={(v) => { if (!result) changeMode(v as 'WORD_BANK' | 'TYPING') }}
-                  options={[{ value: 'WORD_BANK', label: 'Xếp từ' }, { value: 'TYPING', label: 'Gõ câu' }]} />
+                <Segmented label="Cách làm" value={mode} onChange={(v) => { if (!result) changeMode(v as InputMode) }}
+                  options={modesFor(set.type).map((m) => ({ value: m, label: MODE_LABELS[m] }))} />
               </div>
               <ProgressBar value={pos / queue.length} label="Tiến độ lượt luyện" />
             </div>
@@ -227,15 +276,28 @@ export default function TranslationPracticePage() {
               </div>
             )}
 
+            {isPassage(set.type) && <PassageContext items={set.items} current={queue[pos]} written={written} essay={set.type === 'ESSAY'} />}
+
             <div key={item.id} className="rounded-karte border border-kartenrand bg-karteikarte px-5 pb-6 pt-5 sm:px-8">
-              <p className="text-xs font-medium text-radiert">Dịch sang tiếng Đức</p>
+              <p className="flex flex-wrap items-center gap-2 text-xs font-medium text-radiert">
+                {itemMode === 'CLOZE' ? 'Điền từ còn thiếu' : 'Dịch sang tiếng Đức'}
+                {item.partLabel && (
+                  <span className="rounded-reiter bg-tinte-soft px-2 py-0.5 text-tinte">{PART_LABEL[item.partLabel] ?? item.partLabel}</span>
+                )}
+              </p>
               <p className="mt-2 font-display text-2xl font-semibold leading-snug text-bleistift">{item.viText}</p>
 
               {!result && (
                 <>
                   {hintLevel > 0 && (
                     <div className="mt-4 space-y-2 rounded-karte bg-karteikarte-innen px-4 py-3 text-sm">
-                      {item.keywords.length > 0 && (
+                      {item.focus && (
+                        <p>
+                          <span className="text-radiert">{set.type === 'COLLOCATION' ? 'Cụm cần dùng: ' : 'Nên dùng: '}</span>
+                          <span lang="de" className="font-medium text-bleistift">{item.focus}</span>
+                        </p>
+                      )}
+                      {itemMode !== 'CLOZE' && item.keywords.length > 0 && (
                         <p className="flex flex-wrap items-center gap-1.5">
                           <span className="text-radiert">Từ khoá:</span>
                           {item.keywords.map((k) => (
@@ -248,14 +310,37 @@ export default function TranslationPracticePage() {
                       {hintLevel > 1 && (
                         <p className="font-mono tracking-wide text-bleistift">
                           <span className="font-sans text-radiert">Chữ đầu: </span>
-                          {firstLetterHint(item.deReference)}
+                          {firstLetterHint(itemMode === 'CLOZE' && item.gap ? item.gap : item.deReference)}
                         </p>
                       )}
                     </div>
                   )}
 
-                  {mode === 'WORD_BANK' ? (
+                  {itemMode === 'WORD_BANK' ? (
                     <WordBank tokens={tokens} picked={picked} onPick={(i) => setPicked((p) => [...p, i])} onUnpick={(k) => setPicked((p) => p.filter((_, x) => x !== k))} />
+                  ) : itemMode === 'CLOZE' && clozeParts && item.gap ? (
+                    <form
+                      className="mt-5"
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        submit()
+                      }}
+                    >
+                      <p lang="de" className="text-lg leading-loose text-bleistift">
+                        {clozeParts[0]}
+                        <BlankInput
+                          ref={inputRef}
+                          value={typed}
+                          onChange={(e) => setTyped(e.target.value)}
+                          chars={Math.max(item.gap.length, 6)}
+                          aria-label="Từ còn thiếu"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                        />
+                        {clozeParts[1]}
+                      </p>
+                      <UmlautKeys onInsert={insertChar} />
+                    </form>
                   ) : (
                     <form
                       className="mt-5"
@@ -276,16 +361,7 @@ export default function TranslationPracticePage() {
                         spellCheck={false}
                         className="h-12 w-full"
                       />
-                      <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Chèn chữ có dấu">
-                        {UMLAUT_KEYS.map((k) => (
-                          <Button variant="secondary" size="sm" className="h-8 min-w-8"
-                            key={k}
-                            type="button"
-                            onClick={() => insertChar(k)}>
-                            {k}
-                          </Button>
-                        ))}
-                      </div>
+                      <UmlautKeys onInsert={insertChar} />
                     </form>
                   )}
 
@@ -310,7 +386,7 @@ export default function TranslationPracticePage() {
                 </>
               )}
 
-              {result && <Feedback result={result} answer={submitted} />}
+              {result && <Feedback result={result} answer={submitted} focus={set.type === 'COLLOCATION' ? item.focus : null} cloze={itemMode === 'CLOZE'} />}
             </div>
 
             {result && (
@@ -328,6 +404,64 @@ export default function TranslationPracticePage() {
 }
 
 // ------------------------------------------------------------------------------------------
+
+function UmlautKeys({ onInsert }: { onInsert: (char: string) => void }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Chèn chữ có dấu">
+      {UMLAUT_KEYS.map((k) => (
+        <Button variant="secondary" size="sm" className="h-8 min-w-8" key={k} type="button" onClick={() => onInsert(k)}>
+          {k}
+        </Button>
+      ))}
+    </div>
+  )
+}
+
+/** Gom các câu liền nhau cùng phần bài (Einleitung, Hauptteil, Schluss); đoạn văn thì chỉ có một nhóm. */
+function groupByPart(items: TranslationItem[]) {
+  const groups: { part: string | null; items: { item: TranslationItem; index: number }[] }[] = []
+  items.forEach((item, index) => {
+    const last = groups[groups.length - 1]
+    if (last && last.part === item.partLabel) last.items.push({ item, index })
+    else groups.push({ part: item.partLabel, items: [{ item, index }] })
+  })
+  return groups
+}
+
+/** Cả đoạn tiếng Việt (câu đang dịch được tô), và phần tiếng Đức người học đã dịch tới đâu. */
+function PassageContext({ items, current, written, essay }: {
+  items: TranslationItem[]
+  current: number
+  written: Record<number, string>
+  essay: boolean
+}) {
+  const done = items.filter((it) => written[it.id])
+  return (
+    <div className="mb-4 rounded-karte bg-karteikarte-innen px-4 py-3 text-sm leading-relaxed">
+      <p className="mb-1 text-xs font-medium text-radiert">{essay ? 'Bài cần dịch' : 'Đoạn cần dịch'}</p>
+      <div className="space-y-2">
+        {groupByPart(items).map((g, gi) => (
+          <p key={gi}>
+            {g.part && <span className="mr-1 font-semibold text-bleistift">{PART_LABEL[g.part] ?? g.part}:</span>}
+            {g.items.map(({ item, index }) => (
+              <span key={item.id}
+                className={cn(index === current ? 'rounded-karte bg-tinte-soft px-1 font-medium text-bleistift' : written[item.id] ? 'text-radiert' : 'text-bleistift')}
+                aria-current={index === current ? 'step' : undefined}>
+                {item.viText}{' '}
+              </span>
+            ))}
+          </p>
+        ))}
+      </div>
+      {done.length > 0 && (
+        <div className="mt-3 border-t border-linie pt-3">
+          <p className="mb-1 text-xs font-medium text-radiert">Bản tiếng Đức của bạn tới giờ</p>
+          <p lang="de" className="text-bleistift">{done.map((it) => written[it.id]).join(' ')}</p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function WordBank({
   tokens,
@@ -380,10 +514,16 @@ const VERDICT_STYLE: Record<TranslationVerdict, { title: string; box: string; te
   UNGRADED: { title: 'Chưa chấm được', box: 'bg-karteikarte-innen', text: 'text-bleistift' },
 }
 
-function Feedback({ result, answer }: { result: TranslationCheckResult; answer: string }) {
+function Feedback({ result, answer, focus, cloze }: {
+  result: TranslationCheckResult
+  answer: string
+  focus: string | null
+  /** Điền từ: lỗi đã nói rõ từ đúng, không cần thêm dòng "Sửa lại" chỉ có một chữ. */
+  cloze: boolean
+}) {
   const style = VERDICT_STYLE[result.verdict]
   const showCorrection =
-    result.corrected && answer && result.verdict !== 'CORRECT' && normalize(result.corrected) !== normalize(answer)
+    !cloze && result.corrected && answer && result.verdict !== 'CORRECT' && normalize(result.corrected) !== normalize(answer)
   return (
     <div className="mt-5 space-y-4" role="status">
       <div className={`rounded-karte px-4 py-3 ${style.box}`}>
@@ -436,13 +576,15 @@ function Feedback({ result, answer }: { result: TranslationCheckResult; answer: 
         <p className="text-xs font-medium text-radiert">Câu mẫu</p>
         <div className="mt-1 flex items-start justify-between gap-3">
           <p className="font-display text-lg font-semibold leading-snug text-bleistift">{result.reference}</p>
-          <Button variant="secondary" className="h-10 w-10 shrink-0 justify-center"
-            type="button"
-            onClick={() => speak(result.reference)}
-            aria-label="Nghe câu mẫu">
-            <SpeakerIcon className="h-5 w-5" />
-          </Button>
+          <IconButton variant="secondary" label="Nghe câu mẫu" icon={<SpeakerIcon className="size-5" />}
+            onClick={() => speak(result.reference)} />
         </div>
+        {focus && (
+          <p className="mt-1 text-sm">
+            <span className="text-radiert">Cụm cố định: </span>
+            <span lang="de" className="font-medium text-bleistift">{focus}</span>
+          </p>
+        )}
         {result.alternatives.length > 0 && (
           <div className="mt-2 text-sm">
             <p className="text-radiert">Cũng đúng:</p>
@@ -459,16 +601,21 @@ function Feedback({ result, answer }: { result: TranslationCheckResult; answer: 
 }
 
 function Summary({
+  set,
   queue,
   outcomes,
+  written,
   listLink,
   onRetryWrong,
 }: {
+  set: TranslationSetDetail
   queue: TranslationItem[]
   outcomes: Record<number, TranslationVerdict>
+  written: Record<number, string>
   listLink: string
   onRetryWrong: () => void
 }) {
+  const passage = isPassage(set.type)
   const count = (pred: (v: TranslationVerdict | undefined) => boolean) => queue.filter((it) => pred(outcomes[it.id])).length
   const correct = count((v) => v === 'CORRECT')
   const almost = count((v) => v === 'ALMOST')
@@ -496,15 +643,44 @@ function Summary({
           </div>
         ))}
       </dl>
-      <div className={`mt-6 grid gap-2 ${notYet > 0 ? 'sm:grid-cols-2' : ''}`}>
-        <ButtonLink to={listLink} variant="secondary">Chọn chủ điểm khác</ButtonLink>
-        {notYet > 0 && (
+      {passage && <PassageCompare items={set.items} written={written} />}
+      <div className={`mt-6 grid gap-2 ${notYet > 0 || passage ? 'sm:grid-cols-2' : ''}`}>
+        <ButtonLink to={listLink} variant="secondary">{set.type === 'GRAMMAR' ? 'Chọn chủ điểm khác' : 'Chọn bài khác'}</ButtonLink>
+        {passage ? (
+          <Button variant="primary" className="hover:-translate-y-px" onClick={onRetryWrong}>
+            {set.type === 'ESSAY' ? 'Dịch lại cả bài' : 'Dịch lại cả đoạn'}
+          </Button>
+        ) : notYet > 0 && (
           <Button variant="primary" className="hover:-translate-y-px"
             onClick={onRetryWrong}>
             Luyện lại {notYet} câu chưa đúng
           </Button>
         )}
       </div>
+    </div>
+  )
+}
+
+/** Đặt "bản của bạn" cạnh "bản mẫu" theo từng phần, để nhìn cả đoạn liền mạch sau khi dịch từng câu. */
+function PassageCompare({ items, written }: { items: TranslationItem[]; written: Record<number, string> }) {
+  const groups = groupByPart(items)
+  const column = (title: string, text: (it: TranslationItem) => string) => (
+    <div className="rounded-karte bg-karteikarte-innen px-4 py-3">
+      <p className="mb-2 text-xs font-medium text-radiert">{title}</p>
+      <div className="space-y-2">
+        {groups.map((g, i) => (
+          <p key={i} lang="de" className="text-bleistift">
+            {g.part && <span className="mr-1 font-semibold">{g.part}:</span>}
+            {g.items.map(({ item }) => text(item)).join(' ')}
+          </p>
+        ))}
+      </div>
+    </div>
+  )
+  return (
+    <div className="mt-6 grid gap-3 text-left text-sm leading-relaxed sm:grid-cols-2">
+      {column('Bản của bạn', (it) => written[it.id] ?? '...')}
+      {column('Bản mẫu', (it) => it.deReference)}
     </div>
   )
 }

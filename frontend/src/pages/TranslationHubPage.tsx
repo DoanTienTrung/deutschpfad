@@ -4,28 +4,44 @@ import { FileText, Link2, NotebookPen, Puzzle } from 'lucide-react'
 import { Badge, CardButton, Chip, EmptyState, ListCardSkeleton, PageHeader, cn } from '@kit'
 import { listTranslationSets, type TranslationSetSummary, type TranslationType } from '../api/translationApi'
 
-const LEVELS = ['A1', 'A2', 'B1', 'B2']
+type TypeCard = {
+  type: TranslationType
+  icon: ReactNode
+  title: string
+  desc: string
+  levels: string[]
+  /** Đơn vị đếm bài trong danh sách, và đơn vị đếm câu trên từng thẻ. */
+  setUnit: string
+  itemUnit: string
+}
 
-const TYPE_CARDS: { type: TranslationType; icon: ReactNode; title: string; desc: string; ready: boolean }[] = [
-  { type: 'GRAMMAR', icon: <Puzzle />, title: 'Câu theo ngữ pháp', desc: 'Mỗi bài một chủ điểm, A1-B2', ready: true },
-  { type: 'COLLOCATION', icon: <Link2 />, title: 'Collocation', desc: 'Cụm từ cố định: eine Entscheidung treffen', ready: false },
-  { type: 'PARAGRAPH', icon: <FileText />, title: 'Đoạn văn', desc: 'Dịch đoạn 4-8 câu, từ nối và trật tự từ', ready: false },
-  { type: 'ESSAY', icon: <NotebookPen />, title: 'Essay', desc: 'Bài hoàn chỉnh theo dạng đề thi, B2-C1', ready: false },
+const TYPE_CARDS: TypeCard[] = [
+  { type: 'GRAMMAR', icon: <Puzzle />, title: 'Câu theo ngữ pháp', desc: 'Mỗi bài một chủ điểm, A1-B2', levels: ['A1', 'A2', 'B1', 'B2'], setUnit: 'chủ điểm', itemUnit: 'câu' },
+  { type: 'COLLOCATION', icon: <Link2 />, title: 'Collocation', desc: 'Cụm từ cố định: eine Entscheidung treffen', levels: ['A2', 'B1', 'B2'], setUnit: 'bộ', itemUnit: 'cụm' },
+  { type: 'PARAGRAPH', icon: <FileText />, title: 'Đoạn văn', desc: 'Dịch cả đoạn: từ nối và trật tự từ', levels: ['A2', 'B1', 'B2'], setUnit: 'đoạn', itemUnit: 'câu' },
+  { type: 'ESSAY', icon: <NotebookPen />, title: 'Essay', desc: 'Bài hoàn chỉnh theo dạng đề thi, B2-C1', levels: ['B2', 'C1'], setUnit: 'bài', itemUnit: 'câu' },
 ]
 
 export default function TranslationHubPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const level = LEVELS.includes(searchParams.get('level') ?? '') ? searchParams.get('level')! : 'A1'
-  const type: TranslationType = 'GRAMMAR'
+  const card = TYPE_CARDS.find((c) => c.type === searchParams.get('type')) ?? TYPE_CARDS[0]
+  const type = card.type
+  const level = card.levels.includes(searchParams.get('level') ?? '') ? searchParams.get('level')! : card.levels[0]
   const [sets, setSets] = useState<TranslationSetSummary[] | null>(null)
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- level changed, show skeleton before refetch
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- type/level changed, show skeleton before refetch
     setSets(null)
     listTranslationSets(type, level)
       .then(setSets)
       .catch(() => setSets([]))
-  }, [level])
+  }, [type, level])
+
+  function choose(nextType: TranslationType, nextLevel?: string) {
+    const next = TYPE_CARDS.find((c) => c.type === nextType)!
+    const keep = nextLevel ?? (next.levels.includes(level) ? level : next.levels[0])
+    setSearchParams(nextType === 'GRAMMAR' ? { level: keep } : { type: nextType, level: keep }, { replace: true })
+  }
 
   const done = sets?.filter((s) => s.itemCount > 0 && s.passedCount >= s.itemCount).length ?? 0
 
@@ -38,30 +54,29 @@ export default function TranslationHubPage() {
         {TYPE_CARDS.map((c) => {
           const active = c.type === type
           return (
-            <div key={c.type} aria-current={active ? 'true' : undefined}
-              className={cn('flex items-center gap-3 rounded-karte p-4',
-                active ? 'border border-bleistift bg-karteikarte shadow-lift' : 'border border-dashed border-kante')}>
+            <CardButton key={c.type} aria-pressed={active} onClick={() => choose(c.type)}
+              className={cn('flex items-center gap-3 p-4', active ? 'border-bleistift hover:border-bleistift' : 'shadow-none')}>
               <span className="flex size-10 shrink-0 items-center justify-center rounded-rund bg-karteikarte-innen text-radiert [&_svg]:size-5" aria-hidden="true">
                 {c.icon}
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-bleistift">{c.title}</span>
-                <span className="block text-xs text-radiert">{c.ready ? c.desc : 'Sắp ra mắt'}</span>
+                <span className="block text-xs text-radiert">{c.desc}</span>
               </span>
-            </div>
+            </CardButton>
           )
         })}
       </div>
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Cấp độ">
-          {LEVELS.map((l) => (
-            <Chip key={l} selected={l === level} onClick={() => setSearchParams({ level: l }, { replace: true })}>{l}</Chip>
+          {card.levels.map((l) => (
+            <Chip key={l} selected={l === level} onClick={() => choose(type, l)}>{l}</Chip>
           ))}
         </div>
         {sets && sets.length > 0 && (
           <p className="text-sm text-radiert">
-            Đã xong <span className="font-semibold text-bleistift">{done}</span> / {sets.length} chủ điểm
+            Đã xong <span className="font-semibold text-bleistift">{done}</span> / {sets.length} {card.setUnit}
           </p>
         )}
       </div>
@@ -69,7 +84,7 @@ export default function TranslationHubPage() {
       {!sets && <ListCardSkeleton />}
 
       {sets && sets.length === 0 && (
-        <EmptyState title={`Chủ điểm ${level} đang được soạn`} description="Hiện đã có đủ chủ điểm A1 và A2, bạn luyện các cấp đó trước nhé." />
+        <EmptyState title={`Bài ${card.title.toLowerCase()} ${level} đang được soạn`} description="Bạn thử cấp độ khác hoặc dạng bài khác trước nhé." />
       )}
 
       {sets && sets.length > 0 && (
@@ -92,7 +107,7 @@ export default function TranslationHubPage() {
                       <div className="h-full rounded-rund bg-bleistift" style={{ width: `${pct}%` }} />
                     </div>
                     <span className="shrink-0 text-xs text-radiert">
-                      {Math.min(s.passedCount, s.itemCount)}/{s.itemCount} câu
+                      {Math.min(s.passedCount, s.itemCount)}/{s.itemCount} {card.itemUnit}
                     </span>
                   </div>
                 </CardButton>

@@ -41,6 +41,24 @@ public class TranslationItem {
     @Column(name = "hint_keywords", columnDefinition = "TEXT")
     private String hintKeywords;
 
+    /** Cụm cần luyện: collocation dạng từ điển ("eine Entscheidung treffen") hoặc mẫu câu của essay. */
+    @Column(columnDefinition = "TEXT")
+    private String focus;
+
+    /** Từ bị khoét cho chế độ "Điền từ", phải xuất hiện trong câu tham khảo; nhiều đáp án ngăn bằng |. */
+    private String gap;
+
+    /** Các đáp án của chỗ trống (rỗng nếu câu không có chế độ điền từ). */
+    public List<String> gapAnswers() {
+        List<String> answers = new ArrayList<>();
+        if (gap != null) {
+            for (String g : gap.split("\\|")) {
+                if (!g.isBlank()) answers.add(g.strip());
+            }
+        }
+        return answers;
+    }
+
     /** Câu tham khảo + các cách dịch đúng khác. */
     public List<String> allAcceptedAnswers() {
         List<String> answers = new ArrayList<>();

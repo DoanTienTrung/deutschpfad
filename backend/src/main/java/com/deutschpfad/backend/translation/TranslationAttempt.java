@@ -44,7 +44,7 @@ public class TranslationAttempt {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public enum Mode { WORD_BANK, TYPING, REVEAL }
+    public enum Mode { WORD_BANK, TYPING, CLOZE, REVEAL }
 
     /** UNGRADED: đã hết lượt chấm AI trong ngày (hoặc AI lỗi), người học tự so với câu mẫu. */
     public enum Verdict {

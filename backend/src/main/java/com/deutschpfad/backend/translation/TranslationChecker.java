@@ -52,6 +52,28 @@ public final class TranslationChecker {
         return almost;
     }
 
+    /**
+     * Chấm chế độ "Điền từ" (collocation): so với các đáp án của chỗ trống. Chỉ sai hoa thường hay ae/oe/ue/ss thì
+     * "Gần đúng". Luôn có kết quả, không cần AI: chỗ trống chỉ có một vài đáp án.
+     */
+    public static Result checkGap(String answer, List<String> gapAnswers) {
+        String a = normalize(answer);
+        String expected = gapAnswers.get(0);
+        for (String g : gapAnswers) {
+            if (a.equals(normalize(g))) {
+                return new Result(TranslationAttempt.Verdict.CORRECT, new Feedback(g, List.of(), null));
+            }
+        }
+        for (String g : gapAnswers) {
+            if (loose(a).equals(loose(normalize(g)))) {
+                return new Result(TranslationAttempt.Verdict.ALMOST, new Feedback(g,
+                    List.of(new ErrorNote(a, g, "Đúng từ rồi, chỉ sai chính tả hoặc viết hoa.")), null));
+            }
+        }
+        return new Result(TranslationAttempt.Verdict.WRONG, new Feedback(expected,
+            List.of(new ErrorNote(a, expected, "Chỗ trống cần \"" + expected + "\".")), null));
+    }
+
     /** Bỏ dấu phẩy, viết thường, ä→ae... : hai câu bằng nhau ở dạng này thì chỉ khác lỗi nhỏ. */
     static String loose(String normalized) {
         return transliterate(withoutCommas(normalized).toLowerCase(Locale.GERMAN));

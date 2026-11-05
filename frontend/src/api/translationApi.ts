@@ -2,7 +2,7 @@ import { apiFetch } from './client'
 
 export type TranslationType = 'GRAMMAR' | 'COLLOCATION' | 'PARAGRAPH' | 'ESSAY'
 export type TranslationVerdict = 'CORRECT' | 'ALMOST' | 'WRONG' | 'REVEALED' | 'UNGRADED'
-export type TranslationMode = 'WORD_BANK' | 'TYPING' | 'REVEAL'
+export type TranslationMode = 'WORD_BANK' | 'TYPING' | 'CLOZE' | 'REVEAL'
 
 export type TranslationSetSummary = {
   id: number
@@ -23,6 +23,10 @@ export type TranslationItem = {
   deReference: string
   alternatives: string[]
   keywords: string[]
+  /** Cụm cần luyện: collocation dạng từ điển, từ nối hoặc mẫu câu của essay. */
+  focus: string | null
+  /** Từ bị khoét cho chế độ "Điền từ" (có trong deReference), null nếu câu không có. */
+  gap: string | null
   lastVerdict: TranslationVerdict | null
 }
 
@@ -88,6 +92,8 @@ export type TranslationItemData = {
   deReference: string
   acceptedAnswers: string | null
   hintKeywords: string | null
+  focus: string | null
+  gap: string | null
 }
 
 export type TranslationSetData = {
@@ -95,6 +101,7 @@ export type TranslationSetData = {
   type: TranslationType
   level: string
   title: string
+  theme: string | null
   grammarTitleDe: string | null
   structureNote: string | null
   status: 'DRAFT' | 'PUBLISHED'
@@ -113,9 +120,39 @@ export function generateTranslationForTopic(topicId: number, count: number) {
   return apiFetch<TranslationSetData>(`/admin/translation/grammar-topics/${topicId}/generate?count=${count}`, { method: 'POST' })
 }
 
+export type TranslationSetRow = {
+  id: number
+  type: TranslationType
+  level: string
+  title: string
+  theme: string | null
+  status: 'DRAFT' | 'PUBLISHED'
+  itemCount: number
+}
+
+export function listThemedTranslationSets(type: TranslationType) {
+  return apiFetch<TranslationSetRow[]>(`/admin/translation/sets?type=${type}`)
+}
+
+export function createThemedTranslationSet(set: { type: TranslationType; level: string; title: string; theme: string | null }) {
+  return apiFetch<TranslationSetData>('/admin/translation/sets', { method: 'POST', body: JSON.stringify(set) })
+}
+
+export function generateThemedTranslationSet(type: TranslationType, level: string, theme: string, count: number) {
+  const q = new URLSearchParams({ type, level, theme, count: String(count) })
+  return apiFetch<TranslationSetData>(`/admin/translation/sets/generate?${q}`, { method: 'POST' })
+}
+
 export function updateTranslationSet(
   id: number,
-  update: { title: string; structureNote: string | null; status: 'DRAFT' | 'PUBLISHED'; items: TranslationItemData[] },
+  update: {
+    title: string
+    theme?: string | null
+    level?: string
+    structureNote: string | null
+    status: 'DRAFT' | 'PUBLISHED'
+    items: TranslationItemData[]
+  },
 ) {
   return apiFetch<TranslationSetData>(`/admin/translation/sets/${id}`, { method: 'PUT', body: JSON.stringify(update) })
 }
