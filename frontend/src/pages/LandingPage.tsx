@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Flame, GraduationCap, Layers, PencilLine } from 'lucide-react'
-import { Article, Badge, ButtonLink, Card, TextLink } from '@kit'
+import { Article, Badge, ButtonLink, Card, TextLink, cn, type Gender } from '@kit'
 
 const FEATURES: { icon: ReactNode; title: string; description: string; comingSoon?: boolean }[] = [
   {
@@ -26,22 +26,67 @@ const FEATURES: { icon: ReactNode; title: string; description: string; comingSoo
   },
 ]
 
-/** Xấp thẻ Karteikarte minh hoạ cho phần đầu trang: chính là cách app hoạt động. */
+type DemoCard = { gender: Gender; word: string; meaning: string; level: string; topic: string; fach: number }
+
+// Các thẻ chạy luân phiên ở đầu trang: từ thật người học sẽ gặp khi sang Đức.
+const DEMO_CARDS: DemoCard[] = [
+  { gender: 'die', word: 'Anmeldung', meaning: 'sự đăng ký cư trú', level: 'A1', topic: 'Behörde', fach: 2 },
+  { gender: 'der', word: 'Termin', meaning: 'cuộc hẹn', level: 'A1', topic: 'Alltag', fach: 3 },
+  { gender: 'das', word: 'Gehalt', meaning: 'tiền lương', level: 'A2', topic: 'Arbeit', fach: 1 },
+  { gender: 'die', word: 'Krankenkasse', meaning: 'quỹ bảo hiểm y tế', level: 'A2', topic: 'Gesundheit', fach: 4 },
+  { gender: 'der', word: 'Mietvertrag', meaning: 'hợp đồng thuê nhà', level: 'B1', topic: 'Wohnen', fach: 2 },
+  { gender: 'das', word: 'Zeugnis', meaning: 'bảng điểm, giấy chứng nhận', level: 'B1', topic: 'Studium', fach: 3 },
+]
+
+const ROTATE_MS = 3200
+
+// Vị trí của một thẻ trong xấp, tính từ thẻ đang ở trên cùng. Thẻ vừa rời khỏi xấp trượt sang trái
+// và mờ đi; các thẻ phía sau nhích lên; thẻ ẩn phía sau hiện dần ở đáy xấp.
+function stackPosition(offset: number, total: number) {
+  if (offset === 0) return 'z-30 translate-x-0 translate-y-0 rotate-0 scale-100 opacity-100'
+  if (offset === 1) return 'z-20 translate-y-3 -rotate-2 scale-96 opacity-100'
+  if (offset === 2) return 'z-10 translate-y-6 rotate-3 scale-92 opacity-100'
+  if (offset === total - 1) return 'z-40 -translate-x-1/4 -translate-y-1/2 -rotate-6 scale-95 opacity-0 duration-500'
+  return 'z-0 translate-y-6 rotate-3 scale-92 opacity-0'
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || document.documentElement.getAttribute('data-motion') === 'reduce'
+}
+
+/** Xấp thẻ Karteikarte minh hoạ cho phần đầu trang: chính là cách app hoạt động. Thẻ trên cùng tự
+ *  đổi sau vài giây; rê chuột vào thì dừng lại; người bật "giảm chuyển động" chỉ thấy thẻ đầu. */
 function CardStack() {
+  const [top, setTop] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    if (paused || prefersReducedMotion()) return
+    const id = window.setInterval(() => setTop((t) => (t + 1) % DEMO_CARDS.length), ROTATE_MS)
+    return () => window.clearInterval(id)
+  }, [paused])
+
   return (
-    <div className="relative mx-auto h-48 w-full max-w-xs" aria-hidden="true">
-      <div className="absolute inset-x-6 top-6 h-36 rotate-3 rounded-karte border border-kartenrand bg-karteikarte-innen" />
-      <div className="absolute inset-x-3 top-3 h-36 -rotate-2 rounded-karte border border-kartenrand bg-karteikarte-innen" />
-      <div className="absolute inset-x-0 top-0 flex h-36 flex-col rounded-karte border border-kartenrand bg-karteikarte lampenlicht shadow-lift">
-        <div className="flex h-10 items-center justify-between border-b-2 border-kopfzeile px-4 text-xs text-hauch">
-          <span>A1 · Behörde</span>
-          <span>Ngăn 2</span>
-        </div>
-        <div className="flex flex-1 flex-col items-center justify-center textur-linien">
-          <p className="font-display text-2xl font-semibold text-bleistift"><Article gender="die" /> Anmeldung</p>
-          <p className="mt-1 text-sm text-radiert">sự đăng ký cư trú</p>
-        </div>
-      </div>
+    <div className="relative mx-auto h-48 w-full max-w-xs" aria-hidden="true"
+      onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      {DEMO_CARDS.map((card, i) => {
+        const offset = (i - top + DEMO_CARDS.length) % DEMO_CARDS.length
+        return (
+          <div key={card.word}
+            className={cn('absolute inset-x-0 top-0 flex h-36 origin-bottom flex-col rounded-karte border border-kartenrand bg-karteikarte lampenlicht shadow-lift',
+              'transition-all duration-700 ease-standard', stackPosition(offset, DEMO_CARDS.length))}>
+            <div className="flex h-10 items-center justify-between border-b-2 border-kopfzeile px-4 text-xs text-hauch">
+              <span>{card.level} · {card.topic}</span>
+              <span>Ngăn {card.fach}</span>
+            </div>
+            <div className="flex flex-1 flex-col items-center justify-center px-4 text-center textur-linien">
+              <p className="font-display text-2xl font-semibold text-bleistift"><Article gender={card.gender} /> {card.word}</p>
+              <p className="mt-1 text-sm text-radiert">{card.meaning}</p>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -61,7 +106,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="px-6 py-16 sm:py-20">
+      <section className="overflow-x-clip px-6 py-16 sm:py-20">
         <div className="mx-auto grid max-w-seite items-center gap-10 md:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="text-center md:text-left">
             <p className="mb-3 text-sm font-medium text-radiert">Học tiếng Đức cho người Việt</p>
